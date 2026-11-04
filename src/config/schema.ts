@@ -16,6 +16,53 @@ const ownershipGate = z.strictObject({
   rule: z.string().min(1).describe("what an agent must do: usually 'ask the owner first'"),
 });
 
+const portName = z
+  .string()
+  .regex(/^[a-z][a-z0-9_]*$/, "port names are lowercase words, e.g. web, api");
+const port = z.number().int().min(1024, "pick ports above 1023").max(65535);
+
+const envFile = z.strictObject({
+  path: z.string().min(1).describe("relative to the checkout, e.g. .env.local"),
+  set: z
+    .record(z.string().regex(/^[A-Za-z_][A-Za-z0-9_]*$/), z.string().min(1))
+    .default({})
+    .describe("KEY: port name or template, e.g. PORT: web, API_URL: 'http://127.0.0.1:{{api}}'"),
+});
+
+const DEFAULT_PORTS = { from: 4100, to: 4999, names: ["web"] };
+
+export const envSchema = z
+  .strictObject({
+    ports: z
+      .strictObject({
+        from: port.default(4100),
+        to: port.default(4999),
+        names: z.array(portName).min(1).default(["web"]),
+      })
+      .default(DEFAULT_PORTS)
+      .describe("each worktree leases one port per name from this range"),
+    files: z
+      .array(envFile)
+      .default([])
+      .describe("copied from the main checkout when absent, with port keys rewritten"),
+    database: z
+      .strictObject({
+        name: z
+          .string()
+          .min(1)
+          .default("{{repo}}_{{worktree}}")
+          .describe("must include {{worktree}} so each worktree gets its own"),
+        create: z.string().min(1).describe("shell command, e.g. 'createdb {{name}}'"),
+        drop: z
+          .string()
+          .min(1)
+          .optional()
+          .describe("run on 'env down --db', e.g. 'dropdb {{name}}'"),
+      })
+      .optional(),
+  })
+  .default({ ports: DEFAULT_PORTS, files: [] });
+
 export const DEFAULT_VISIBLE = [
   "**/*.{tsx,jsx,vue,svelte,astro,html,css,scss}",
   "**/templates/**",
@@ -42,6 +89,7 @@ export const configSchema = z
         providers: z.array(z.string().min(1)).default([]),
       })
       .default({ enabled: false, budgetUsdPerPr: 10, providers: [] }),
+    env: envSchema,
   })
   .superRefine((config, ctx) => {
     if (config.council.enabled && config.profile === "solo") {
@@ -51,6 +99,30 @@ export const configSchema = z
         message: "council needs several providers; use profile 'team' or 'factory', or disable it",
       });
     }
+    const { ports, files } = config.env;
+    if (ports.to - ports.from + 1 < ports.names.length) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["env", "ports", "to"],
+        message: `the range ${ports.from}-${ports.to} cannot fit ${ports.names.length} ports`,
+      });
+    }
+    files.forEach((file, index) => {
+      for (const [key, value] of Object.entries(file.set)) {
+        const used = ports.names.includes(value)
+          ? []
+          : [...value.matchAll(/\{\{(\w+)\}\}/g)].map((m) => m[1] as string);
+        const unknown = used.filter((name) => !ports.names.includes(name));
+        if (unknown.length > 0 || (used.length === 0 && !ports.names.includes(value))) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["env", "files", index, "set", key],
+            message: `use a port name (${ports.names.join(", ")}) or a template like "{{${ports.names[0]}}}"`,
+          });
+        }
+      }
+    });
   });
 
 export type MitchstackConfig = z.output<typeof configSchema>;
+export type EnvConfig = z.output<typeof envSchema>;
