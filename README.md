@@ -18,6 +18,36 @@ build ─▶ prove ─▶ ship ─▶ [you merge]
 Exactly two human decisions: you approve the ticket, and you merge. Everything between is the
 agent's job, and the agent has to show its work. The full contract is in [AGENTS.md](AGENTS.md).
 
+## Install
+
+One line per host:
+
+| Host | Command |
+|---|---|
+| Claude Code | `/plugin install mitchstack --marketplace aresbotv1-beep/mitchstack` |
+| Codex | `npx mitchstack install --host codex` |
+| Cursor | `npx mitchstack install --host cursor` |
+
+- **Claude Code** installs it as a plugin, so every skill is namespaced (`/mitchstack:groundbreak`)
+  and can never clash with one of yours. On Claude Code older than 2.1.275, use two steps:
+  `claude plugin marketplace add aresbotv1-beep/mitchstack` then
+  `claude plugin install mitchstack@mitchstack`.
+- **Codex** gets the skills in `~/.agents/skills/` and the contract in `~/.codex/AGENTS.md`.
+  **Cursor** gets the skills in `~/.cursor/skills/`. Add `--project <repo>` to install into one
+  repository instead (skills under `.agents/skills/` or `.cursor/skills/`, the contract in the
+  repo's `AGENTS.md`), and `--hooks` to add a git pre-push hook that runs the checks in
+  `mitchstack.yaml`. `--host all` does all three; `--dry-run` shows what would change.
+- **It never overwrites anything it didn't write.** If you already have a skill called `plan` or
+  `ship`, that one is skipped and reported (add `--prefix` to install ours as `mitchstack-plan`).
+  The contract goes between `<!-- mitchstack:begin -->` and `<!-- mitchstack:end -->` markers;
+  your text outside them is never touched. An existing pre-push hook is left alone. Running the
+  install again changes nothing.
+- **Uninstall** with `npx mitchstack uninstall --host codex` (same flags). It removes only the
+  files it recorded in `.mitchstack/install.json`, and keeps any you edited since.
+- The skills also follow the [`npx skills`](https://github.com/vercel-labs/skills) layout
+  (`npx skills add aresbotv1-beep/mitchstack`); the no-overwrite promise above covers
+  `mitchstack install` only.
+
 ## Configure
 
 Copy [`mitchstack.yaml.example`](mitchstack.yaml.example) to `mitchstack.yaml` and check it:
