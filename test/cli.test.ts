@@ -171,3 +171,17 @@ describe("mitchstack prove (wired into the main CLI)", () => {
     expect(out.join("\n")).toMatch(/```receipts/);
   });
 });
+
+describe("ship and env (wired into the main CLI)", () => {
+  it("routes 'ship' and 'env' instead of printing the top-level usage", async () => {
+    for (const group of ["ship", "env"]) {
+      const err: string[] = [];
+      await runCli([group, "--definitely-not-a-flag"], {
+        cwd: tmpdir(),
+        out: () => {},
+        err: (l) => err.push(l),
+      });
+      expect(err.join("\n"), group).not.toMatch(/^usage: mitchstack config check/m);
+    }
+  });
+});
