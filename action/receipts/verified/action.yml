@@ -1,0 +1,153 @@
+name: mitchstack receipts (verified)
+description: >-
+  The mitchstack/receipts-verified check (opt-in). Re-runs the proof instead of trusting it: each
+  red-green claim must fail at the merge base with only the PR's test files applied and pass at the
+  head; each visual claim is re-captured at both commits and compared to the claimed hashes.
+  No token, no secrets, no LLM calls.
+
+# Opt-in, and separate from the present tier: give the job its own name so it shows up as its own
+# check, and only make it required once the repo's receipts reproduce in CI.
+#
+#   on:
+#     pull_request:
+#       types: [opened, edited, synchronize, reopened]
+#   permissions:
+#     contents: read
+#   jobs:
+#     receipts-verified:
+#       name: mitchstack/receipts-verified
+#       runs-on: ubuntu-latest
+#       timeout-minutes: 60
+#       steps:
+#         - uses: actions/checkout@v4
+#           with:
+#             ref: ${{ github.event.pull_request.head.sha }}
+#             fetch-depth: 0             # the base, the head and their merge base must all be here
+#             persist-credentials: false # the PR's commands run in this job
+#         - uses: aresbotv1-beep/mitchstack/action/receipts/verified@main
+#           with:
+#             setup: npm ci
+#
+# Trigger on `pull_request` only, never `pull_request_target`: the verifier runs the PR's own
+# commands, so it must run with the read-only token fork PRs get and without secrets. This action
+# never passes a token to the verifier, and the verifier scrubs tokens and the workflow file-command
+# variables (GITHUB_OUTPUT, GITHUB_ENV, ...) from every command it runs.
+#
+# Rules (see src/receipts/verify/verdict.ts):
+# - red-green: run at the merge base of base and head (not the base branch's moving tip), after
+#   checking out the PR's new and changed test files (test-globs) from the head. Must fail on every
+#   attempt; one pass means the red never happened (failed); a mix is a flake (could not verify).
+#   At the head it must exit 0, retried up to `attempts`. Exit 126/127, signals and timeouts are
+#   "could not verify", never a pass.
+# - visual: re-captured at the merge base and the head with the repo's capture script, or, for a
+#   repo-relative file surface such as public/index.html, with mitchstack's deterministic capture.
+#   before: "absent" means the surface must not exist at the merge base (a file surface is missing,
+#   or the capture script exits 3); if it exists, the claim fails. Exact hash match = verified.
+#   Pixel-exact hashes only reproduce in the same rendering environment (OS, fonts, Chromium), so a
+#   mismatch with nothing else wrong is "could not verify" in lenient mode (the default) and a
+#   failure in strict mode. A mismatch on one side while the other matches exactly always fails:
+#   the matching side proves the environments agree. Base and head rendering identically fails.
+#
+# Exit: 0 every checkable claim verified, 1 a claim was contradicted, 2 could not verify / run.
+
+inputs:
+  path:
+    description: The checked-out repository (full history). Defaults to the workspace.
+    default: ${{ github.workspace }}
+  setup:
+    description: Shell command run in each temp worktree before any claim, e.g. "npm ci".
+    default: ""
+  capture:
+    description: >-
+      The repo's capture script, run per visual claim in each worktree with MITCHSTACK_SURFACE,
+      MITCHSTACK_CAPTURE_OUT, MITCHSTACK_SIDE (base|head) and MITCHSTACK_CLAIM. Writes a PNG to
+      MITCHSTACK_CAPTURE_OUT and exits 0, or exits 3 when the surface does not exist at that commit.
+    default: ""
+  test-globs:
+    description: Newline-separated globs for the PR's test files. Empty uses mitchstack's defaults.
+    default: ""
+  timeout:
+    description: Seconds per command run or capture; a timeout is "could not verify".
+    default: "300"
+  setup-timeout:
+    description: Seconds per setup run.
+    default: "900"
+  attempts:
+    description: Red runs this many times (all must fail); green retries up to this many (1-5).
+    default: "2"
+  visual:
+    description: >-
+      lenient (default) or strict. Use strict only when the receipts' pictures were captured in the
+      same image CI uses (e.g. the Playwright container), so a hash mismatch can only be a fake.
+    default: lenient
+  install-browser:
+    description: >-
+      auto (default): install Chromium for mitchstack's built-in capture only when the PR claims a
+      visual change and no capture script is given. Costs roughly 1-2 minutes and ~150 MB. true or
+      false to force.
+    default: auto
+
+outputs:
+  conclusion:
+    description: pass, fail, could-not-verify or could-not-run
+    value: ${{ steps.verify.outputs.conclusion }}
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22
+
+    - name: Build mitchstack
+      shell: bash
+      working-directory: ${{ github.action_path }}/../../..
+      run: npm ci --ignore-scripts --no-audit --no-fund && npm run build
+
+    - name: Install Chromium
+      shell: bash
+      working-directory: ${{ github.action_path }}/../../..
+      env:
+        MODE: ${{ inputs.install-browser }}
+        CAPTURE: ${{ inputs.capture }}
+      run: |
+        needs=false
+        if [ "$MODE" = true ]; then
+          needs=true
+        elif [ "$MODE" = auto ] && [ -z "$CAPTURE" ] &&
+          jq -r '.pull_request.body // ""' "$GITHUB_EVENT_PATH" | grep -Eq '"kind"[[:space:]]*:[[:space:]]*"visual"'; then
+          needs=true
+        fi
+        if [ "$needs" = true ]; then npx playwright install --with-deps chromium; else echo "no browser needed"; fi
+
+    - name: Make sure base and head are present
+      shell: bash
+      working-directory: ${{ inputs.path }}
+      env:
+        BASE: ${{ github.event.pull_request.base.sha }}
+        HEAD: ${{ github.event.pull_request.head.sha }}
+      run: |
+        for sha in "$BASE" "$HEAD"; do
+          git cat-file -e "$sha^{commit}" 2>/dev/null || git fetch --no-tags --quiet origin "$sha" || true
+        done
+
+    - name: Verify receipts
+      id: verify
+      shell: bash
+      working-directory: ${{ inputs.path }}
+      env:
+        SETUP: ${{ inputs.setup }}
+        CAPTURE: ${{ inputs.capture }}
+        TEST_GLOBS: ${{ inputs.test-globs }}
+        TIMEOUT: ${{ inputs.timeout }}
+        SETUP_TIMEOUT: ${{ inputs.setup-timeout }}
+        ATTEMPTS: ${{ inputs.attempts }}
+        VISUAL: ${{ inputs.visual }}
+      run: |
+        args=(receipts verify --repo . --timeout "$TIMEOUT" --setup-timeout "$SETUP_TIMEOUT" --attempts "$ATTEMPTS" --visual "$VISUAL")
+        [ -n "$SETUP" ] && args+=(--setup "$SETUP")
+        [ -n "$CAPTURE" ] && args+=(--capture "$CAPTURE")
+        while IFS= read -r glob; do
+          [ -n "$glob" ] && args+=(--test-glob "$glob")
+        done <<< "$TEST_GLOBS"
+        node "$GITHUB_ACTION_PATH/../../../dist/bin/mitchstack.js" "${args[@]}"
