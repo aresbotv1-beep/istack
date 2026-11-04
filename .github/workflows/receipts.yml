@@ -1,0 +1,27 @@
+# Dogfood: run the mitchstack/receipts check on this repo's own pull requests.
+# pull_request only (never pull_request_target); no paths: filter — the check decides in-job.
+name: receipts
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: receipts-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  receipts:
+    name: mitchstack/receipts
+    runs-on: ubuntu-latest
+    steps:
+      # Checked out only to run the action from this branch; the check itself reads the PR's
+      # files and the base commit's mitchstack.yaml through the API.
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: ./action/receipts
