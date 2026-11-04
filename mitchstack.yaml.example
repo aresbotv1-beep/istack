@@ -1,0 +1,41 @@
+# mitchstack.yaml — one per repo. Validate with: npx mitchstack config check
+version: 1
+
+# The human who holds both gates: says yes to the ticket, and is the only one who merges.
+owner: Sam Rivera
+
+# solo    — one reviewer, no council. Lightest path; good for a typo.
+# team    — cross-provider reviewer on every PR.
+# factory — team + a scored council on visible changes and one-way doors.
+profile: team
+
+# The repo's own checks. Every PR must pass all of them before it is ready.
+checks:
+  - name: test
+    run: npm test
+  - name: typecheck
+    run: npm run typecheck
+  - name: whitespace
+    run: git diff --check
+
+# Files whose change a person can see. Changing any of these requires a before/after pair.
+visibleChange:
+  include:
+    - "src/**/*.{tsx,css}"
+    - "public/**"
+  exclude:
+    - "**/*.test.tsx"
+
+# Shared resources a worktree does not isolate. Agents ask the owner before touching these.
+ownershipGates:
+  - resource: shared local database
+    owner: Sam Rivera
+    rule: never wipe or migrate it; use a per-worktree schema
+  - resource: production deploys
+    owner: Sam Rivera
+    rule: agents never deploy
+
+# Council: several AI providers score before/after pictures (team and factory only).
+council:
+  enabled: false
+  budgetUsdPerPr: 10
