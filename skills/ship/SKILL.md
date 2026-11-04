@@ -85,12 +85,14 @@ with its real verdict; a reviewer with no score says "no score". Never edit the 
 ## 5. Open it
 
 ```sh
+gh pr create --help | grep -q -- --attach && echo attach-ok   # check the client first
 gh pr create --title "..." --body-file body.md --attach before.png --attach after.png
 ```
 
-`--attach` uploads pictures to GitHub so they render on private repos; it needs push access.
-Where it cannot work (forks, no push access, an older host), upload the pictures as an Actions
-artifact and link the run in **Evidence**. Never put a picture with secrets or customer data
+`--attach` uploads pictures to GitHub so they render on private repos; it needs push access and
+a `gh` that has the flag. Without it (an older `gh`, forks, no push access, an older host), run
+the same command without `--attach`, upload the pictures as an Actions artifact, and link the
+run in **Evidence**. Never put a picture with secrets or customer data
 anywhere.
 
 ## 6. Watch it

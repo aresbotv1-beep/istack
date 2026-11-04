@@ -38,7 +38,7 @@ export const SNAPSHOT_QUERY = `query($owner: String!, $name: String!, $number: I
       } } } } }
       reviewThreads(first: 100) {
         pageInfo { hasNextPage }
-        nodes { id isResolved comments(first: 50) { nodes { author { login } body url } } }
+        nodes { id isResolved comments(first: 50) { pageInfo { hasNextPage } nodes { author { login } body url } } }
       }
       comments(first: 100) {
         pageInfo { hasNextPage }
@@ -206,7 +206,14 @@ export function snapshotFromGraphql(json: unknown): PrSnapshot {
     });
   }
 
-  const pages = [contexts, pr.reviewThreads, pr.comments, pr.reviews];
+  // A thread's own comments are a page too: an unread newest reply must not read as answered.
+  const pages = [
+    contexts,
+    pr.reviewThreads,
+    pr.comments,
+    pr.reviews,
+    ...pr.reviewThreads.nodes.map((t) => t.comments),
+  ];
   return {
     number: pr.number,
     url: pr.url,

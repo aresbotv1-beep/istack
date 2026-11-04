@@ -77,6 +77,16 @@ describe("snapshotFromGraphql", () => {
     expect(snapshotFromGraphql(more).truncated).toBe(true);
   });
 
+  // A thread with more comments than the first page: the newest reply may be unread.
+  it("flags a review thread whose comments it did not read in full", () => {
+    const long = fixture();
+    const thread = long.data.repository.pullRequest.reviewThreads.nodes[0] as {
+      comments: { pageInfo?: { hasNextPage: boolean } };
+    };
+    thread.comments.pageInfo = { hasNextPage: true };
+    expect(snapshotFromGraphql(long).truncated).toBe(true);
+  });
+
   it("maps failing check conclusions to failure", () => {
     const failing = fixture();
     const nodes =
