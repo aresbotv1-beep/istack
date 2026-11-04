@@ -1,0 +1,17 @@
+{
+  "action": "synchronize",
+  "number": 7,
+  "pull_request": {
+    "number": 7,
+    "body": "## Summary\n\nSave button restyled.\n\n## Evidence\n\n```receipts\n{\n  \"version\": 1,\n  \"head\": \"3f2a9c1e5b7d4f6a8c0e2b4d6f8a0c2e4b6d8f0a\",\n  \"door\": {\n    \"kind\": \"two-way\",\n    \"blastRadius\": \"the Save button on the settings page only\"\n  },\n  \"claims\": [\n    {\n      \"id\": \"C1\",\n      \"kind\": \"visual\",\n      \"statement\": \"Save button uses the primary colour\",\n      \"surface\": \"http://localhost:5173/settings\",\n      \"before\": {\n        \"sha256\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\n        \"url\": \"https://github.com/user-attachments/assets/before\"\n      },\n      \"after\": {\n        \"sha256\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n        \"url\": \"https://github.com/user-attachments/assets/after\"\n      }\n    },\n    {\n      \"id\": \"C2\",\n      \"kind\": \"red-green\",\n      \"statement\": \"Save is disabled until the form is dirty\",\n      \"command\": \"npx vitest run test/settings.test.tsx\",\n      \"red\": {\n        \"sha\": \"9e8d7c6\",\n        \"exitCode\": 1\n      },\n      \"green\": {\n        \"sha\": \"3f2a9c1\",\n        \"exitCode\": 0\n      }\n    }\n  ]\n}\n```\n",
+    "head": {
+      "sha": "3f2a9c1e5b7d4f6a8c0e2b4d6f8a0c2e4b6d8f0a"
+    },
+    "base": {
+      "sha": "65881ed884127d64ec923c1f37f1bd280b5e4e33"
+    }
+  },
+  "repository": {
+    "full_name": "example/widgets"
+  }
+}

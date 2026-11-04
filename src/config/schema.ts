@@ -16,7 +16,7 @@ const ownershipGate = z.strictObject({
   rule: z.string().min(1).describe("what an agent must do: usually 'ask the owner first'"),
 });
 
-const DEFAULT_VISIBLE = [
+export const DEFAULT_VISIBLE = [
   "**/*.{tsx,jsx,vue,svelte,astro,html,css,scss}",
   "**/templates/**",
   "public/**",

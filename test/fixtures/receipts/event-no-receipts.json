@@ -1,0 +1,17 @@
+{
+  "action": "synchronize",
+  "number": 7,
+  "pull_request": {
+    "number": 7,
+    "body": "## Summary\n\nUpdate the install guide.\n\nNo receipts here.\n",
+    "head": {
+      "sha": "3f2a9c1e5b7d4f6a8c0e2b4d6f8a0c2e4b6d8f0a"
+    },
+    "base": {
+      "sha": "65881ed884127d64ec923c1f37f1bd280b5e4e33"
+    }
+  },
+  "repository": {
+    "full_name": "example/widgets"
+  }
+}
