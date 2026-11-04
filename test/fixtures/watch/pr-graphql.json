@@ -1,0 +1,148 @@
+{
+  "data": {
+    "repository": {
+      "autoMergeAllowed": true,
+      "pullRequest": {
+        "number": 7,
+        "url": "https://github.com/acme/app/pull/7",
+        "state": "OPEN",
+        "mergeable": "MERGEABLE",
+        "headRefOid": "abc1234def5678abc1234def5678abc1234def56",
+        "autoMergeRequest": null,
+        "mergeQueueEntry": null,
+        "commits": {
+          "nodes": [
+            {
+              "commit": {
+                "statusCheckRollup": {
+                  "contexts": {
+                    "pageInfo": { "hasNextPage": false },
+                    "nodes": [
+                      {
+                        "__typename": "CheckRun",
+                        "name": "test",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS"
+                      },
+                      {
+                        "__typename": "CheckRun",
+                        "name": "lint",
+                        "status": "IN_PROGRESS",
+                        "conclusion": null
+                      },
+                      { "__typename": "StatusContext", "context": "ci/legacy", "state": "SUCCESS" }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "reviewThreads": {
+          "pageInfo": { "hasNextPage": false },
+          "nodes": [
+            {
+              "id": "T1",
+              "isResolved": true,
+              "comments": {
+                "nodes": [
+                  {
+                    "author": { "login": "review-bot" },
+                    "body": "S1 [should] guard the null",
+                    "url": "https://github.com/acme/app/pull/7#discussion_r1"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "T2",
+              "isResolved": false,
+              "comments": {
+                "nodes": [
+                  {
+                    "author": { "login": "teammate" },
+                    "body": "why a new helper?",
+                    "url": "https://github.com/acme/app/pull/7#discussion_r2"
+                  },
+                  {
+                    "author": { "login": "owner" },
+                    "body": "> **agent: claude-code** — posted on the owner's behalf\n\nThe old one mutates its input.",
+                    "url": "https://github.com/acme/app/pull/7#discussion_r3"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "T3",
+              "isResolved": false,
+              "comments": {
+                "nodes": [
+                  {
+                    "author": { "login": "review-bot" },
+                    "body": "S2 [blocker] this leaks the token",
+                    "url": "https://github.com/acme/app/pull/7#discussion_r4"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "comments": {
+          "pageInfo": { "hasNextPage": false },
+          "nodes": [
+            {
+              "id": "IC1",
+              "author": { "login": "teammate" },
+              "body": "can you add a picture?",
+              "url": "https://github.com/acme/app/pull/7#issuecomment-1",
+              "createdAt": "2026-11-04T10:00:00Z"
+            },
+            {
+              "id": "IC2",
+              "author": { "login": "owner" },
+              "body": "> **agent: claude-code** — posted on the owner's behalf\n\nAdded under Evidence.",
+              "url": "https://github.com/acme/app/pull/7#issuecomment-2",
+              "createdAt": "2026-11-04T10:05:00Z"
+            },
+            {
+              "id": "IC3",
+              "author": { "login": "other" },
+              "body": "docs too?",
+              "url": "https://github.com/acme/app/pull/7#issuecomment-3",
+              "createdAt": "2026-11-04T10:10:00Z"
+            }
+          ]
+        },
+        "reviews": {
+          "pageInfo": { "hasNextPage": false },
+          "nodes": [
+            {
+              "id": "R1",
+              "author": { "login": "teammate" },
+              "state": "CHANGES_REQUESTED",
+              "body": "Please split this.",
+              "url": "https://github.com/acme/app/pull/7#pullrequestreview-1",
+              "submittedAt": "2026-11-04T09:00:00Z"
+            },
+            {
+              "id": "R2",
+              "author": { "login": "approver" },
+              "state": "APPROVED",
+              "body": "",
+              "url": "https://github.com/acme/app/pull/7#pullrequestreview-2",
+              "submittedAt": "2026-11-04T11:00:00Z"
+            },
+            {
+              "id": "R3",
+              "author": { "login": "commenter" },
+              "state": "COMMENTED",
+              "body": "wording on line 3",
+              "url": "https://github.com/acme/app/pull/7#pullrequestreview-3",
+              "submittedAt": "2026-11-04T10:30:00Z"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
