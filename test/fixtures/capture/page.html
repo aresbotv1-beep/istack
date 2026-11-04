@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>capture fixture</title>
+    <style>
+      body { font-family: sans-serif; margin: 24px; background: #fafafa; }
+      .spinner {
+        width: 60px; height: 60px; background: #2b6cb0;
+        animation: spin 0.7s linear infinite;
+      }
+      @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      .bar { height: 12px; background: #38a169; animation: grow 1.3s ease-in-out infinite alternate; }
+      @keyframes grow { from { width: 10%; } to { width: 90%; } }
+    </style>
+  </head>
+  <body>
+    <h1 id="title">Receipts fixture</h1>
+    <div class="spinner"></div>
+    <div class="bar"></div>
+    <p>Rendered at <span id="clock"></span></p>
+    <input id="field" value="focused input with a caret" />
+    <script>
+      function tick() { document.getElementById("clock").textContent = `${new Date().toISOString()} / ${Date.now()}`; }
+      tick();
+      setInterval(tick, 50);
+      document.getElementById("field").focus();
+    </script>
+  </body>
+</html>
