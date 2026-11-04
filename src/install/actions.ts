@@ -71,8 +71,23 @@ export interface InstallOptions {
 }
 
 export function install(options: InstallOptions): Report {
+  // A fresh install has no record to check, so plan it first (a dry run writes nothing but fills
+  // the record it would save) and check every destination in that planned record before any
+  // write. The same rule as uninstall: nothing outside mitchstack's locations, nothing through a
+  // symlink that leaves the root.
+  const planned = installInto(context(options.scope, true), options);
+  const problems = checkLocations(planned.manifest, options.scope);
+  if (problems.length > 0) {
+    throw new Error(
+      `the install would write outside mitchstack's install locations, so nothing was written: ${problems.join("; ")}`,
+    );
+  }
+  if (options.dryRun) return finish(planned, options.scope);
+  return finish(installInto(context(options.scope, false), options), options.scope);
+}
+
+function installInto(ctx: Ctx, options: InstallOptions): Ctx {
   const { scope, kit } = options;
-  const ctx = context(scope, options.dryRun ?? false);
   const blocks = new Map<string, Host[]>();
   const skills = options.prefix ? prefixSkills(kit.skills, "mitchstack-") : kit.skills;
   for (const host of options.hosts) {
@@ -84,7 +99,7 @@ export function install(options: InstallOptions): Report {
   }
   for (const [path, hosts] of blocks) installBlock(ctx, path, hosts, kit.contract);
   if (options.hooks) installHook(ctx, kit.hookTemplate);
-  return finish(ctx, scope);
+  return ctx;
 }
 
 export interface UninstallOptions {

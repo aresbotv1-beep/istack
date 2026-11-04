@@ -241,8 +241,11 @@ export async function runCouncil(input: CouncilInput): Promise<CouncilResult> {
       record.samples.push(sample);
       log.spentUsd += sample.costUsd;
       round.costUsd += sample.costUsd;
-      if (log.spentUsd > log.budgetUsd + 1e-9) {
-        round.overrunUsd = roundMoney(log.spentUsd - log.budgetUsd);
+      // Compare, store and validate at the same precision: an overrun that rounds to zero is
+      // within the budget, so it is never written as a zero the schema would refuse.
+      const over = roundMoney(log.spentUsd - log.budgetUsd);
+      if (over > 0) {
+        round.overrunUsd = over;
         overrun = `a call to ${judge.id} cost ${usd(sample.costUsd)} (${sample.costSource}) with ${usd(left)} left`;
         return "budget";
       }

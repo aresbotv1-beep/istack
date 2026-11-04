@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -196,6 +196,54 @@ describe("mitchstack climb run", () => {
     expect(readFileSync(join(dir, "user-data.txt"), "utf8")).toBe("precious");
     expect(readFileSync(join(dir, ".artifacts/decision.tsv"), "utf8")).toMatch(/rejected/);
     expect(git(dir, "status", "--porcelain")).toBe("");
+  });
+
+  // F15: a nested repository under an ignored path is opaque to the snapshot, so a move could
+  // change files inside it and the revert would not notice. Refuse before any move runs.
+  it("refuses to start when an ignored nested repository could hide a move's changes", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "ms-climb-nested-"));
+    writeFileSync(join(dir, ".gitignore"), ".artifacts/\nvendor/\n");
+    writeFileSync(join(dir, "quality.txt"), "5");
+    writeFileSync(
+      join(dir, "bench.mjs"),
+      "import {readFileSync} from 'node:fs'; console.log(Number(readFileSync('quality.txt','utf8')));",
+    );
+    writeFileSync(
+      join(dir, "plan.json"),
+      JSON.stringify({
+        target: 9,
+        minAttempts: 1,
+        runs: 3,
+        noiseFloor: 0.1,
+        k: 2,
+        harness: "node bench.mjs",
+        frozen: ["bench.mjs"],
+        sensitivity: { id: "bad", apply: "echo 1 > quality.txt" },
+        moves: [
+          {
+            id: "rejected",
+            apply: "echo 4 > quality.txt; echo contaminated > vendor/cache.txt",
+            expectedGain: 1,
+            cost: 1,
+          },
+        ],
+      }),
+    );
+    const g = (cwd: string, ...args: string[]) => execFileSync("git", args, { cwd, stdio: "pipe" });
+    g(dir, "init", "-q", "-b", "main");
+    g(dir, "config", "user.email", "climb@example.com");
+    g(dir, "config", "user.name", "Climb Fixture");
+    g(dir, "add", "-A");
+    g(dir, "commit", "-q", "-m", "base");
+    mkdirSync(join(dir, "vendor"));
+    g(join(dir, "vendor"), "init", "-q");
+    writeFileSync(join(dir, "vendor/cache.txt"), "original");
+
+    const r = await cli(["run", "--plan", "plan.json", "--log", ".artifacts/decision.tsv"], dir);
+    expect(r.code).toBe(2);
+    expect(r.err).toMatch(/vendor.*nested repository.*scratch/);
+    expect(readFileSync(join(dir, "vendor/cache.txt"), "utf8")).toBe("original");
+    expect(readFileSync(join(dir, "quality.txt"), "utf8").trim()).toBe("5");
   });
 
   it("refuses to climb when the planted bad change does not move the score", async () => {

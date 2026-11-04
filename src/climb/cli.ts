@@ -168,6 +168,18 @@ async function run(flags: Map<string, string>, io: CliIo, deps: ClimbDeps): Prom
   const skip = skippedBy([...plan.scratch, ...(logInRepo ? [inside] : [])]);
   let ignored: IgnoredSnapshot | undefined;
 
+  // A nested repository under an ignored path is opaque to the snapshot: a move could change the
+  // files inside it and the revert would not see it. Refuse before any move runs.
+  const preflight = await snapshotIgnored(io.cwd, listIgnored, skip);
+  const opaque = [...preflight.entries].filter(([, e]) => e.kind === "opaque").map(([rel]) => rel);
+  disposeSnapshot(preflight);
+  if (opaque.length > 0) {
+    io.err(
+      `${opaque.join(", ")}: ignored nested repository the climb cannot restore after a rejected move; list it under scratch in the plan, or remove it, then rerun`,
+    );
+    return 2;
+  }
+
   const harness: ClimbHarness = {
     measure: async (runs) => {
       const scores: number[] = [];

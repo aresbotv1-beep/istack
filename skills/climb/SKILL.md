@@ -61,9 +61,9 @@ prints no number counts as an incomplete measurement: revert.
 Everything that fails the rule is **fully reverted** (`git reset --hard` plus `git clean -fd`
 back to the last kept commit). Git-ignored files survive both, so the climb copies them aside
 before each move and puts them back: files the move created go, files it changed come back.
-Only `scratch` paths (default `[".artifacts/"]`, the harness's and climb's own records; a move
-must not write there) are left alone. Listing `node_modules/` there skips its copy, at your own
-risk. If the tree or the ignored files do not match afterwards the climb stops as `broken`.
+Only `scratch` paths (default `[".artifacts/"]`; moves must not write there) are left alone; an
+ignored nested repository must be listed there or the climb won't start. `node_modules/` there
+skips its copy, at your risk. A mismatch in the tree or ignored files afterwards means `broken`.
 
 ## 5. One change per iteration, one commit per win
 

@@ -239,6 +239,31 @@ describe("council: runner", () => {
     expect(table).not.toContain("| Judge |");
   });
 
+  // F17: a sub-precision overrun must not write a log the schema then refuses to read.
+  it("keeps every log it writes readable, whatever the measured cost's precision", async () => {
+    for (const cost of [5, 0.0101, 0.0100001, 0.01]) {
+      const judges: Judge[] = ["a", "b"].map((provider) => ({
+        id: provider,
+        provider,
+        costUsdPerCall: 0.001,
+        score: async (req) => ({
+          kind: "scores",
+          scores: Object.fromEntries(req.pictures.map((p) => [p.label, 5])),
+          costUsd: cost,
+        }),
+      }));
+      const result = await runCouncil(
+        base({
+          council: { enabled: true, budgetUsdPerPr: 0.01 },
+          judges,
+          options: { samples: 1, baselineSamples: 1 },
+        }),
+      );
+      const parsed = councilLogSchema.safeParse(JSON.parse(JSON.stringify(result.log)));
+      expect(parsed.success, `cost ${cost}: ${JSON.stringify(parsed.error?.issues)}`).toBe(true);
+    }
+  });
+
   it("a judge that fails a sample gets no score, never a guessed one", async () => {
     let calls = 0;
     const flaky: Judge = {

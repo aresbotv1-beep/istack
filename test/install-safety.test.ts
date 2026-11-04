@@ -145,6 +145,22 @@ describe("F6: the install record is validated before anything is touched", () =>
     expect(snapshot(parent)).toEqual(before);
   });
 
+  // F16: a fresh install has no record to check, so its destinations must be checked instead.
+  it("refuses a fresh install whose destination escapes through a symlink, and writes nothing", async () => {
+    const { parent, project } = projectWithVictim();
+    const outside = join(parent, "external");
+    mkdirSync(outside);
+    symlinkSync(outside, join(project, ".agents"), "dir");
+    const before = snapshot(parent);
+
+    const run = await install(project, ["install", "--host", "codex", "--project", project]);
+
+    expect(run.code).toBe(2);
+    expect(run.err).toMatch(/outside|symlink/);
+    expect(existsSync(join(outside, "skills"))).toBe(false);
+    expect(snapshot(parent)).toEqual(before);
+  });
+
   it("still accepts its own records: install, re-install, uninstall round trip", async () => {
     const project = gitRepo({
       "mitchstack.yaml":
