@@ -79,3 +79,28 @@ export function renameSkill(skill: KitSkill, name: string): KitSkill {
   }
   return { name, files };
 }
+
+/**
+ * A `<prefix><name>` install of the whole kit: each folder and frontmatter name is prefixed, and every
+ * markdown link into a sibling skill (`](../ship/council.md)`) is rewritten to the prefixed folder so
+ * it still resolves. The bytes returned are the bytes written and hashed into the install record.
+ */
+export function prefixSkills(skills: KitSkill[], prefix: string): KitSkill[] {
+  const names = new Set(skills.map((s) => s.name));
+  return skills.map((skill) => {
+    const renamed = renameSkill(skill, `${prefix}${skill.name}`);
+    const files = new Map<string, Buffer>();
+    for (const [file, data] of renamed.files) {
+      if (!file.endsWith(".md")) {
+        files.set(file, data);
+        continue;
+      }
+      const text = data.toString("utf8");
+      const next = text.replace(/\]\((\.\.\/)([^/)\s]+)\//g, (whole, up: string, name: string) =>
+        names.has(name) ? `](${up}${prefix}${name}/` : whole,
+      );
+      files.set(file, next === text ? data : Buffer.from(next, "utf8"));
+    }
+    return { name: renamed.name, files };
+  });
+}

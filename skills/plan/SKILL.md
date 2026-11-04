@@ -14,7 +14,7 @@ from the express lane. Read them; do not re-ask what they settle.
 ## 1. Size it
 
 - **One ticket** (most express-lane work): skip the spec. Check the draft ticket against
-  `templates/ticket.md`, fill the gaps, go to step 5.
+  [ticket-template.md](ticket-template.md), fill the gaps, go to step 5.
 - **Several tickets:** write the spec first, then the tickets.
 
 ## 2. The spec, in your own words
@@ -41,7 +41,7 @@ Save as `docs/spec/<topic>.md`. Keep it to what a builder needs:
 - Draw **blocking edges** as a graph; anything without an edge can run in parallel.
 - **One context window each:** a ticket a builder cannot finish and prove in one session is two
   tickets.
-- Each ticket uses `templates/ticket.md` and opens with the ask. Save the graph as
+- Each ticket uses [ticket-template.md](ticket-template.md) and opens with the ask. Save the graph as
   `docs/spec/<topic>-tickets.md`, or in the tracker named by the repo.
 
 ## 4. Sort every open choice

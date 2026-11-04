@@ -1,4 +1,3 @@
-import { execFileSync } from "node:child_process";
 import {
   chmodSync,
   existsSync,
@@ -14,7 +13,8 @@ import { dirname, join, relative, resolve, sep } from "node:path";
 import { loadConfig } from "../config/load.js";
 import { mergeBlock, removeBlock, renderBlock } from "./block.js";
 import { type Host, hostTarget, type Scope } from "./hosts.js";
-import { type Kit, renameSkill } from "./kit.js";
+import { type Kit, prefixSkills } from "./kit.js";
+import { checkLocations, gitHooksDir } from "./locations.js";
 import {
   type BlockEntry,
   type DirEntry,
@@ -74,16 +74,10 @@ export function install(options: InstallOptions): Report {
   const { scope, kit } = options;
   const ctx = context(scope, options.dryRun ?? false);
   const blocks = new Map<string, Host[]>();
+  const skills = options.prefix ? prefixSkills(kit.skills, "mitchstack-") : kit.skills;
   for (const host of options.hosts) {
     const target = hostTarget(host, scope);
-    for (const skill of kit.skills) {
-      installSkill(
-        ctx,
-        host,
-        target.skillsDir,
-        options.prefix ? renameSkill(skill, `mitchstack-${skill.name}`) : skill,
-      );
-    }
+    for (const skill of skills) installSkill(ctx, host, target.skillsDir, skill);
     if (target.agentsFile)
       blocks.set(target.agentsFile, [...(blocks.get(target.agentsFile) ?? []), host]);
     for (const note of target.notes) ctx.items.push({ status: "note", path: "", detail: note });
@@ -138,8 +132,20 @@ export function uninstall(options: UninstallOptions): Report {
 
 // — internals —
 
+/**
+ * Read and check the install record before anything is touched. A record naming any path mitchstack
+ * could not have written (outside the host locations, `..`, absolute, or out through a symlink) is
+ * refused whole: the run throws and nothing changes.
+ */
 function context(scope: Scope, dryRun: boolean): Ctx {
-  return { root: scope.root, manifest: readManifest(scope.root), dryRun, items: [] };
+  const manifest = readManifest(scope.root);
+  const problems = checkLocations(manifest, scope);
+  if (problems.length > 0) {
+    throw new Error(
+      `${join(scope.root, MANIFEST_PATH)} names paths outside mitchstack's install locations, so it is refused and nothing changed: ${problems.join("; ")}`,
+    );
+  }
+  return { root: scope.root, manifest, dryRun, items: [] };
 }
 
 function rel(ctx: Ctx, abs: string): string {
@@ -240,12 +246,11 @@ function installSkill(ctx: Ctx, host: Host, skillsDir: string, skill: Kit["skill
     const disk = read(join(dirAbs, file));
     return disk !== null && sha256(disk) !== sha;
   });
-  const foreign = [...skill.files].filter(([file, data]) => {
-    if (entry?.files[file]) return false;
-    const disk = read(join(dirAbs, file));
-    return disk !== null && !disk.equals(data);
-  });
-  const touched = [...edited.map(([f]) => f), ...foreign.map(([f]) => f)];
+  // A file on disk that this record did not write is never adopted, even when its bytes match.
+  const foreign = [...skill.files.keys()].filter(
+    (file) => !entry?.files[file] && existsSync(join(dirAbs, file)),
+  );
+  const touched = [...edited.map(([f]) => f), ...foreign];
   if (touched.length > 0) {
     ctx.items.push({
       status: "kept",
@@ -287,6 +292,14 @@ function installBlock(ctx: Ctx, abs: string, hosts: Host[], contract: string): v
     ctx.items.push({ status: "skipped", path, detail: `${who}: AGENTS.md ${merged.reason}` });
     return;
   }
+  if (!entry && merged.replaced) {
+    ctx.items.push({
+      status: "skipped",
+      path,
+      detail: `${who}: AGENTS.md already has a mitchstack block this install did not write — left untouched and not recorded (remove it and re-run to let the installer own it)`,
+    });
+    return;
+  }
   const changed = write(ctx, abs, merged.text, hosts[0] as Host);
   for (const host of hosts.slice(1)) ensureDir(ctx, dirname(abs), host);
   if (entry) {
@@ -321,15 +334,8 @@ export function renderHook(
 }
 
 function installHook(ctx: Ctx, template: string): void {
-  let hooksDir: string;
-  try {
-    const out = execFileSync("git", ["rev-parse", "--git-path", "hooks"], {
-      cwd: ctx.root,
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "ignore"],
-    });
-    hooksDir = resolve(ctx.root, out.trim());
-  } catch {
+  const hooksDir = gitHooksDir(ctx.root);
+  if (!hooksDir) {
     ctx.items.push({ status: "skipped", path: "", detail: "pre-push hook: not a git repository" });
     return;
   }
@@ -358,12 +364,13 @@ function installHook(ctx: Ctx, template: string): void {
     (e): e is HookEntry => e.kind === "hook" && e.path === path,
   );
   const disk = read(abs);
-  if (disk && !entry && !disk.equals(Buffer.from(text))) {
+  // A hook this record did not write is never adopted, even when its bytes match ours.
+  if (disk && !entry) {
     ctx.items.push({
       status: "skipped",
       path,
       detail:
-        "pre-push hook: this repo already has a pre-push hook that is not mitchstack's — left untouched; call your checks from it, or remove it and re-run with --hooks",
+        "pre-push hook: this repo already has a pre-push hook mitchstack did not write — left untouched and not recorded; call your checks from it, or remove it and re-run with --hooks",
     });
     return;
   }
