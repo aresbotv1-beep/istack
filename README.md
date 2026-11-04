@@ -40,10 +40,14 @@ One line per host:
 - **It never overwrites anything it didn't write.** If you already have a skill called `plan` or
   `ship`, that one is skipped and reported (add `--prefix` to install ours as `mitchstack-plan`).
   The contract goes between `<!-- mitchstack:begin -->` and `<!-- mitchstack:end -->` markers;
-  your text outside them is never touched. An existing pre-push hook is left alone. Running the
-  install again changes nothing.
+  your text outside them is never touched. An existing pre-push hook, skill file or contract block
+  is left alone and never recorded as mitchstack's, even when it is byte-identical. With
+  `--prefix`, links between skills (`../ship/council.md`) are rewritten to the prefixed folders.
+  Running the install again changes nothing.
 - **Uninstall** with `npx mitchstack uninstall --host codex` (same flags). It removes only the
-  files it recorded in `.mitchstack/install.json`, and keeps any you edited since.
+  files it recorded in `.mitchstack/install.json`, and keeps any you edited since. A record that
+  names any path outside the host folders (`..`, an absolute path, or out through a symlink) is
+  refused whole: exit 2, nothing changed.
 - The skills also follow the [`npx skills`](https://github.com/vercel-labs/skills) layout
   (`npx skills add aresbotv1-beep/mitchstack`); the no-overwrite promise above covers
   `mitchstack install` only.

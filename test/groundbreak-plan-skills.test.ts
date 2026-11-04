@@ -210,7 +210,8 @@ describe("plan", () => {
     expect(plan).toMatch(/at most two implementers/i);
     expect(plan).toMatch(/one pull request/i);
     expect(plan).toMatch(/gate 1/i);
-    expect(plan).toContain("templates/ticket.md");
+    // The template ships inside the skill (a byte-identical copy of templates/ticket.md).
+    expect(plan).toContain("[ticket-template.md](ticket-template.md)");
   });
 });
 

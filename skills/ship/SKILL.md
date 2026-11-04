@@ -75,7 +75,7 @@ the ticket or to an earlier PR is not a yes to this one.
 mitchstack ship body --from body.json > body.md
 ```
 
-The shape is fixed by `templates/pr-body.md`: **Summary** (the smallest picture: pseudocode, a
+The shape is fixed by [pr-body.md](pr-body.md): **Summary** (the smallest picture: pseudocode, a
 call tree, a file tree, a diagram or a diff sketch) → **Evidence** → **Merge danger** (door and
 blast radius) → **Try it yourself** → **Reviewer verdicts** → **Open disputes** → **Risks and
 follow-ups** → the one `receipts` block. The command refuses to render without a door or

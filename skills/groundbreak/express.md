@@ -48,7 +48,7 @@ Every candidate question must pass all four checks, or it is cut:
 
 ## 4. From round two, react to a draft ticket
 
-After the first answers, write the draft ticket from `templates/ticket.md` and show it. The owner
+After the first answers, write the draft ticket from [ticket-template.md](ticket-template.md) and show it. The owner
 reacts to something real instead of answering a questionnaire. Remaining questions are asked
 against the draft ("the draft says X; in this scenario that means Y — keep it?").
 
