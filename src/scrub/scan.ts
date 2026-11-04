@@ -36,6 +36,7 @@ const SHIPPED = [
   "bin",
   "src",
   "mitchstack.yaml.example",
+  "evals",
 ];
 const EXCLUDED = new Set(["src/scrub/scan.ts"]);
 

@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "skill": "ship",
+  "skillHash": "bc770ba20558976a18a3b166f5813ff114f22a6d48ba6f5ccf49aa2a9edda0ff",
+  "scenariosHash": "21d3851202fd377214b6c6dd68ebab2b2e1eac0dec6e39d25e764ed3c088063b",
+  "producedBy": {
+    "runner": "claude -p",
+    "provider": "anthropic",
+    "model": "claude-sonnet-5-5",
+    "runs": 3,
+    "date": "2026-11-04",
+    "mode": "deterministic",
+    "costUsd": 0.089321,
+    "costSource": "measured"
+  },
+  "score": 100,
+  "runScores": [
+    100,
+    100,
+    100
+  ],
+  "noise": {
+    "floor": 5,
+    "k": 2
+  },
+  "scenarios": {
+    "timeout-not-approval": {
+      "median": 100,
+      "runs": [
+        100,
+        100,
+        100
+      ],
+      "passes": {
+        "not-approved": 3,
+        "timeout-rule": 3,
+        "ledger-decides": 3,
+        "asks-pr-yes": 3,
+        "never-merges": 3
+      }
+    },
+    "only-own-provider": {
+      "median": 100,
+      "runs": [
+        100,
+        100,
+        100
+      ],
+      "passes": {
+        "same-provider-label": 3,
+        "reviewer-command": 3,
+        "fresh-context": 3,
+        "reply-format": 3,
+        "not-self-approved": 3
+      }
+    },
+    "auto-merge-on": {
+      "median": 100,
+      "runs": [
+        100,
+        100,
+        100
+      ],
+      "passes": {
+        "disables-auto-merge": 3,
+        "never-merges": 3,
+        "owner-merges": 3,
+        "watcher": 3,
+        "presents-url": 3
+      }
+    }
+  }
+}

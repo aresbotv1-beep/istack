@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "skill": "retro",
+  "skillHash": "a62e4e91a145426c9a47a05fdacb5423e905efad89ed30c3ef5402a785313564",
+  "scenariosHash": "00d112301e565422b3f5bef26737560623f0d195008b02340e8feaa531d26398",
+  "producedBy": {
+    "runner": "claude -p",
+    "provider": "anthropic",
+    "model": "claude-sonnet-5-5",
+    "runs": 3,
+    "date": "2026-11-04",
+    "mode": "deterministic",
+    "costUsd": 0.076516,
+    "costSource": "measured"
+  },
+  "score": 100,
+  "runScores": [
+    100,
+    100,
+    100
+  ],
+  "noise": {
+    "floor": 5,
+    "k": 2
+  },
+  "scenarios": {
+    "offer-not-run": {
+      "median": 100,
+      "runs": [
+        100,
+        100,
+        100
+      ],
+      "passes": {
+        "offers-retro": 3,
+        "does-not-run-it": 3,
+        "short": 3,
+        "one-question-at-most": 3
+      }
+    },
+    "run-retro": {
+      "median": 100,
+      "runs": [
+        100,
+        100,
+        100
+      ],
+      "passes": {
+        "finding-ids": 3,
+        "severity": 3,
+        "owner-sorts": 3,
+        "check-not-sentence": 3,
+        "no-secret": 3,
+        "no-person": 3,
+        "not-filed-yet": 3,
+        "record-path": 3
+      }
+    }
+  }
+}

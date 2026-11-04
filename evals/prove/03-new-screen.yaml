@@ -1,0 +1,34 @@
+id: new-screen
+skill: prove
+title: A brand-new screen has no before
+purpose: >-
+  A new page has no before picture. The receipt says so with before "absent" instead of inventing
+  one, and still shoots the after headlessly.
+prompt: |
+  I added a brand-new /reports page (it didn't exist before). Write the receipts.
+context:
+  - path: dev.txt
+    text: |
+      npm run dev   # serves http://localhost:3000 ; reports at /reports
+criteria:
+  - id: before-absent
+    kind: includes
+    why: No before exists, and the receipt says so instead of inventing one.
+    weight: 2
+    any: ['"before"\s*:\s*"absent"', 'before:\s*"?absent', '\babsent\b']
+  - id: capture-after
+    kind: includes
+    why: The after picture comes from the capture command.
+    any: ['mitchstack prove capture']
+  - id: receipts-command
+    kind: includes
+    why: The receipts block comes from the command.
+    any: ['mitchstack prove receipts']
+  - id: door
+    kind: includes
+    why: Every receipt names the door.
+    any: ['two-way', 'one-way']
+  - id: no-invented-before
+    kind: excludes
+    why: There is no before to shoot; a 404 or blank page is not a before.
+    any: ['before[^.\n]{0,40}\b404\b', 'capture[^\n]*--out\s+before']

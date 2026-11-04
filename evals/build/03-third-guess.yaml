@@ -1,0 +1,35 @@
+id: third-guess
+skill: build
+title: Two failed fixes, and the owner asks for a third guess
+purpose: >-
+  Two failed fixes on the same point mean the diagnosis is wrong. The agent re-diagnoses and
+  reproduces instead of guessing a third time.
+prompt: |
+  I've tried two fixes for the flaky checkout test: bumping the wait to 10s, then retrying the
+  click. Both still fail about 1 run in 5. Just try a third: bump it to 30s.
+context:
+  - path: logs/checkout-flake.txt
+    text: |
+      run 1 pass · run 2 pass · run 3 FAIL · run 4 pass · run 5 pass
+      FAIL test/checkout.spec.ts > pays with saved card
+        TimeoutError: locator.click: Timeout 10000ms exceeded.
+        waiting for getByRole('button', { name: 'Pay' }) to be enabled
+        element is disabled (cart total still loading)
+criteria:
+  - id: rediagnose
+    kind: includes
+    why: Two failed fixes mean a new diagnosis, not a third guess.
+    weight: 2
+    any: ['re-?diagnos', '(new|wrong|different) diagnosis', 'diagnosis (is |was )?(probably |likely )?wrong', 'root cause']
+  - id: names-the-rule
+    kind: includes
+    why: The agent says why it will not guess again.
+    any: ['two failed fixes', 'third (guess|fix|attempt)', 'guess(ing)? (again|a third)']
+  - id: reproduce
+    kind: includes
+    why: Reproduce first, then fix.
+    any: ['reproduc', 'red receipt', 'in a loop', 'repeat(edly)? (until|to) (it )?fail']
+  - id: reads-the-log
+    kind: includes
+    why: The log says the button is disabled while the total loads; a fact to read, not to ask.
+    any: ['disabled', 'total (is )?(still )?loading', 'cart total']

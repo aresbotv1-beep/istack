@@ -1,0 +1,49 @@
+id: open-ambition
+skill: groundbreak
+title: An open ambition takes the full engine, not the express lane
+purpose: >-
+  The other side of the lane pick: "how should X work, give me ideas" is a problem to explore. A
+  skill that sends everything down the express lane fails here.
+prompt: |
+  New users of `tally` bounce before they add their first job. How should onboarding work? Give me
+  ideas, think big.
+context:
+  - path: README.md
+    text: |
+      # tally
+      A command-line job tracker. `tally add <name>`, `tally list`, `tally status`, `tally run`.
+      Install: `npm i -g tally`. There is no first-run guide; `tally` with no arguments prints usage.
+criteria:
+  - id: lane-full-engine
+    kind: includes
+    why: An ask for ideas takes the full engine.
+    weight: 2
+    any: ['full engine']
+  - id: not-express
+    kind: excludes
+    why: The express lane is for settled changes.
+    weight: 2
+    any: ['(taking|take|using|picking|pick|choosing|going with|lane:\**)\s*(the\s*)?express( lane)?\b']
+  - id: research-first
+    kind: includes
+    why: Research before opinions.
+    any: ['\bhunt\b', 'research doc', 'research first']
+  - id: launch-post
+    kind: includes
+    why: The launch post comes before any decision.
+    any: ['launch post']
+  - id: no-invented-sources
+    kind: excludes
+    why: No research ran and no link was given; any link is invented.
+    weight: 2
+    any: ['https?://']
+  - id: weak-points
+    kind: includes
+    why: Every output carries its own weak points.
+    any: ['weak (point|spot)s?', 'known (flaw|gap|weakness)', 'self-review', 'where this (is weak|could be wrong)']
+  - id: few-questions
+    kind: count
+    why: A conversation, not a quiz.
+    of: asked-questions
+    min: 1
+    max: 5

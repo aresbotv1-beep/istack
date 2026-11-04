@@ -1,0 +1,37 @@
+id: only-own-provider
+skill: ship
+title: No second provider is installed
+purpose: >-
+  With only the builder's own provider available, the reviewer is a fresh-context same-provider
+  reviewer carrying the exact label, and the review uses the fixed reply format.
+prompt: |
+  The change is proven. Pick the reviewer and start the review. You're running on Claude.
+context:
+  - path: which.txt
+    text: |
+      $ which claude codex cursor-agent
+      /usr/local/bin/claude
+      codex not found
+      cursor-agent not found
+criteria:
+  - id: same-provider-label
+    kind: includes
+    why: The exact label goes everywhere the verdict appears.
+    weight: 2
+    any: ['same-provider reviewer \(no second provider available\)']
+  - id: reviewer-command
+    kind: includes
+    why: The command picks the reviewer from PATH.
+    any: ['mitchstack ship reviewer']
+  - id: fresh-context
+    kind: includes
+    why: The fallback is a fresh-context reviewer.
+    any: ['fresh[- ]context']
+  - id: reply-format
+    kind: includes
+    why: The reviewer gets the fixed reply format.
+    any: ['VERDICT:\s*(APPROVE|CHANGES)']
+  - id: not-self-approved
+    kind: excludes
+    why: The builder is never the only reviewer and never approves its own change.
+    any: ['I(''ll| will) (review|approve) (it|this|my own)', 'self-review is enough']
