@@ -27,3 +27,4 @@ these are the people whose published ideas shaped a mechanism here. Go read thei
 | Zero to one; the 10x test; "what important truth do few agree with?" | Peter Thiel | *Zero to One* |
 | "You must not fool yourself" | Richard Feynman | 1974 Caltech commencement address |
 | Resolving contradictions by separation, not compromise | Genrich Altshuller | TRIZ |
+| Board bench tests: inversion; the whole product; simplest measurable version; build the eval first; five whys and waste; small team, simple to fix; less but better; do things that don't scale; fragility and via negativa | Charlie Munger, Steve Jobs, John Carmack, Andrej Karpathy, Taiichi Ohno, Kelly Johnson, Dieter Rams, Paul Graham, Nassim Taleb | their talks, essays and books; used as tests, never as personas |
