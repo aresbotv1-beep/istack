@@ -4,6 +4,7 @@ import { parseArgs } from "node:util";
 import { loadConfig } from "./config/load.js";
 import type { FetchLike } from "./receipts/github.js";
 import { renderSummary, runReceiptsCheck } from "./receipts/run.js";
+import { runProveCli } from "./capture/cli.js";
 
 export interface CliIo {
   cwd: string;
@@ -18,6 +19,7 @@ export interface CliIo {
 const USAGE = [
   "usage: mitchstack config check [path-to-mitchstack.yaml]",
   "       mitchstack receipts check [--event path] [--config path] [--files path]",
+  "       mitchstack prove capture --url <url> --out <png> | prove receipts --from <claims.json>",
 ].join("\n");
 
 /** Returns the process exit code. */
@@ -25,6 +27,7 @@ export async function runCli(args: string[], io: CliIo): Promise<number> {
   const [group, command, ...rest] = args;
   if (group === "config" && command === "check") return configCheck(rest[0], io);
   if (group === "receipts" && command === "check") return receiptsCheck(rest, io);
+  if (group === "prove") return runProveCli(args.slice(1), io);
   io.err(USAGE);
   return 2;
 }

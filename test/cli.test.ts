@@ -150,3 +150,24 @@ describe("mitchstack receipts check", () => {
     expect(err.join("\n")).toMatch(/GITHUB_TOKEN/);
   });
 });
+
+describe("mitchstack prove (wired into the main CLI)", () => {
+  it("prints a fenced receipts block from a claims file", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "ms-"));
+    const claims = {
+      head: "e663cde28953b82b4c9a0d82cce4e91943e5f98d",
+      door: { kind: "two-way", blastRadius: "test only" },
+      claims: [],
+      noVisibleChange: "test fixture",
+    };
+    writeFileSync(join(dir, "claims.json"), JSON.stringify(claims));
+    const out: string[] = [];
+    const code = await runCli(["prove", "receipts", "--from", "claims.json"], {
+      cwd: dir,
+      out: (l) => out.push(l),
+      err: () => {},
+    });
+    expect(code).toBe(0);
+    expect(out.join("\n")).toMatch(/```receipts/);
+  });
+});
