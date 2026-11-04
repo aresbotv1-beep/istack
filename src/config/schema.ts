@@ -51,7 +51,9 @@ export const envSchema = z
           .string()
           .min(1)
           .default("{{repo}}_{{worktree}}")
-          .describe("must include {{worktree}} so each worktree gets its own"),
+          .describe(
+            "must include {{worktree}} (the worktree directory name plus an 8-char hash of its real path) so each worktree gets its own; capped at 63 bytes",
+          ),
         create: z.string().min(1).describe("shell command, e.g. 'createdb {{name}}'"),
         drop: z
           .string()

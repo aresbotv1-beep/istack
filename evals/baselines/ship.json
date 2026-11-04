@@ -1,7 +1,7 @@
 {
   "version": 1,
   "skill": "ship",
-  "skillHash": "bc770ba20558976a18a3b166f5813ff114f22a6d48ba6f5ccf49aa2a9edda0ff",
+  "skillHash": "7c28e22e3336826db01f396831f6175330ad08bf073cdf99390095dd12020ebb",
   "scenariosHash": "21d3851202fd377214b6c6dd68ebab2b2e1eac0dec6e39d25e764ed3c088063b",
   "producedBy": {
     "runner": "claude -p",
@@ -10,14 +10,14 @@
     "runs": 3,
     "date": "2026-11-04",
     "mode": "deterministic",
-    "costUsd": 0.089321,
+    "costUsd": 0.138051,
     "costSource": "measured"
   },
   "score": 100,
   "runScores": [
     100,
     100,
-    100
+    95.24
   ],
   "noise": {
     "floor": 5,
@@ -29,12 +29,12 @@
       "runs": [
         100,
         100,
-        100
+        85.71
       ],
       "passes": {
         "not-approved": 3,
         "timeout-rule": 3,
-        "ledger-decides": 3,
+        "ledger-decides": 2,
         "asks-pr-yes": 3,
         "never-merges": 3
       }

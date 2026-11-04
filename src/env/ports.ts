@@ -29,7 +29,14 @@ interface Registry {
 }
 
 export type AllocateResult =
-  | { ok: true; ports: Record<string, number>; reused: boolean; registryPath: string }
+  | {
+      ok: true;
+      ports: Record<string, number>;
+      reused: boolean;
+      registryPath: string;
+      /** Why this worktree's previous lease was dropped instead of reused, when it was. */
+      replaced?: string;
+    }
   | { ok: false; reason: string };
 
 export interface AllocateInput {
@@ -58,12 +65,16 @@ export function allocatePorts(input: AllocateInput): AllocateResult {
     // A lease whose worktree directory is gone is stale; reclaim it.
     registry.leases = registry.leases.filter((l) => existsSync(l.worktree));
     const mine = registry.leases.find((l) => l.worktree === worktree);
-    if (mine && sameNames(mine.ports, names)) {
-      return { ok: true, ports: mine.ports, reused: true, registryPath };
-    }
     const taken = new Set(input.reserved ?? []);
     for (const lease of registry.leases) {
       if (lease.worktree !== worktree) for (const p of Object.values(lease.ports)) taken.add(p);
+    }
+    // A lease is reused only while it is still valid: same names, inside the configured range,
+    // and no port reserved (ownership gates) or leased to another worktree since.
+    let replaced: string | undefined;
+    if (mine && sameNames(mine.ports, names)) {
+      replaced = invalidLease(mine.ports, range, new Set(input.reserved ?? []), taken);
+      if (!replaced) return { ok: true, ports: mine.ports, reused: true, registryPath };
     }
     const start = preferredBlock(worktree, blockCount);
     for (let i = 0; i < blockCount; i++) {
@@ -77,7 +88,7 @@ export function allocatePorts(input: AllocateInput): AllocateResult {
         ports,
         leasedAt: (input.now ?? (() => new Date()))().toISOString(),
       });
-      return { ok: true, ports, reused: false, registryPath };
+      return { ok: true, ports, reused: false, registryPath, ...(replaced ? { replaced } : {}) };
     }
     return {
       ok: false,
@@ -99,6 +110,22 @@ export function releasePorts(input: { worktree: string; registryPath: string }):
     registry.leases = registry.leases.filter((l) => l.worktree !== input.worktree);
     return { released: lease?.ports ?? null };
   });
+}
+
+function invalidLease(
+  ports: Record<string, number>,
+  range: PortRange,
+  reserved: Set<number>,
+  taken: Set<number>,
+): string | undefined {
+  const reasons = Object.entries(ports).flatMap(([name, port]) => {
+    if (port < range.from || port > range.to)
+      return [`${name} ${port} is outside ${range.from}-${range.to}`];
+    if (reserved.has(port)) return [`${name} ${port} is reserved by an ownership gate`];
+    if (taken.has(port)) return [`${name} ${port} is leased to another worktree`];
+    return [];
+  });
+  return reasons.length > 0 ? `previous lease dropped: ${reasons.join("; ")}` : undefined;
 }
 
 function sameNames(ports: Record<string, number>, names: string[]): boolean {

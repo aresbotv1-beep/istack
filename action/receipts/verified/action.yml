@@ -24,9 +24,13 @@ description: >-
 #             ref: ${{ github.event.pull_request.head.sha }}
 #             fetch-depth: 0             # the base, the head and their merge base must all be here
 #             persist-credentials: false # the PR's commands run in this job
-#         - uses: aresbotv1-beep/mitchstack/action/receipts/verified@main
+#         - uses: aresbotv1-beep/mitchstack/action/receipts/verified@<full-40-char-commit-sha>
 #           with:
 #             setup: npm ci
+#
+# Trust: pin this action to a full commit SHA so the verifier comes from mitchstack, never from the
+# PR's checkout, and protect the workflow file (CODEOWNERS / required workflow / ruleset). The PR's
+# checkout is only the thing under test. See action/receipts/README.md.
 #
 # Trigger on `pull_request` only, never `pull_request_target`: the verifier runs the PR's own
 # commands, so it must run with the read-only token fork PRs get and without secrets. This action

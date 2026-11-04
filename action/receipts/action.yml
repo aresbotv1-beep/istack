@@ -20,9 +20,15 @@ description: >-
 #       name: mitchstack/receipts
 #       runs-on: ubuntu-latest
 #       steps:
-#         - uses: aresbotv1-beep/mitchstack/action/receipts@main
+#         - uses: aresbotv1-beep/mitchstack/action/receipts@<full-40-char-commit-sha>
 #
 # No checkout is needed: the PR's files and the base commit's mitchstack.yaml come from the API.
+#
+# Trust: the code that decides the verdict must never come from the PR being checked. Pin this
+# action to a full commit SHA (not a branch or tag, which can move), never run it as a local
+# `uses: ./...` from the PR's own checkout, and protect the workflow file itself (CODEOWNERS plus
+# branch protection, or a required workflow / ruleset), since a PR can edit its own workflow. See
+# action/receipts/README.md.
 
 inputs:
   token:

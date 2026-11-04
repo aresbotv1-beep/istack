@@ -103,6 +103,7 @@ function printDatabase(db: DatabaseReport, io: CliIo, verb: "create" | "drop"): 
 function printUp(r: UpReport, io: CliIo): void {
   io.out(`worktree: ${r.worktree}`);
   io.out(`ports: ${portsLine(r.ports)}${r.reused ? " (existing lease)" : " (new lease)"}`);
+  if (r.replaced) io.out(`  ${r.replaced}`);
   for (const f of r.files) {
     const keys = f.rewritten.length > 0 ? `, set ${f.rewritten.join(", ")}` : "";
     io.out(`env file ${f.path}: ${f.status}${keys}`);

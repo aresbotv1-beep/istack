@@ -59,6 +59,9 @@ A claim without a receipt does not count.
   desktop screen recording. A short headless clip only when the change is about motion or timing.
 - **Receipts live in the pull request body** as one fenced `receipts` JSON block (schema in
   `schema/receipts.schema.json`), checked by the `mitchstack/receipts` CI check.
+- **The checker is never the PR's own code.** Pin
+  `uses: <owner>/mitchstack/action/receipts@<full-sha>` and protect the workflow file (CODEOWNERS
+  or a required workflow).
 - A mock, a fixture or a green suite on stubs is not proof that the real thing works.
 - Never capture secrets, keys, tokens, customer data or payment details.
 

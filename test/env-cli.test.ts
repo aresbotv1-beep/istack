@@ -69,11 +69,9 @@ describe("mitchstack env (real git worktrees)", () => {
     expect(human.out.join("\n")).not.toContain("hunter2");
 
     // Database: planned, not run without --db; ownership gate surfaced.
-    expect(upA.json.database).toMatchObject({
-      name: "app_wt_a",
-      create: "createdb app_wt_a",
-      ran: false,
-    });
+    expect(upA.json.database).toMatchObject({ ran: false });
+    expect(upA.json.database.name).toMatch(/^app_wt_a_[0-9a-f]{8}$/);
+    expect(upA.json.database.create).toBe(`createdb ${upA.json.database.name}`);
     expect(upA.json.database.gates[0].resource).toBe("shared local database");
   });
 
@@ -122,7 +120,8 @@ describe("mitchstack env (real git worktrees)", () => {
       return realExec(cmd, args, opts);
     };
     expect((await env(a, ["up", "--db"], spy)).code).toBe(0);
-    expect(shell).toEqual(["-c createdb app_wt_a"]);
+    expect(shell).toHaveLength(1);
+    expect(shell[0]).toMatch(/^-c createdb app_wt_a_[0-9a-f]{8}$/);
     const fromMain = await env(main, ["up", "--db"], spy);
     expect(fromMain.code).toBe(1);
     expect(fromMain.err.join("\n")).toMatch(/main checkout/);

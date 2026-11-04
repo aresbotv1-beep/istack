@@ -1,8 +1,8 @@
 {
   "version": 1,
   "skill": "plan",
-  "skillHash": "f8cd4eb7d021e8cd25ea104803551891314330dca2e7d7f37744f92182fad5d6",
-  "scenariosHash": "537a76d50e9558fcdb0d3540e1fa3f74026eee1064dfe8310ebe3f0213c9fc5e",
+  "skillHash": "2ff08acb8adb2b053ac767a3cdc86a2f8df2fe863871d6188b5818db7c942ab4",
+  "scenariosHash": "826b96d5ae73f9d181ab6ee7659bca7b4e51a56c7a1f4a589b158fc8da1d4f85",
   "producedBy": {
     "runner": "claude -p",
     "provider": "anthropic",
@@ -10,14 +10,14 @@
     "runs": 3,
     "date": "2026-11-04",
     "mode": "deterministic",
-    "costUsd": 0.148961,
+    "costUsd": 0.145976,
     "costSource": "measured"
   },
-  "score": 89.21,
+  "score": 77.28,
   "runScores": [
     81.82,
-    89.21,
-    90.91
+    77.28,
+    77.28
   ],
   "noise": {
     "floor": 5,
@@ -28,12 +28,12 @@
       "median": 100,
       "runs": [
         100,
-        87.5,
+        100,
         100
       ],
       "passes": {
         "the-ask": 3,
-        "no-spec-for-one": 2,
+        "no-spec-for-one": 3,
         "decided-for-you": 3,
         "acceptance-observable": 3,
         "names-commit": 3,
@@ -42,20 +42,20 @@
       }
     },
     "multi-ticket-spec": {
-      "median": 81.82,
+      "median": 54.55,
       "runs": [
         63.64,
-        90.91,
-        81.82
+        54.55,
+        54.55
       ],
       "passes": {
-        "seams-before-tickets": 2,
+        "seams-before-tickets": 0,
         "seams-agreed": 3,
         "vertical-slices": 3,
         "blocking-edges": 1,
-        "one-pr": 2,
+        "one-pr": 0,
         "challenge-asked": 3,
-        "the-ask": 1,
+        "the-ask": 0,
         "asks-for-yes": 3,
         "no-code": 3
       }

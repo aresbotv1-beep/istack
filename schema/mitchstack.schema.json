@@ -221,7 +221,7 @@
           "properties": {
             "name": {
               "default": "{{repo}}_{{worktree}}",
-              "description": "must include {{worktree}} so each worktree gets its own",
+              "description": "must include {{worktree}} (the worktree directory name plus an 8-char hash of its real path) so each worktree gets its own; capped at 63 bytes",
               "type": "string",
               "minLength": 1
             },

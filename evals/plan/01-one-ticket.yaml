@@ -15,7 +15,7 @@ context:
       - Errors in JSON mode: "a JSON error object on stdout, exit 1."
       - How will you know I'm wrong: "my cron script pipes it into jq and the job count is wrong or jq fails."
       Open: the flag could be called --json or --format json.
-  - path: templates/ticket.md
+  - path: ticket-template.md
     text: |
       # <Ticket id> — <short title>
       ## The ask

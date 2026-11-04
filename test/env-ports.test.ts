@@ -77,4 +77,37 @@ describe("port allocation", () => {
       join(registryPath, "..", "..", "..", "b"),
     ]);
   });
+
+  it("re-checks a reused lease: a port reserved since, or outside the range now, is reallocated (F10)", () => {
+    const { registryPath, wt } = setup();
+    const a = wt("a");
+    const two = { from: 4100, to: 4101 };
+    const first = allocatePorts({ worktree: a, registryPath, range: two, names: ["web"] });
+    expect(first.ok).toBe(true);
+    if (!first.ok) return;
+    const taken = first.ports.web as number;
+    const second = allocatePorts({
+      worktree: a,
+      registryPath,
+      range: two,
+      names: ["web"],
+      reserved: [taken],
+    });
+    expect(second.ok).toBe(true);
+    if (!second.ok) return;
+    expect(second.ports.web).not.toBe(taken);
+    expect(second.reused).toBe(false);
+    expect(second.replaced).toMatch(new RegExp(`${taken}.*reserved`));
+    expect(findLease({ worktree: a, registryPath })?.ports.web).toBe(second.ports.web);
+
+    // The configured range moved: the old lease is outside it now.
+    const moved = allocatePorts({
+      worktree: a,
+      registryPath,
+      range: { from: 4200, to: 4200 },
+      names: ["web"],
+    });
+    expect(moved.ok && moved.ports.web).toBe(4200);
+    if (moved.ok) expect(moved.replaced).toMatch(/outside 4200-4200/);
+  });
 });
