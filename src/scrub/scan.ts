@@ -35,6 +35,9 @@ const SHIPPED = [
   "schema",
   "bin",
   "src",
+  "hooks",
+  ".claude-plugin",
+  "README.md",
   "mitchstack.yaml.example",
   "evals",
 ];

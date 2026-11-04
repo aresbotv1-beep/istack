@@ -1,0 +1,13 @@
+{
+  "name": "mitchstack",
+  "version": "0.0.0",
+  "description": "Receipts, not vibes. An agent workflow where every PR carries checked proof: groundbreak, plan, build, prove, ship, retro, climb.",
+  "author": {
+    "name": "aresbotv1-beep",
+    "url": "https://github.com/aresbotv1-beep"
+  },
+  "homepage": "https://github.com/aresbotv1-beep/mitchstack",
+  "repository": "https://github.com/aresbotv1-beep/mitchstack",
+  "license": "MIT",
+  "keywords": ["workflow", "receipts", "review", "pull-request", "skills"]
+}

@@ -12,6 +12,8 @@
     "skills",
     "schema",
     "templates",
+    "hooks",
+    ".claude-plugin",
     "AGENTS.md",
     "LICENSE",
     "CREDITS.md"
