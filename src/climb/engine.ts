@@ -169,6 +169,7 @@ export async function runClimb(input: ClimbInput): Promise<ClimbResult> {
     return delta < -noise
       ? {
           done: "revert",
+          sensitive: true,
           candidate: m.samples,
           noise,
           reason: `sensitivity check passed: the planted bad change moved the median ${fmt(delta)}, beyond noise ${num(noise)}`,
@@ -182,7 +183,8 @@ export async function runClimb(input: ClimbInput): Promise<ClimbResult> {
   });
   push({ iteration: 0, change: input.sensitivity.id, baselineMedian: start, ...bad.row });
   if (bad.broken) return result("broken", bad.broken, { start, final: start });
-  if (bad.row.decision === "refuse") return result("insensitive", bad.row.reason, { start });
+  // Only an explicitly passed measurement proves sensitivity; a failed apply or measurement does not.
+  if (!bad.sensitive) return result("insensitive", bad.row.reason, { start });
 
   if (start >= input.target) {
     return result(
@@ -278,8 +280,11 @@ export async function runClimb(input: ClimbInput): Promise<ClimbResult> {
   );
 
   /**
-   * Apply, check the harness is untouched, judge, and revert unless kept. A revert that does not
-   * restore the tree (or the harness) is "broken": nothing after it could be trusted.
+   * Apply, check the harness is untouched, judge, check the harness again, and revert unless
+   * kept. The second check runs after every measurement and regression check, immediately before
+   * a keep (and so before its commit) or a passed sensitivity check: a harness that changed while
+   * it was measuring gave no trustworthy number. A revert that does not restore the tree (or the
+   * harness) is "broken": nothing after it could be trusted.
    */
   async function tryChange(
     change: ClimbChange,
@@ -289,24 +294,41 @@ export async function runClimb(input: ClimbInput): Promise<ClimbResult> {
       candidate?: number[];
       noise?: number;
       next?: number[];
+      /** Set only by a sensitivity measurement that saw the planted bad change. */
+      sensitive?: boolean;
     }>,
   ): Promise<{
     row: Omit<DecisionRow, "iteration" | "change" | "baselineMedian">;
     next?: number[];
+    sensitive?: boolean;
     broken?: string;
   }> {
+    const planted = change === input.sensitivity;
+    const notTrusted = planted ? "refuse" : "revert";
     let verdict: Awaited<ReturnType<typeof judge>>;
     try {
       await change.apply();
       verdict =
         (await harness.fingerprint()) === frozen
           ? await judge()
-          : {
-              done: change === input.sensitivity ? "refuse" : "revert",
-              reason: "the change touched the frozen harness",
-            };
+          : { done: notTrusted, reason: "the change touched the frozen harness" };
+      if (
+        (verdict.done === "keep" || verdict.sensitive) &&
+        (await harness.fingerprint()) !== frozen
+      ) {
+        verdict = {
+          done: notTrusted,
+          candidate: verdict.candidate,
+          noise: verdict.noise,
+          reason: "the frozen harness changed while the change was measured or checked",
+        };
+      }
     } catch (error) {
-      verdict = { done: "revert", reason: `apply failed: ${(error as Error).message}` };
+      const why = `apply failed: ${(error as Error).message}`;
+      verdict = {
+        done: notTrusted,
+        reason: planted ? `sensitivity check could not run: ${why}` : why,
+      };
     }
     const row = {
       candidateMedian: verdict.candidate ? median(verdict.candidate) : undefined,
@@ -326,7 +348,7 @@ export async function runClimb(input: ClimbInput): Promise<ClimbResult> {
     } catch (error) {
       broken = `revert of ${change.id} failed: ${(error as Error).message}`;
     }
-    return { row, broken };
+    return { row, broken, sensitive: verdict.sensitive === true };
   }
 }
 

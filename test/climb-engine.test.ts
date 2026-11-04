@@ -250,6 +250,114 @@ describe("climb engine", () => {
   });
 });
 
+describe("climb engine: review fixes", () => {
+  // F4: a sensitivity change whose apply throws never measured anything, so it proves nothing.
+  it("refuses to climb when the planted bad change cannot be applied", async () => {
+    let phase = "base";
+    const commits: string[] = [];
+    const result = await runClimb({
+      target: 8,
+      minAttempts: 1,
+      runs: 3,
+      noiseFloor: 0.1,
+      k: 2,
+      confirm: true,
+      sensitivity: {
+        id: "broken-bad-patch",
+        expectedGain: 0,
+        cost: 1,
+        apply: async () => {
+          throw new Error("git apply failed");
+        },
+        revert: async () => {
+          phase = "base";
+        },
+      },
+      moves: [
+        {
+          id: "candidate",
+          expectedGain: 1,
+          cost: 1,
+          apply: async () => {
+            phase = "candidate";
+          },
+          revert: async () => {
+            phase = "base";
+          },
+        },
+      ],
+      harness: {
+        fingerprint: async () => "frozen",
+        measure: async (n) => Array(n).fill(phase === "base" ? 5 : 9),
+        regressions: async () => ({ green: true, detail: "" }),
+        restored: async () => true,
+        commit: async (c) => {
+          commits.push(c.id);
+        },
+      },
+    });
+    expect(result.status).toBe("insensitive");
+    expect(result.rows).toHaveLength(1);
+    expect(result.rows[0]?.decision).toBe("refuse");
+    expect(result.rows[0]?.reason).toMatch(/apply failed: git apply failed/);
+    expect(result.kept).toEqual([]);
+    expect(commits).toEqual([]);
+  });
+
+  // F7: the harness must still be the frozen one when the change is kept, not only when judged.
+  it("reverts a change when the frozen harness changes after it was first checked", async () => {
+    let fingerprint = "original";
+    let phase = "base";
+    const commits: string[] = [];
+    const change: ClimbChange = {
+      id: "candidate",
+      cost: 1,
+      expectedGain: 1,
+      apply: async () => {
+        phase = "candidate";
+      },
+      revert: async () => {
+        phase = "base";
+        fingerprint = "original";
+      },
+    };
+    const result = await runClimb({
+      target: 8,
+      minAttempts: 1,
+      runs: 3,
+      noiseFloor: 0.1,
+      k: 2,
+      confirm: true,
+      sensitivity: {
+        ...change,
+        id: "bad",
+        apply: async () => {
+          phase = "bad";
+        },
+      },
+      moves: [change],
+      harness: {
+        fingerprint: async () => fingerprint,
+        measure: async (n) => Array(n).fill(phase === "base" ? 5 : phase === "bad" ? 1 : 9),
+        regressions: async () => {
+          fingerprint = "modified";
+          return { green: true, detail: "" };
+        },
+        restored: async () => true,
+        commit: async (c) => {
+          commits.push(c.id);
+        },
+      },
+    });
+    expect(result.kept).toEqual([]);
+    expect(commits).toEqual([]);
+    expect(result.status).toBe("short");
+    const row = result.rows.find((r) => r.change === "candidate");
+    expect(row?.decision).toBe("revert");
+    expect(row?.reason).toMatch(/frozen harness/);
+  });
+});
+
 describe("noise rule", () => {
   it("is the larger of the floor and k × MAD of either sample set", () => {
     expect(noiseOf([5, 5, 5], [5, 5, 5], 0.5, 2)).toBe(0.5);

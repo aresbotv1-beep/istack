@@ -85,7 +85,13 @@ export const configSchema = z
     council: z
       .strictObject({
         enabled: z.boolean().default(false),
-        budgetUsdPerPr: z.number().positive().default(10),
+        budgetUsdPerPr: z
+          .number()
+          .positive()
+          .default(10)
+          .describe(
+            "council spend per PR in USD, checked before each judge call on estimates plus measured spend; not a hard cap: one call can overrun it, and the overrun is logged and shown",
+          ),
         providers: z.array(z.string().min(1)).default([]),
       })
       .default({ enabled: false, budgetUsdPerPr: 10, providers: [] }),

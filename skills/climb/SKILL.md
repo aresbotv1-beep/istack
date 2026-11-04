@@ -34,12 +34,13 @@ target unreachable.
 The harness is the command that prints the score (one number on its last line, higher is
 better; for a lower-is-better metric, print its negative). List every file it reads under
 `frozen`. A change that edits a frozen file is reverted, whatever its score: improving the ruler
-is not improving the thing.
+is not improving the thing. They are checked after the change is applied and again just before
+it is kept, after its measurements and regression checks.
 
 Then prove the harness can see a difference. The plan names a **planted bad change**
-(`sensitivity`) known to make things worse. The climb measures it first. If it does not drop
-the score by more than the noise, the climb **refuses to start** (`insensitive`): a harness that
-cannot see worse cannot see better either.
+(`sensitivity`) known to make things worse. The climb measures it first. Unless it drops the
+score by more than the noise, the climb **refuses to start** (`insensitive`): a harness that
+cannot see worse cannot see better either. One that fails to apply or measure proves nothing.
 
 ## 4. The keep rule
 
@@ -58,7 +59,11 @@ runs become the new baseline because they played no part in picking the winner. 
 prints no number counts as an incomplete measurement: revert.
 
 Everything that fails the rule is **fully reverted** (`git reset --hard` plus `git clean -fd`
-back to the last kept commit). If the tree is not clean afterwards the climb stops as `broken`.
+back to the last kept commit). Git-ignored files survive both, so the climb copies them aside
+before each move and puts them back: files the move created go, files it changed come back.
+Only `scratch` paths (default `[".artifacts/"]`, the harness's and climb's own records; a move
+must not write there) are left alone. Listing `node_modules/` there skips its copy, at your own
+risk. If the tree or the ignored files do not match afterwards the climb stops as `broken`.
 
 ## 5. One change per iteration, one commit per win
 
@@ -84,9 +89,8 @@ mitchstack climb run --plan climb.json --log .artifacts/climb/decision.tsv
 ```
 
 Each `apply` is a shell command that makes one change. Keep patch files committed or outside the
-repo: the revert cleans untracked files. Exit 0 means the target was reached; 1 means short,
-refused or broken; 2 means it could not run.
-The log must be outside the repo or git-ignored (it would dirty the tree otherwise).
+repo: the revert cleans untracked files. Exit 0: target reached; 1: short, refused or broken;
+2: could not run. The log must be outside the repo or git-ignored (it would dirty the tree).
 
 ## 7. decision.tsv
 
@@ -109,7 +113,9 @@ It prints one number: the median, across judges, of each judge's median score fo
 picture. The **target stays hidden**: judges get the neutral rubric and hash-named files, never
 the goal or the number hoped for. A **control** picture is scored on every call; a round whose
 control drifts out of the band gives no score, which the climb treats as an incomplete
-measurement. Keep one council log for the whole climb so bands are learned once.
+measurement. Keep one council log for the whole climb so bands are learned once. The first round
+that scores fixes the **judge panel**: a round where any of its judges gives no score gives no
+score at all. `--budget` is checked before each call, not a hard cap (see the council rules).
 
 ## 9. Report
 

@@ -25,6 +25,11 @@ export interface JudgePicture {
 export interface JudgeRequest {
   rubric: string;
   pictures: JudgePicture[];
+  /**
+   * What is left of the budget when the call starts. A judge whose CLI takes a spend limit passes
+   * it on (claude -p --max-budget-usd); the others cannot, so a call can still cost more.
+   */
+  maxBudgetUsd?: number;
 }
 
 export type JudgeReply =
@@ -136,8 +141,14 @@ export function councilEligibility(
  * Run one council round. Judges go cheapest first; each sees the pictures in a fresh random order
  * with the neutral rubric. A judge's score is the median of its samples. The control picture is
  * scored in every call; if any judge's control median leaves the band learned from its baseline,
- * the whole round is discarded and the remaining judges are not called. The round never starts
- * if its estimated cost would break the per-PR budget, and it stops before any call that would.
+ * the whole round is discarded and the remaining judges are not called.
+ *
+ * The per-PR budget is enforced before each call, on the judge's price (its estimate, or the most
+ * it has really cost) plus what was already spent: a round whose estimate does not fit never
+ * starts, and a call that would not fit is never made. It is not a hard cap: a call can report
+ * more than was left. Each call is told what is left, for CLIs that take a spend limit; when one
+ * still goes over, the overrun is recorded on the round and the round stops as a budget stop.
+ * So the budget can be exceeded by at most one call's overrun.
  */
 export async function runCouncil(input: CouncilInput): Promise<CouncilResult> {
   const options = { ...DEFAULT_OPTIONS, ...input.options };
@@ -211,6 +222,8 @@ export async function runCouncil(input: CouncilInput): Promise<CouncilResult> {
     : ["after", "control"];
   const random = seededRandom(input.seed);
   const rubric = input.rubric ?? RUBRIC;
+  /** Set when a call's cost took the log past the budget. */
+  let overrun: string | undefined;
 
   for (const [index, judge] of judges.entries()) {
     const record: JudgeRound = {
@@ -223,16 +236,24 @@ export async function runCouncil(input: CouncilInput): Promise<CouncilResult> {
 
     const call = async (phase: Sample["phase"]): Promise<Sample | "budget"> => {
       if (log.spentUsd + price(judge) > log.budgetUsd + 1e-9) return "budget";
-      const sample = await callJudge(judge, phase, roles, input.pictures, random, rubric);
+      const left = roundMoney(log.budgetUsd - log.spentUsd);
+      const sample = await callJudge(judge, phase, roles, input.pictures, random, rubric, left);
       record.samples.push(sample);
       log.spentUsd += sample.costUsd;
       round.costUsd += sample.costUsd;
+      if (log.spentUsd > log.budgetUsd + 1e-9) {
+        round.overrunUsd = roundMoney(log.spentUsd - log.budgetUsd);
+        overrun = `a call to ${judge.id} cost ${usd(sample.costUsd)} (${sample.costSource}) with ${usd(left)} left`;
+        return "budget";
+      }
       return sample;
     };
     const outOfBudget = () =>
       finish(
         "budget",
-        `no council (budget): stopped before a call to ${judge.id}; ${usd(log.spentUsd)} of ${usd(log.budgetUsd)} spent`,
+        overrun
+          ? `no council (budget): ${overrun}; ${usd(log.spentUsd)} of ${usd(log.budgetUsd)} spent, over the budget by ${usd(round.overrunUsd ?? 0)}`
+          : `no council (budget): stopped before a call to ${judge.id}; ${usd(log.spentUsd)} of ${usd(log.budgetUsd)} spent`,
       );
 
     if (!log.bands[judge.id]) {
@@ -290,6 +311,7 @@ async function callJudge(
   pictures: CouncilInput["pictures"],
   random: () => number,
   rubric: string,
+  maxBudgetUsd: number,
 ): Promise<Sample> {
   const order = shuffle(roles, random);
   const shown = order.map((role, i) => ({
@@ -298,7 +320,7 @@ async function callJudge(
   }));
   let reply: JudgeReply;
   try {
-    reply = await judge.score({ rubric, pictures: shown });
+    reply = await judge.score({ rubric, pictures: shown, maxBudgetUsd });
   } catch (error) {
     reply = { kind: "error", message: (error as Error).message };
   }

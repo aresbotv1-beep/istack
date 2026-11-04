@@ -82,21 +82,21 @@ async function callCli(
       "Read",
       "--add-dir",
       pictureDir,
+      // The only judge CLI with a spend limit (`claude --help`: "only works with --print").
+      // codex exec and cursor-agent have none, so they get no flag.
+      ...(request.maxBudgetUsd === undefined
+        ? []
+        : ["--max-budget-usd", String(Math.max(0, request.maxBudgetUsd))]),
       prompt,
     ];
   } else {
     args = [...base, prompt];
   }
   const result = await exec(file, args);
-  if (result.code !== 0) {
-    return {
-      kind: "error",
-      message: `${cli.via} exited ${result.code}: ${result.stderr.slice(0, 200)}`,
-    };
-  }
   let text = result.stdout;
   let costUsd: number | undefined;
   if (cli.provider === "anthropic") {
+    // Read the cost even from a failed call (a spend-limit stop still reports what it spent).
     try {
       const json = JSON.parse(result.stdout) as { result?: unknown; total_cost_usd?: unknown };
       if (typeof json.result === "string") text = json.result;
@@ -104,6 +104,14 @@ async function callCli(
     } catch {
       // Not JSON: read the plain text.
     }
+  }
+  const cost = costUsd === undefined ? {} : { costUsd };
+  if (result.code !== 0) {
+    return {
+      kind: "error",
+      message: `${cli.via} exited ${result.code}: ${result.stderr.slice(0, 200)}`,
+      ...cost,
+    };
   }
   const scores = parseScoresReply(text);
   return costUsd === undefined ? { kind: "scores", scores } : { kind: "scores", scores, costUsd };

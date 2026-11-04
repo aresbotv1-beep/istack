@@ -220,4 +220,34 @@ describe("council judges (thin adapters)", () => {
     expect(calls[0]).toEqual(expect.arrayContaining(["--image", "/stage/aa.png"]));
     expect(await judges[1]?.score(request)).toMatchObject({ costUsd: 0.04 });
   });
+
+  // F8: claude -p takes a spend limit; codex exec has none, so it gets no made-up flag.
+  it("passes the remaining allowance to claude -p as --max-budget-usd, and reads the cost of a failed call", async () => {
+    const calls: string[][] = [];
+    const judges = discoverJudges({
+      probe: { hasCommand: (name) => name !== "cursor-agent" },
+      providers: [],
+      pictureDir: "/stage",
+      exec: async (file, args) => {
+        calls.push([file, ...args]);
+        return file === "claude"
+          ? {
+              code: 1,
+              stdout: JSON.stringify({ subtype: "error_max_budget_usd", total_cost_usd: 0.31 }),
+              stderr: "",
+            }
+          : { code: 0, stdout: "Picture 1: 5", stderr: "" };
+      },
+    });
+    const request = {
+      rubric: "R",
+      pictures: [{ label: "Picture 1", path: "/stage/aa.png" }],
+      maxBudgetUsd: 0.3,
+    };
+    await judges[0]?.score(request);
+    expect(calls[0]).not.toContain("--max-budget-usd");
+    expect(await judges[1]?.score(request)).toMatchObject({ kind: "error", costUsd: 0.31 });
+    const claude = calls[1] ?? [];
+    expect(claude[claude.indexOf("--max-budget-usd") + 1]).toBe("0.3");
+  });
 });

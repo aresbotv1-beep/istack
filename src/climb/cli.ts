@@ -19,7 +19,7 @@ import { type CouncilLog, councilLogSchema } from "../council/schema.js";
 import { toFieldErrors } from "../result.js";
 import { onPath, stagePictures } from "../ship/cli.js";
 import type { Exec } from "../watch/gh.js";
-import { councilScore } from "./council.js";
+import { councilPanel, councilScore, panelGap } from "./council.js";
 import {
   type ClimbChange,
   type ClimbHarness,
@@ -28,6 +28,15 @@ import {
   orderLadder,
   runClimb,
 } from "./engine.js";
+import {
+  disposeSnapshot,
+  type IgnoredSnapshot,
+  ignoredDrift,
+  type ListIgnored,
+  restoreIgnored,
+  skippedBy,
+  snapshotIgnored,
+} from "./ignored.js";
 
 export type ShellExec = (
   command: string,
@@ -73,6 +82,13 @@ export const climbPlanSchema = z.strictObject({
   frozen: z.array(z.string().min(1)).min(1),
   /** Each must exit 0 for a change to be kept. */
   regressions: z.array(z.string().min(1)).default([]),
+  /**
+   * Git-ignored paths the climb leaves as they are on a revert: where the harness and the climb
+   * write their own records (the council log, run counters). Every other ignored file is put
+   * back exactly after a rejected move. A move must not write here, and the harness must not read
+   * anything here that a move could change.
+   */
+  scratch: z.array(z.string().min(1)).default([".artifacts/"]),
   /** A change known to make the score worse. The climb refuses to start unless it does. */
   sensitivity: move.pick({ id: true, apply: true }),
   moves: z.array(move),
@@ -142,6 +158,16 @@ async function run(flags: Map<string, string>, io: CliIo, deps: ClimbDeps): Prom
   mkdirSync(dirname(logPath), { recursive: true });
   writeFileSync(logPath, DECISION_TSV_HEADER);
 
+  // Ignored files survive git reset and git clean, so the climb snapshots them before each move.
+  const listIgnored: ListIgnored = async () => {
+    const r = await sh("git ls-files -z --others --ignored --exclude-standard");
+    if (r.code !== 0) throw new Error(`git ls-files exited ${r.code}: ${r.stderr.trim()}`);
+    return r.stdout.split("\0").filter((p) => p !== "");
+  };
+  const logInRepo = !inside.startsWith("..") && !isAbsolute(inside);
+  const skip = skippedBy([...plan.scratch, ...(logInRepo ? [inside] : [])]);
+  let ignored: IgnoredSnapshot | undefined;
+
   const harness: ClimbHarness = {
     measure: async (runs) => {
       const scores: number[] = [];
@@ -170,7 +196,8 @@ async function run(flags: Map<string, string>, io: CliIo, deps: ClimbDeps): Prom
     },
     restored: async () => {
       const r = await sh("git status --porcelain");
-      return r.code === 0 && r.stdout.trim() === "";
+      if (r.code !== 0 || r.stdout.trim() !== "") return false;
+      return !ignored || (await ignoredDrift(io.cwd, ignored, listIgnored, skip)).length === 0;
     },
     commit: async (_change, summary) => {
       const r = await sh(`git add -A && git commit -q -m ${quote(summary)}`);
@@ -183,12 +210,17 @@ async function run(flags: Map<string, string>, io: CliIo, deps: ClimbDeps): Prom
       expectedGain: m.expectedGain ?? 0,
       cost: m.cost ?? 1,
       apply: async () => {
+        disposeSnapshot(ignored);
+        ignored = undefined;
+        ignored = await snapshotIgnored(io.cwd, listIgnored, skip);
         const r = await sh(m.apply);
         if (r.code !== 0) throw new Error(`"${m.apply}" exited ${r.code}`);
       },
       revert: async () => {
         const r = await sh("git reset -q --hard HEAD && git clean -qfd");
         if (r.code !== 0) throw new Error(`git reset exited ${r.code}: ${r.stderr.trim()}`);
+        if (!ignored) throw new Error("no snapshot of the ignored files was taken before the move");
+        await restoreIgnored(io.cwd, ignored, listIgnored, skip);
       },
     }) satisfies ClimbChange;
 
@@ -209,6 +241,8 @@ async function run(flags: Map<string, string>, io: CliIo, deps: ClimbDeps): Prom
   } catch (error) {
     io.err(`the climb could not run: ${(error as Error).message}`);
     return 2;
+  } finally {
+    disposeSnapshot(ignored);
   }
   io.out(`climb ${result.status}: ${result.reason}`);
   io.out(
@@ -305,11 +339,23 @@ async function councilScoreCommand(
   }
   mkdirSync(dirname(logPath), { recursive: true });
   writeFileSync(logPath, `${JSON.stringify(result.log, null, 2)}\n`);
-  const score = councilScore(result.outcome.round);
-  if (score === undefined) {
+  const round = result.outcome.round;
+  if (round.status !== "kept") {
+    io.err(`no score: round ${round.number} ${round.status}: ${result.outcome.reason}`);
+    return 1;
+  }
+  // Every sample of a climb comes from the same judges: the ones that scored first in this log.
+  const panel = councilPanel(result.log);
+  const missing = panel ? panelGap(round, panel) : [];
+  if (missing.length > 0) {
     io.err(
-      `no score: round ${result.outcome.round.number} ${result.outcome.status}: ${result.outcome.reason}`,
+      `no score: round ${round.number}: judge panel changed: ${missing.join(", ")} gave no score; the climb's panel is ${panel?.join(", ")}, and a partial panel is a different instrument`,
     );
+    return 1;
+  }
+  const score = councilScore(round, panel);
+  if (score === undefined) {
+    io.err(`no score: round ${round.number} ${round.status}: ${result.outcome.reason}`);
     return 1;
   }
   io.out(String(score));

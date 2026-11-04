@@ -206,6 +206,39 @@ describe("council: runner", () => {
     expect(costs?.every((c) => c === "measured")).toBe(true);
   });
 
+  // F8: the budget is admitted on estimates; a call can still report more than was left.
+  it("tells each judge what is left, and records and renders a measured overrun", async () => {
+    const limits: (number | undefined)[] = [];
+    const judges: Judge[] = ["a", "b"].map((provider) => ({
+      id: provider,
+      provider,
+      costUsdPerCall: 0.001,
+      score: async (req) => {
+        limits.push(req.maxBudgetUsd);
+        return {
+          kind: "scores",
+          scores: Object.fromEntries(req.pictures.map((p) => [p.label, 5])),
+          costUsd: 5,
+        };
+      },
+    }));
+    const result = await runCouncil(
+      base({
+        council: { enabled: true, budgetUsdPerPr: 0.01 },
+        judges,
+        options: { samples: 1, baselineSamples: 1 },
+      }),
+    );
+    expect(limits).toEqual([0.01]);
+    expect(result.outcome.status).toBe("budget");
+    expect(result.log.spentUsd).toBe(5);
+    expect(result.log.rounds[0]?.overrunUsd).toBe(4.99);
+    expect(result.outcome.reason).toMatch(/over the budget by \$4\.99/);
+    const table = renderCouncilScores(result.log);
+    expect(table).toMatch(/over the \$0\.01 budget by \$4\.99/);
+    expect(table).not.toContain("| Judge |");
+  });
+
   it("a judge that fails a sample gets no score, never a guessed one", async () => {
     let calls = 0;
     const flaky: Judge = {
