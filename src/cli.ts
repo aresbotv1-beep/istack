@@ -5,6 +5,8 @@ import { runProveCli } from "./capture/cli.js";
 import { runClimbCli } from "./climb/cli.js";
 import { loadConfig } from "./config/load.js";
 import { runEnvCli } from "./env/cli.js";
+import { runEvalsCli } from "./evals/cli.js";
+import { runInstallCli } from "./install/cli.js";
 import type { FetchLike } from "./receipts/github.js";
 import { renderSummary, runReceiptsCheck } from "./receipts/run.js";
 import { runVerifyCli } from "./receipts/verify/cli.js";
@@ -28,6 +30,8 @@ const USAGE = [
   "       mitchstack ship reviewer|review|body|watch ...",
   "       mitchstack env up|status|down|check-port ...",
   "       mitchstack climb ladder|run|council-score ...",
+  "       mitchstack evals list|run|baseline|compare ...",
+  "       mitchstack install|uninstall --host claude|codex|cursor|all ...",
 ].join("\n");
 
 /** Returns the process exit code. */
@@ -40,6 +44,8 @@ export async function runCli(args: string[], io: CliIo): Promise<number> {
   if (group === "ship") return runShipCli(args.slice(1), io);
   if (group === "env") return runEnvCli(args.slice(1), io);
   if (group === "climb") return runClimbCli(args.slice(1), io);
+  if (group === "evals") return runEvalsCli(args.slice(1), io);
+  if (group === "install" || group === "uninstall") return runInstallCli(args, io);
   io.err(USAGE);
   return 2;
 }

@@ -198,3 +198,17 @@ describe("climb and receipts verify (wired into the main CLI)", () => {
     }
   });
 });
+
+describe("evals and install (wired into the main CLI)", () => {
+  it("routes 'evals', 'install' and 'uninstall' instead of printing the top-level usage", async () => {
+    for (const group of ["evals", "install", "uninstall"]) {
+      const err: string[] = [];
+      await runCli([group, "--definitely-not-a-flag"], {
+        cwd: tmpdir(),
+        out: () => {},
+        err: (l) => err.push(l),
+      });
+      expect(err.join("\n"), group).not.toMatch(/^usage: mitchstack config check/m);
+    }
+  });
+});
