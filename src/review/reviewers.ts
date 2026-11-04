@@ -25,15 +25,15 @@ export interface ReviewerProbe {
   delegateTaskProviders?: string[];
 }
 
-interface Cli {
+export interface ReviewerCli {
   via: Exclude<ReviewerVia, "delegate_task" | "fresh-context subagent">;
   command: string;
   provider: string;
   argv: string[];
 }
 
-/** In preference order. cursor-agent counts as its own provider. */
-const CLIS: Cli[] = [
+/** In preference order. cursor-agent counts as its own provider. Also the council's judge list. */
+export const REVIEWER_CLIS: readonly ReviewerCli[] = [
   { via: "codex exec", command: "codex", provider: "openai", argv: ["codex", "exec"] },
   { via: "claude -p", command: "claude", provider: "anthropic", argv: ["claude", "-p"] },
   {
@@ -64,7 +64,7 @@ export function chooseReviewer(input: {
       label: `delegate_task (${other})`,
     };
   }
-  const present = CLIS.filter((cli) => input.probe.hasCommand(cli.command));
+  const present = REVIEWER_CLIS.filter((cli) => input.probe.hasCommand(cli.command));
   const cross = present.find((cli) => cli.provider !== builder);
   if (cross) {
     return {

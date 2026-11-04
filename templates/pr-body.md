@@ -18,6 +18,8 @@
 
 {{reviewerVerdicts}}
 
+{{councilScores}}
+
 ## Open disputes
 
 {{openDisputes}}

@@ -1,7 +1,25 @@
-import { accessSync, constants, existsSync, readFileSync, statSync } from "node:fs";
-import { delimiter, join, resolve } from "node:path";
+import { createHash } from "node:crypto";
+import {
+  accessSync,
+  constants,
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
+import { delimiter, dirname, extname, join, resolve } from "node:path";
 import { z } from "zod";
 import type { CliIo } from "../cli.js";
+import { loadConfig } from "../config/load.js";
+import { discoverJudges, execJudge } from "../council/judges.js";
+import { renderCouncilScores } from "../council/markdown.js";
+import { type Judge, runCouncil } from "../council/run.js";
+import { type CouncilLog, councilLogSchema } from "../council/schema.js";
+import { matchVisibleFiles } from "../receipts/check.js";
 import { toFieldErrors } from "../result.js";
 import { runReview } from "../review/ledger.js";
 import { renderOpenDisputes, renderReviewerVerdicts } from "../review/markdown.js";
@@ -14,6 +32,10 @@ import { renderPrBody } from "./body.js";
 export interface ShipDeps {
   /** Runs gh for `ship watch`. Defaults to the real gh on PATH. */
   exec?: Exec;
+  /** Builds the council's judges for `ship council`. Defaults to the installed provider CLIs. */
+  judges?: (context: { pictureDir: string; prices: Record<string, number> }) => Judge[];
+  /** Clock for the council log. */
+  now?: () => string;
 }
 
 const USAGE = [
@@ -21,6 +43,10 @@ const USAGE = [
   "       mitchstack ship review --from <review.json> [--format md|json]",
   "       mitchstack ship body --from <body.json>",
   "       mitchstack ship watch --repo <owner/name> --pr <number>",
+  "       mitchstack ship council --after <png> --control <png> [--before <png>] --head <sha>",
+  "                               --changed <files.txt> --log <council.json>",
+  "                               [--changed-since-last <files.txt>] [--door one-way|two-way]",
+  "                               [--config mitchstack.yaml] [--seed <n>] [--prices openai=0.2,...]",
 ].join("\n");
 
 const bodyInputSchema = z.strictObject({
@@ -31,6 +57,8 @@ const bodyInputSchema = z.strictObject({
     .default({}),
   tryItYourself: z.array(z.string()).optional(),
   reviews: z.array(reviewInputSchema).default([]),
+  /** Path to the council log written by `ship council`, relative to the working directory. */
+  councilLog: z.string().min(1).optional(),
   risks: z.array(z.string()).default([]),
   receipts: z.looseObject({ head: z.string(), claims: z.array(z.unknown()) }),
 });
@@ -47,7 +75,175 @@ export async function runShipCli(args: string[], io: CliIo, deps: ShipDeps = {})
   if (command === "review") return review(flags.flags, io);
   if (command === "body") return body(flags.flags, io);
   if (command === "watch") return watch(flags.flags, io, deps);
+  if (command === "council") return council(flags.flags, io, deps);
   return usage(io);
+}
+
+/**
+ * One council round. Scores are measurements, never a gate: every completed decision (kept,
+ * discarded, no council, skipped) exits 0. Exit 2 means the council could not run at all.
+ */
+async function council(flags: Map<string, string>, io: CliIo, deps: ShipDeps): Promise<number> {
+  const after = flags.get("after");
+  const control = flags.get("control");
+  const head = flags.get("head");
+  const changedPath = flags.get("changed");
+  const logPath = flags.get("log");
+  if (!after || !control || !head || !changedPath || !logPath) {
+    return usage(io, "council needs --after, --control, --head, --changed and --log");
+  }
+  const door = flags.get("door");
+  if (door !== undefined && door !== "one-way" && door !== "two-way") {
+    return usage(io, "--door is one-way or two-way");
+  }
+  const configPath = resolve(io.cwd, flags.get("config") ?? "mitchstack.yaml");
+  if (!existsSync(configPath)) {
+    io.err(`no config at ${configPath}: the council needs the profile and council settings`);
+    return 2;
+  }
+  const loaded = loadConfig(readFileSync(configPath, "utf8"));
+  if (!loaded.ok) {
+    io.err(`${configPath} is invalid:`);
+    for (const e of loaded.errors) io.err(`  ${e.path || "(file)"}: ${e.message}`);
+    return 2;
+  }
+  const config = loaded.config;
+
+  const prices = parsePrices(flags.get("prices"));
+  if (!prices.ok) return usage(io, prices.reason);
+
+  const lists: Record<string, string[] | undefined> = {};
+  for (const name of ["changed", "changed-since-last"]) {
+    const value = flags.get(name);
+    if (value === undefined) continue;
+    const path = resolve(io.cwd, value);
+    if (!existsSync(path)) {
+      io.err(`no file at ${path}`);
+      return 2;
+    }
+    lists[name] = readFileSync(path, "utf8")
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean);
+  }
+  const visibleFiles = matchVisibleFiles(lists.changed ?? [], config.visibleChange);
+  const since = lists["changed-since-last"];
+  const visibleSince = since ? matchVisibleFiles(since, config.visibleChange) : undefined;
+
+  const absoluteLog = resolve(io.cwd, logPath);
+  let log: CouncilLog | undefined;
+  if (existsSync(absoluteLog)) {
+    let json: unknown;
+    try {
+      json = JSON.parse(readFileSync(absoluteLog, "utf8"));
+    } catch (error) {
+      io.err(`${absoluteLog} is not valid JSON: ${(error as Error).message}`);
+      return 2;
+    }
+    const parsed = councilLogSchema.safeParse(json);
+    if (!parsed.success) {
+      io.err(`${absoluteLog} is not a council log:`);
+      for (const e of toFieldErrors(parsed.error.issues)) io.err(`  ${e.path}: ${e.message}`);
+      return 2;
+    }
+    log = parsed.data;
+  }
+
+  const staged = stagePictures({ before: flags.get("before"), after, control }, io.cwd);
+  if (!staged.ok) {
+    io.err(staged.reason);
+    return 2;
+  }
+
+  const seedFlag = flags.get("seed");
+  const seed =
+    seedFlag !== undefined
+      ? Number(seedFlag)
+      : (Number.parseInt(head.slice(0, 8), 16) || 0) + (log?.rounds.length ?? 0) + 1;
+  if (!Number.isInteger(seed)) return usage(io, "--seed is a whole number");
+
+  const judges = (
+    deps.judges ??
+    ((context) =>
+      discoverJudges({
+        probe: { hasCommand: (name) => onPath(name, (io.env ?? process.env).PATH ?? "") },
+        providers: config.council.providers,
+        prices: context.prices,
+        exec: deps.exec ?? execJudge,
+        pictureDir: context.pictureDir,
+      }))
+  )({ pictureDir: staged.dir, prices: prices.prices });
+
+  const result = await runCouncil({
+    profile: config.profile,
+    council: config.council,
+    door,
+    visibleFiles,
+    visibleChangedSinceLastRound: visibleSince,
+    head,
+    pictures: staged.pictures,
+    judges,
+    log,
+    seed,
+    now: deps.now,
+  });
+
+  if (result.outcome.status === "skipped") {
+    io.out(`council skipped: ${result.outcome.reason}`);
+  } else {
+    mkdirSync(dirname(absoluteLog), { recursive: true });
+    writeFileSync(absoluteLog, `${JSON.stringify(result.log, null, 2)}\n`);
+    io.out(
+      `council round ${result.outcome.round.number} ${result.outcome.status}: ${result.outcome.reason}`,
+    );
+    io.out(`log: ${absoluteLog}`);
+  }
+  if (result.log.rounds.length > 0) io.out(`\n${renderCouncilScores(result.log)}`);
+  return 0;
+}
+
+/**
+ * Copy each picture to a fresh directory under a name made from its content hash, so nothing a
+ * judge can see (file name, folder) says which picture is the before, the after or the control.
+ */
+function stagePictures(
+  paths: { before?: string; after: string; control: string },
+  cwd: string,
+):
+  | { ok: true; dir: string; pictures: { before?: string; after: string; control: string } }
+  | { ok: false; reason: string } {
+  const dir = mkdtempSync(join(tmpdir(), "ms-council-"));
+  const out: Record<string, string> = {};
+  for (const [role, path] of Object.entries(paths)) {
+    if (path === undefined) continue;
+    const source = resolve(cwd, path);
+    if (!existsSync(source)) return { ok: false, reason: `no picture at ${source}` };
+    const hash = createHash("sha256").update(readFileSync(source)).digest("hex").slice(0, 16);
+    const target = join(dir, `${hash}${extname(source).toLowerCase() || ".png"}`);
+    copyFileSync(source, target);
+    out[role] = target;
+  }
+  return {
+    ok: true,
+    dir,
+    pictures: { before: out.before, after: out.after as string, control: out.control as string },
+  };
+}
+
+function parsePrices(
+  text: string | undefined,
+): { ok: true; prices: Record<string, number> } | { ok: false; reason: string } {
+  const prices: Record<string, number> = {};
+  if (text === undefined) return { ok: true, prices };
+  for (const pair of text.split(",").filter(Boolean)) {
+    const [provider, value] = pair.split("=");
+    const price = Number(value);
+    if (!provider || !Number.isFinite(price) || price < 0) {
+      return { ok: false, reason: `--prices wants provider=usd pairs, got "${pair}"` };
+    }
+    prices[provider.trim().toLowerCase()] = price;
+  }
+  return { ok: true, prices };
 }
 
 function reviewer(flags: Map<string, string>, io: CliIo): number {
@@ -86,8 +282,16 @@ function review(flags: Map<string, string>, io: CliIo): number {
 function body(flags: Map<string, string>, io: CliIo): number {
   const input = readJson(flags, io, bodyInputSchema);
   if (!input) return 1;
+  let councilLog: CouncilLog | undefined;
+  if (input.councilLog !== undefined) {
+    const loaded = readJson(new Map([["from", input.councilLog]]), io, councilLogSchema);
+    if (!loaded) return 1;
+    councilLog = loaded;
+  }
+  const { councilLog: _path, ...rest } = input;
   const result = renderPrBody({
-    ...input,
+    ...rest,
+    council: councilLog,
     mergeDanger: input.mergeDanger as { door?: "one-way" | "two-way"; blastRadius?: string },
     reviews: input.reviews.map((r) => runReview(r)),
   });

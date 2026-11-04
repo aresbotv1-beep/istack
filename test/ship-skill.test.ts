@@ -27,9 +27,33 @@ describe("skills/ship/SKILL.md", () => {
     }
   });
 
-  it("leaves a clearly marked council placeholder for the factory profile", () => {
+  it("points to the council rules instead of a placeholder", () => {
     expect(skill).toMatch(/## Council \(factory profile\)/);
-    expect(skill).toMatch(/placeholder/i);
+    expect(skill).not.toMatch(/placeholder/i);
+    expect(skill).toContain("[council.md](council.md)");
+    expect(skill).toContain("never a merge gate");
+  });
+});
+
+describe("skills/ship/council.md", () => {
+  const council = readFileSync(new URL("../skills/ship/council.md", import.meta.url), "utf8");
+
+  it("states the rules the council runner enforces", () => {
+    for (const needle of [
+      "control picture",
+      "Cheapest judge first",
+      "Target hidden",
+      "Median of 3",
+      "max(1, 2 × MAD)",
+      "whole round is discarded",
+      "no council (budget)",
+      "no score",
+      "does not gate the merge",
+      "mitchstack ship council",
+      "Theo Browne",
+    ]) {
+      expect(council, needle).toContain(needle);
+    }
   });
 });
 
