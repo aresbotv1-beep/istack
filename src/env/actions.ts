@@ -35,6 +35,8 @@ export interface UpReport {
   registryPath: string;
   ports: Record<string, number>;
   reused: boolean;
+  /** Set when the previous lease was no longer valid (reserved or out of range) and was replaced. */
+  replaced?: string;
   files: EnvFileOutcome[];
   deps: DepsPlan & { ran: boolean };
   database: DatabaseReport;
@@ -174,6 +176,7 @@ export function envUp(input: {
     registryPath: ctx.registryPath,
     ports: lease.ports,
     reused: lease.reused,
+    ...(lease.replaced ? { replaced: lease.replaced } : {}),
     files: files.files,
     deps: { ...deps, ran: ranInstall },
     database,

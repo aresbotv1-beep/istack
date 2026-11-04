@@ -1,7 +1,7 @@
 {
   "version": 1,
   "skill": "groundbreak",
-  "skillHash": "0766ae7dd9a1c1adee3d48bb92922f88224ca0b58810cd932a2977009fd59f7f",
+  "skillHash": "bbcc4db22c97f255c1774ece2f1a986f7d0b2b9428358ca34700c9401b194a3c",
   "scenariosHash": "d7f151696d69701512a9ce38df7f467112f932955496c36841b83bfb63a9de14",
   "producedBy": {
     "runner": "claude -p",
@@ -10,14 +10,14 @@
     "runs": 3,
     "date": "2026-11-04",
     "mode": "deterministic",
-    "costUsd": 0.296414,
+    "costUsd": 0.271465,
     "costSource": "measured"
   },
-  "score": 97.73,
+  "score": 100,
   "runScores": [
-    100,
     97.73,
-    95.46
+    100,
+    100
   ],
   "noise": {
     "floor": 5,
@@ -63,21 +63,21 @@
       }
     },
     "express-bugfix": {
-      "median": 90.91,
+      "median": 100,
       "runs": [
-        100,
         90.91,
-        81.82
+        100,
+        100
       ],
       "passes": {
         "lane-express": 3,
         "no-full-engine": 3,
         "last-question-wrong": 3,
-        "almost-no-questions": 2,
+        "almost-no-questions": 3,
         "no-asking-known-facts": 2,
         "draft-ticket": 3,
         "no-code": 3,
-        "short": 2
+        "short": 3
       }
     },
     "open-ambition": {

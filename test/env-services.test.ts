@@ -100,10 +100,44 @@ describe("database hook", () => {
     const plan = planDatabase({ spec, worktree: "/x/wt-A.1", mainRoot: "/x/my-app", gates: [] });
     expect(plan).toMatchObject({
       ok: true,
-      name: "my_app_wt_a_1",
-      create: "createdb my_app_wt_a_1",
-      drop: "dropdb my_app_wt_a_1",
     });
+    if (!plan.ok) return;
+    expect(plan.name).toMatch(/^my_app_wt_a_1_[0-9a-f]{8}$/);
+    expect(plan.create).toBe(`createdb ${plan.name}`);
+    expect(plan.drop).toBe(`dropdb ${plan.name}`);
+  });
+
+  it("gives two worktrees with the same directory name different databases (F11)", () => {
+    const [one, two] = ["/jobs/one/task", "/jobs/two/task"].map((worktree) =>
+      planDatabase({ spec, worktree, mainRoot: "/repo/demo", gates: [] }),
+    );
+    expect(one?.ok && two?.ok).toBe(true);
+    if (!one?.ok || !two?.ok) return;
+    expect(one.name).toMatch(/^demo_task_[0-9a-f]{8}$/);
+    expect(one.name).not.toBe(two.name);
+    expect(one.drop).not.toBe(two.drop);
+    // Stable: the same worktree path always gets the same name.
+    const again = planDatabase({
+      spec,
+      worktree: "/jobs/one/task",
+      mainRoot: "/repo/demo",
+      gates: [],
+    });
+    expect(again.ok && again.name).toBe(one.name);
+  });
+
+  it("keeps the database name within Postgres's 63-byte identifier limit", () => {
+    const long = `/x/${"w".repeat(120)}`;
+    const plan = planDatabase({
+      spec,
+      worktree: long,
+      mainRoot: `/x/${"r".repeat(80)}`,
+      gates: [],
+    });
+    expect(plan.ok).toBe(true);
+    if (!plan.ok) return;
+    expect(Buffer.byteLength(plan.name)).toBeLessThanOrEqual(63);
+    expect(plan.name).toMatch(/_[0-9a-f]{8}$/);
   });
 
   it("refuses to touch the main checkout's database", () => {

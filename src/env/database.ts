@@ -1,7 +1,12 @@
-import { basename } from "node:path";
+import { createHash } from "node:crypto";
+import { realpathSync } from "node:fs";
+import { basename, resolve } from "node:path";
 
 export interface DatabaseSpec {
-  /** Template for the isolated database name; must use {{worktree}}. */
+  /**
+   * Template for the isolated database name; must use {{worktree}}, which renders as the worktree
+   * directory name plus an 8-char hash of its real path. Capped at 63 bytes (Postgres's limit).
+   */
   name: string;
   /** Shell command template that creates it, e.g. "createdb {{name}}". */
   create: string;
@@ -18,6 +23,23 @@ export interface Gate {
 export type DatabasePlan =
   | { ok: true; name: string; create: string; drop?: string; gates: Gate[] }
   | { ok: false; reason: string };
+
+/** Postgres truncates identifiers longer than this many bytes (NAMEDATALEN - 1). */
+export const MAX_DATABASE_NAME = 63;
+
+/**
+ * Eight hex chars of the SHA-256 of the canonical worktree path. The directory name alone is not
+ * unique (/jobs/one/task and /jobs/two/task), so the hash keeps two worktrees' databases apart.
+ */
+export function worktreeHash(worktree: string): string {
+  let canonical = resolve(worktree);
+  try {
+    canonical = realpathSync(canonical);
+  } catch {
+    // Not on disk (e.g. a plan for a path being created); the resolved path is still stable.
+  }
+  return createHash("sha256").update(canonical).digest("hex").slice(0, 8);
+}
 
 /** Lowercase, [a-z0-9_] only: safe as a database name and inside a shell command. */
 export function slug(text: string): string {
@@ -72,12 +94,19 @@ export function planDatabase(input: {
   if (spec.drop !== undefined && !spec.drop.includes("{{name}}")) {
     return { ok: false, reason: "database drop command must target {{name}}" };
   }
-  const name = slug(
+  const hash = worktreeHash(worktree);
+  // {{worktree}} is the directory name plus the path hash, e.g. "task_1a2b3c4d".
+  const rendered = slug(
     renderTemplate(spec.name, {
       repo: slug(basename(mainRoot)),
-      worktree: slug(basename(worktree)),
+      worktree: `${slug(basename(worktree))}_${hash}`,
     }),
   );
+  // Over the limit: shorten the readable part and keep the hash, so the name stays unique.
+  const name =
+    rendered.length <= MAX_DATABASE_NAME
+      ? rendered
+      : `${rendered.slice(0, MAX_DATABASE_NAME - hash.length - 1).replace(/_+$/, "")}_${hash}`;
   const vars = { name };
   return {
     ok: true,

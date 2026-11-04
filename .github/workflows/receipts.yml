@@ -1,5 +1,12 @@
 # Dogfood: run the mitchstack/receipts check on this repo's own pull requests.
 # pull_request only (never pull_request_target); no paths: filter — the check decides in-job.
+#
+# The checker comes from the PR's BASE commit, never the PR head: a PR that edits the checker must
+# not be able to make its own receipts pass. The PR is only data here (the event payload, and its
+# files and the base commit's mitchstack.yaml, read through the API); its code is never checked
+# out. Bootstrap: if the base commit has no checker yet (the PR that introduces it), the job fails
+# as "could not run" rather than falling back to the PR's copy. Protect this file with CODEOWNERS
+# or a ruleset, since a PR can still edit the workflow itself.
 name: receipts
 
 on:
@@ -19,9 +26,19 @@ jobs:
     name: mitchstack/receipts
     runs-on: ubuntu-latest
     steps:
-      # Checked out only to run the action from this branch; the check itself reads the PR's
-      # files and the base commit's mitchstack.yaml through the API.
-      - uses: actions/checkout@v4
+      - name: Check out the trusted checker (the PR's base commit)
+        uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: trusted
           persist-credentials: false
-      - uses: ./action/receipts
+      - name: Require the checker on the base commit
+        shell: bash
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if [ ! -f trusted/action/receipts/action.yml ]; then
+            echo "::error::could not run: checker not present on base ($BASE). The checker is never taken from the PR head; merge it to the base branch first."
+            exit 1
+          fi
+      - uses: ./trusted/action/receipts

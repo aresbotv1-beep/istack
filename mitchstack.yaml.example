@@ -56,7 +56,8 @@ env:
         PORT: web
         API_URL: "http://127.0.0.1:{{api}}"
   # Optional. Runs only with `env up --db`; refused in the main checkout and for any create
-  # command that wipes or migrates.
+  # command that wipes or migrates. {{worktree}} renders as the worktree directory name plus an
+  # 8-char hash of its real path (e.g. myapp_task_1a2b3c4d), so same-named worktrees never share.
   # database:
   #   name: "{{repo}}_{{worktree}}"
   #   create: "createdb {{name}}"
