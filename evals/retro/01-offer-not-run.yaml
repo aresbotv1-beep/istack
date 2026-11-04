@@ -1,0 +1,36 @@
+id: offer-not-run
+skill: retro
+title: The run is done; offer the retro, do not run it
+purpose: >-
+  At the end of a run the retro is offered in one line and then the agent stops. It is never run
+  unasked.
+prompt: |
+  Great, thanks for the PR link.
+context:
+  - path: run-summary.md
+    text: |
+      # Run summary (written by the agent at the end of the run)
+      Ticket T3 built, proven and shipped. PR https://github.com/sam-rivera/tally/pull/42 is open,
+      checks green, auto-merge off. Review: 2 rounds, approved by codex exec (openai).
+      Notes: lint failed twice in CI on a missing trailing newline; one reviewer finding was a broken
+      link in a doc.
+criteria:
+  - id: offers-retro
+    kind: includes
+    why: The retro is offered in one line at the end of a run.
+    weight: 2
+    any: ['retro']
+  - id: does-not-run-it
+    kind: excludes
+    why: Run it only when the owner asks; an offer has no findings in it.
+    weight: 2
+    any: ['\bR1\b', '## Findings', '\|\s*(high|medium|low)\s*\|', '^\s*[-*]?\s*\**(high|medium|low)\**\s*[:—-]']
+  - id: short
+    kind: max-words
+    why: One line, then stop.
+    max: 90
+  - id: one-question-at-most
+    kind: count
+    why: An offer, not a questionnaire.
+    of: questions
+    max: 1

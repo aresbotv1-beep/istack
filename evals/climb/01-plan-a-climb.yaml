@@ -1,0 +1,45 @@
+id: plan-a-climb
+skill: climb
+title: Make the test suite faster
+purpose: >-
+  A climb starts with a ladder, a fixed target, a frozen harness proven sensitive by a planted bad
+  change, a median of several runs, and decision.tsv - not with the first edit.
+prompt: |
+  The test suite takes 95 seconds. Get it under 60. Go.
+context:
+  - path: package.json
+    text: |
+      { "name": "tally", "scripts": { "test": "vitest run" }, "devDependencies": { "vitest": "^3.2.0" } }
+  - path: vitest.config.ts
+    text: |
+      export default { test: { pool: "forks", poolOptions: { forks: { singleFork: true } }, testTimeout: 20000 } };
+criteria:
+  - id: ladder-first
+    kind: includes
+    why: Plan the ladder of moves before measuring anything.
+    weight: 2
+    any: ['ladder']
+  - id: fixed-target
+    kind: includes
+    why: The target is written down and fixed for the whole climb.
+    all: ['target', '\b60\b']
+  - id: lower-is-better
+    kind: includes
+    why: The harness prints one number, higher is better; seconds need their negative.
+    any: ['negative', '-\s?seconds', 'negat']
+  - id: sensitivity
+    kind: includes
+    why: A planted bad change proves the harness can see worse.
+    any: ['sensitiv', 'planted']
+  - id: median-of-runs
+    kind: includes
+    why: Every measurement is the median of several runs.
+    any: ['median', '\b\d+ runs\b', 'runs["`:]*\s*[3-9]']
+  - id: frozen-harness
+    kind: includes
+    why: The harness and the files it reads are frozen.
+    any: ['frozen']
+  - id: decision-log
+    kind: includes
+    why: decision.tsv is the climb's receipt.
+    any: ['decision\.tsv']

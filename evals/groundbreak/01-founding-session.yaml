@@ -1,0 +1,96 @@
+# Eval #1 for groundbreak: a scrubbed version of the session this kit was founded in.
+id: founding-session
+skill: groundbreak
+title: Combine several public agent kits into one workflow
+purpose: >-
+  An open ambition with "groundbreak" in it must take the full engine, research before opinions,
+  stay honest about what was not researched, and ask few, sharp questions with recommendations.
+prompt: |
+  I'm Sam Rivera, a solo developer. I've been using a handful of public agent kits, each one good
+  at one thing, across Claude Code, Codex and Cursor. I want to take all of them and make my own
+  workflow that I use for every single feature.
+
+  Three things bug me. The grilling questions I get are generic: they don't change the plan. My
+  PRs say "done" with no visual proof; I want before/after pictures in every PR. And I'd like a
+  council of AI judges from different providers to score visible changes.
+
+  Groundbreak this. What should my kit be?
+context:
+  - path: notes/kits.md
+    text: |
+      # Kits I use today
+      - Kit A: skills for specs, tickets, TDD and a grill-me questionnaire.
+      - Kit B: a review and QA pack with browser checks and a "ship" command.
+      - Kit C: a brainstorming pack with an audit and a wall of ideas.
+      - Kit D: a hill-climbing playbook: plan moves, measure, keep or revert.
+      All four are MIT. None of them checks proof in CI.
+  - path: notes/current-workflow.md
+    text: |
+      # How I work now
+      1. Brainstorm in chat, sometimes with Kit C.
+      2. Ask Kit A to grill me; I answer 10-15 questions, most of them obvious from the code.
+      3. Build in a branch; the agent says "done, all tests pass".
+      4. Open a PR by hand. Screenshots only when I remember.
+      5. Merge myself after reading the diff.
+criteria:
+  - id: lane-full-engine
+    kind: includes
+    why: An ambition that says "groundbreak" takes the full engine.
+    weight: 2
+    any: ['full engine']
+  - id: not-express
+    kind: excludes
+    why: The express lane is for settled changes, not for "what should my kit be".
+    weight: 2
+    any: ['(taking|take|using|picking|pick|choosing|going with|lane:\**)\s*(the\s*)?express( lane)?\b']
+  - id: names-domain
+    kind: includes
+    why: Phase 1 names the subject's domain, which decides where steals come from.
+    any: ['\bdomain\b']
+  - id: research-first
+    kind: includes
+    why: Research before opinions; the hunt produces a research doc.
+    any: ['\bhunt\b', 'research doc']
+  - id: no-invented-sources
+    kind: excludes
+    why: No tool ran and no link was given, so any link in the reply is invented.
+    weight: 2
+    any: ['https?://']
+  - id: no-asking-known-facts
+    kind: excludes
+    why: The kits are listed in the notes; asking which ones is asking a fact.
+    any: ['which (agent )?kits (do|are|did) you[^?]*\?', 'what kits (do|are) you[^?]*\?']
+  - id: weak-points
+    kind: includes
+    why: Every output carries the agent's own list of its weak points.
+    any: ['weak (point|spot)s?', 'known (flaw|gap|weakness)', 'self-review', 'where this (is weak|could be wrong)']
+  - id: few-questions
+    kind: count
+    why: One-page loops end on a sharp question or a few, not a questionnaire.
+    of: asked-questions
+    min: 1
+    max: 5
+  - id: recommends
+    kind: includes
+    why: Every question carries a recommendation.
+    any: ['recommend', 'my pick', 'I''d pick', 'I would pick']
+  - id: no-code
+    kind: excludes
+    why: Groundbreak never builds.
+    any: ['```(ts|typescript|js|javascript|python|tsx)']
+  - id: question-quality
+    kind: taste
+    why: The questions should be ones only this owner can answer and that change the plan.
+    rubric: >-
+      Are the questions in the reply ones that only this person could answer, that would change
+      what gets built, and that come with a recommendation? Generic or answerable-by-reading
+      questions score low.
+    control: |
+      Great idea! Before we start, a few questions:
+      1. What harnesses do you use?
+      2. What is your budget?
+      3. What features do you want?
+      4. Who is your target audience?
+      5. What does success look like?
+      6. Any deadlines?
+      Let me know and I'll put together a plan.

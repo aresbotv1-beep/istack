@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "skill": "plan",
+  "skillHash": "f8cd4eb7d021e8cd25ea104803551891314330dca2e7d7f37744f92182fad5d6",
+  "scenariosHash": "537a76d50e9558fcdb0d3540e1fa3f74026eee1064dfe8310ebe3f0213c9fc5e",
+  "producedBy": {
+    "runner": "claude -p",
+    "provider": "anthropic",
+    "model": "claude-sonnet-5-5",
+    "runs": 3,
+    "date": "2026-11-04",
+    "mode": "deterministic",
+    "costUsd": 0.148961,
+    "costSource": "measured"
+  },
+  "score": 89.21,
+  "runScores": [
+    81.82,
+    89.21,
+    90.91
+  ],
+  "noise": {
+    "floor": 5,
+    "k": 2
+  },
+  "scenarios": {
+    "one-ticket": {
+      "median": 100,
+      "runs": [
+        100,
+        87.5,
+        100
+      ],
+      "passes": {
+        "the-ask": 3,
+        "no-spec-for-one": 2,
+        "decided-for-you": 3,
+        "acceptance-observable": 3,
+        "names-commit": 3,
+        "asks-for-yes": 3,
+        "no-code": 3
+      }
+    },
+    "multi-ticket-spec": {
+      "median": 81.82,
+      "runs": [
+        63.64,
+        90.91,
+        81.82
+      ],
+      "passes": {
+        "seams-before-tickets": 2,
+        "seams-agreed": 3,
+        "vertical-slices": 3,
+        "blocking-edges": 1,
+        "one-pr": 2,
+        "challenge-asked": 3,
+        "the-ask": 1,
+        "asks-for-yes": 3,
+        "no-code": 3
+      }
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "skill": "groundbreak",
+  "description": "groundbreak with the express-lane rules deleted: no lane pick, no express.md, no line that mentions the express lane. Settled work should now get the full brainstorm, so the express-lane scenarios must score lower.",
+  "removeFiles": ["express.md"],
+  "removeSections": ["## Pick the lane"],
+  "removeLines": ["express"]
+}

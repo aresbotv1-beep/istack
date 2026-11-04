@@ -1,0 +1,80 @@
+id: express-bugfix
+skill: groundbreak
+title: A fully specified bug fix leaves only the last question
+purpose: >-
+  When the code and the ask settle everything, no question passes the bar except the last one.
+  The reply stays in the express lane, asks almost nothing, and does not slide into building.
+prompt: |
+  Bug: `tally add` with no name crashes with `TypeError: Cannot read properties of undefined
+  (reading 'trim')`. It should print `name is required` to stderr and exit 1, like the other
+  commands do. Fix it.
+context:
+  - path: src/commands/add.ts
+    text: |
+      import type { Db } from "../db.js";
+
+      export function add(db: Db, name: string | undefined): number {
+        const clean = name.trim();
+        if (clean === "") {
+          console.error("name is required");
+          return 1;
+        }
+        db.insert("jobs", { name: clean });
+        return 0;
+      }
+  - path: src/commands/remove.ts
+    text: |
+      export function remove(db: Db, id: string | undefined): number {
+        if (!id) {
+          console.error("id is required");
+          return 1;
+        }
+        db.delete("jobs", id);
+        return 0;
+      }
+  - path: test/add.test.ts
+    text: |
+      import { expect, it } from "vitest";
+      import { add } from "../src/commands/add.js";
+      it("adds a job", () => {
+        const db = fakeDb();
+        expect(add(db, "nightly")).toBe(0);
+      });
+criteria:
+  - id: lane-express
+    kind: includes
+    why: A fully specified fix takes the express lane.
+    weight: 2
+    any: ['express lane', 'lane:\**\s*express', 'express\b[^.\n]{0,20}\blane']
+  - id: no-full-engine
+    kind: excludes
+    why: Settled work is never dragged through the brainstorm.
+    weight: 2
+    any: ['launch post', 'board audit', 'wall of ideas', '\bthe hunt\b', 'research doc', '\bMusk\b', '\bThiel\b', '\bFeynman\b', '\b(8|eight) phases\b']
+  - id: last-question-wrong
+    kind: last-question
+    why: '"How will you know I''m wrong?" is asked even when nothing else survives the bar.'
+    weight: 2
+    of: asked-questions
+    pattern: 'know[^?]{0,40}wrong'
+  - id: almost-no-questions
+    kind: count
+    why: Everything is settled by the ask and the code; the last question is all that is left.
+    of: asked-questions
+    max: 1
+  - id: no-asking-known-facts
+    kind: excludes
+    why: The ask says stderr and exit 1, and remove.ts shows the pattern; asking is asking a fact.
+    any: ['(stderr|stdout)\s+or\s+(stderr|stdout)\s*\?', 'exit (code )?(1|0|non-?zero)[^.\n]{0,20}\?', 'should (it|this) (exit|print)[^.\n]*\?']
+  - id: draft-ticket
+    kind: includes
+    why: The grill ends in a draft ticket handed to plan, not in code.
+    any: ['ticket']
+  - id: no-code
+    kind: excludes
+    why: Groundbreak never builds; the fix belongs to build.
+    any: ['```(ts|typescript|js|javascript|diff)']
+  - id: short
+    kind: max-words
+    why: Nothing is open, so the reply is short.
+    max: 450

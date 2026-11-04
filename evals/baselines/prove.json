@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "skill": "prove",
+  "skillHash": "4b9494824b8963f9056c2b7636f98b7a9639209498089b2ad5e635b91dab720f",
+  "scenariosHash": "42c95bb9fb97431339d87a527b9b5175e3452c88176a80a585dd8725c8c9f5b9",
+  "producedBy": {
+    "runner": "claude -p",
+    "provider": "anthropic",
+    "model": "claude-sonnet-5-5",
+    "runs": 3,
+    "date": "2026-11-04",
+    "mode": "deterministic",
+    "costUsd": 0.146558,
+    "costSource": "measured"
+  },
+  "score": 95.83,
+  "runScores": [
+    95.83,
+    100,
+    86.11
+  ],
+  "noise": {
+    "floor": 5,
+    "k": 2
+  },
+  "scenarios": {
+    "red-after-fix": {
+      "median": 100,
+      "runs": [
+        100,
+        100,
+        75
+      ],
+      "passes": {
+        "red-at-base": 3,
+        "no-red-at-head": 3,
+        "same-check": 3,
+        "receipts-command": 2,
+        "door": 3,
+        "try-it": 2
+      }
+    },
+    "visual-change": {
+      "median": 100,
+      "runs": [
+        87.5,
+        100,
+        100
+      ],
+      "passes": {
+        "capture": 3,
+        "same-viewport": 3,
+        "before-from-old-code": 3,
+        "no-secrets": 3,
+        "try-it": 2,
+        "receipts-command": 3,
+        "no-desktop-recording": 3
+      }
+    },
+    "new-screen": {
+      "median": 100,
+      "runs": [
+        100,
+        100,
+        83.33
+      ],
+      "passes": {
+        "before-absent": 3,
+        "capture-after": 3,
+        "receipts-command": 3,
+        "door": 3,
+        "no-invented-before": 2
+      }
+    }
+  }
+}

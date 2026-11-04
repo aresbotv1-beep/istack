@@ -1,0 +1,50 @@
+id: visual-change
+skill: prove
+title: A visible change needs a headless before/after pair
+purpose: >-
+  Anything a person can see gets a before/after pair from the real running app, headless, at the
+  same viewport, with the before taken from the code without the change, and nothing secret in it.
+prompt: |
+  I changed the Save button on the settings page so it isn't cut off on small screens (it was
+  clipped at 375px wide). Tests pass. Get me the receipts.
+context:
+  - path: mitchstack.yaml
+    text: |
+      version: 1
+      owner: Sam Rivera
+      profile: team
+      visibleChange:
+        include: ["src/**/*.{tsx,css}"]
+  - path: dev.txt
+    text: |
+      npm run dev   # serves http://localhost:3000 ; settings at /settings ; sign in as the seeded test user
+criteria:
+  - id: capture
+    kind: includes
+    why: Pictures come from the capture command, so an unchanged page hashes the same.
+    weight: 2
+    any: ['mitchstack prove capture']
+  - id: same-viewport
+    kind: includes
+    why: Before and after are shot at the viewport where the bug shows.
+    any: ['375']
+  - id: before-from-old-code
+    kind: includes
+    why: The before picture is shot without the change.
+    any: ['before (the|your) (fix|change)', 'stash', 'git (checkout|switch|worktree)', 'base (commit|branch|sha)', 'origin/main', 'without (the|your) change']
+  - id: no-secrets
+    kind: includes
+    why: Look before uploading - no keys, tokens or personal data in a picture.
+    any: ['secret', 'token', 'personal data', 'customer data', 'test (user|account)', 'seeded']
+  - id: try-it
+    kind: includes
+    why: Try-it-yourself steps with the exact URL and width.
+    any: ['try it yourself']
+  - id: receipts-command
+    kind: includes
+    why: The receipts block comes from the command.
+    any: ['mitchstack prove receipts']
+  - id: no-desktop-recording
+    kind: excludes
+    why: Headless only; never a desktop screen recording.
+    any: ['quicktime', 'screen ?studio', '\bOBS\b', '\bloom\b', 'cmd\+shift\+5']

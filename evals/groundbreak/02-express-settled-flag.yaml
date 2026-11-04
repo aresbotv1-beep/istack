@@ -1,0 +1,91 @@
+id: express-settled-flag
+skill: groundbreak
+title: A settled small flag gets the express lane, not the full engine
+purpose: >-
+  The express-lane trigger: a named, two-way change with its acceptance check already written must
+  get a short ranked grill that ends on "how will you know I'm wrong", never the brainstorm.
+prompt: |
+  Add a `--json` flag to `tally status` that prints the same three fields as one JSON object, so I
+  can pipe it into jq. Done when `tally status --json | jq .running` prints a number.
+context:
+  - path: src/commands/status.ts
+    text: |
+      import type { Db } from "../db.js";
+
+      export interface Status {
+        jobs: number;
+        running: number;
+        lastRun: string | null;
+      }
+
+      export function collectStatus(db: Db): Status {
+        return { jobs: db.count("jobs"), running: db.count("jobs", { state: "running" }), lastRun: db.lastRunAt() };
+      }
+
+      export function printStatus(s: Status, out: (line: string) => void = console.log): void {
+        out(`jobs ${s.jobs} · running ${s.running} · last run ${s.lastRun ?? "never"}`);
+      }
+  - path: src/cli.ts
+    text: |
+      import { parseArgs } from "node:util";
+      // Each command parses its own flags. `tally list --quiet` is the existing example.
+      export async function main(argv: string[]) {
+        const [command, ...rest] = argv;
+        if (command === "list") {
+          const { values } = parseArgs({ args: rest, options: { quiet: { type: "boolean" } } });
+          return list({ quiet: values.quiet ?? false });
+        }
+        if (command === "status") return printStatus(collectStatus(openDb()));
+        console.error(`unknown command ${command}`);
+        process.exitCode = 1;
+      }
+  - path: package.json
+    text: |
+      { "name": "tally", "type": "module", "scripts": { "test": "vitest run", "typecheck": "tsc --noEmit" } }
+  - path: test/status.test.ts
+    text: |
+      import { expect, it } from "vitest";
+      import { printStatus } from "../src/commands/status.js";
+      it("prints one line", () => {
+        const lines: string[] = [];
+        printStatus({ jobs: 3, running: 1, lastRun: null }, (l) => lines.push(l));
+        expect(lines).toEqual(["jobs 3 · running 1 · last run never"]);
+      });
+criteria:
+  - id: lane-express
+    kind: includes
+    why: A named two-way change with its check written takes the express lane.
+    weight: 2
+    any: ['express lane', 'lane:\**\s*express', 'express\b[^.\n]{0,20}\blane']
+  - id: no-full-engine
+    kind: excludes
+    why: Settled work is never dragged through the brainstorm.
+    weight: 2
+    any: ['launch post', 'board audit', 'wall of ideas', '\bthe hunt\b', 'research doc', '\bMusk\b', '\bThiel\b', '\bFeynman\b', '\b(8|eight) phases\b']
+  - id: last-question-wrong
+    kind: last-question
+    why: '"How will you know I''m wrong?" is always the last question.'
+    weight: 2
+    of: asked-questions
+    pattern: 'know[^?]{0,40}wrong'
+  - id: at-most-five
+    kind: count
+    why: At most five questions a round, plus the last one.
+    of: asked-questions
+    max: 6
+  - id: shows-cut-count
+    kind: includes
+    why: The cut count shows the owner the question bar working.
+    any: ['\bcut\s+\d+', '\d+\s+cut\b']
+  - id: no-asking-known-facts
+    kind: excludes
+    why: The files answer which fields and which test runner; those are facts, not questions.
+    any: ['(which|what) (test (runner|framework)|fields?)[^.?\n]*\?', 'what should the (json|output) (contain|include)[^?\n]*\?']
+  - id: recommends
+    kind: includes
+    why: Every question carries a recommendation.
+    any: ['recommend', 'my pick', 'I''d pick', 'I would pick']
+  - id: short
+    kind: max-words
+    why: The express lane is short; it is not a design document.
+    max: 700

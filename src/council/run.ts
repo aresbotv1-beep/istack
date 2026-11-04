@@ -79,6 +79,11 @@ export interface CouncilInput {
   seed: number;
   now?: () => string;
   options?: Partial<CouncilOptions>;
+  /**
+   * Replaces the neutral picture rubric, for councils over something other than screenshots (the
+   * skill evals score text replies). It must stay neutral: no goal, no expected answer, no roles.
+   */
+  rubric?: string;
 }
 
 export type CouncilOutcome =
@@ -205,6 +210,7 @@ export async function runCouncil(input: CouncilInput): Promise<CouncilResult> {
     ? ["before", "after", "control"]
     : ["after", "control"];
   const random = seededRandom(input.seed);
+  const rubric = input.rubric ?? RUBRIC;
 
   for (const [index, judge] of judges.entries()) {
     const record: JudgeRound = {
@@ -217,7 +223,7 @@ export async function runCouncil(input: CouncilInput): Promise<CouncilResult> {
 
     const call = async (phase: Sample["phase"]): Promise<Sample | "budget"> => {
       if (log.spentUsd + price(judge) > log.budgetUsd + 1e-9) return "budget";
-      const sample = await callJudge(judge, phase, roles, input.pictures, random);
+      const sample = await callJudge(judge, phase, roles, input.pictures, random, rubric);
       record.samples.push(sample);
       log.spentUsd += sample.costUsd;
       round.costUsd += sample.costUsd;
@@ -283,6 +289,7 @@ async function callJudge(
   roles: Role[],
   pictures: CouncilInput["pictures"],
   random: () => number,
+  rubric: string,
 ): Promise<Sample> {
   const order = shuffle(roles, random);
   const shown = order.map((role, i) => ({
@@ -291,7 +298,7 @@ async function callJudge(
   }));
   let reply: JudgeReply;
   try {
-    reply = await judge.score({ rubric: RUBRIC, pictures: shown });
+    reply = await judge.score({ rubric, pictures: shown });
   } catch (error) {
     reply = { kind: "error", message: (error as Error).message };
   }

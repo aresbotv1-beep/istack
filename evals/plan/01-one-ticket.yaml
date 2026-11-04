@@ -1,0 +1,66 @@
+id: one-ticket
+skill: plan
+title: A draft ticket from the express lane becomes a yes-able ticket
+purpose: >-
+  One ticket skips the spec, fills the template, opens with the ask in three plain sentences,
+  surfaces taste choices, and stops at gate 1 naming the commit it covers.
+prompt: |
+  Here's the draft ticket from the grill. Plan it.
+context:
+  - path: drafts/status-json.md
+    text: |
+      # Draft — `tally status --json`
+      Change: add --json to status, same fields (jobs, running, lastRun) as one JSON object.
+      Owner's answers from the grill:
+      - Errors in JSON mode: "a JSON error object on stdout, exit 1."
+      - How will you know I'm wrong: "my cron script pipes it into jq and the job count is wrong or jq fails."
+      Open: the flag could be called --json or --format json.
+  - path: templates/ticket.md
+    text: |
+      # <Ticket id> — <short title>
+      ## The ask
+      - **Change:** <what will be different, for whom>
+      - **Could break:** <the most likely way this goes wrong>
+      - **You'll know I'm wrong:** <the thing the owner will see if it did>
+      ## Scope
+      ## Out of scope
+      ## Designated builder
+      ## Independent reviewers
+      ## Files and reuse
+      ## Acceptance
+      ## Required evidence
+      ## Decided for you
+      ## Before asking for the yes
+  - path: git-head.txt
+    text: |
+      HEAD 4f9c2ab on main (clean)
+criteria:
+  - id: the-ask
+    kind: includes
+    why: The ticket opens with the ask - what changes, what could break, how you will know.
+    weight: 2
+    all: ['change', 'could break', 'know[^.\n]{0,30}wrong']
+  - id: no-spec-for-one
+    kind: excludes
+    why: One ticket skips the spec.
+    any: ['docs/spec/[\w./-]+\.md']
+  - id: decided-for-you
+    kind: includes
+    why: Taste choices (the flag name) are decided and surfaced so the owner can overrule them.
+    any: ['decided for you']
+  - id: acceptance-observable
+    kind: includes
+    why: The acceptance check is the owner's observable answer, the jq pipe.
+    any: ['\bjq\b']
+  - id: names-commit
+    kind: includes
+    why: The yes names the file and commit it covers.
+    any: ['4f9c2ab']
+  - id: asks-for-yes
+    kind: includes
+    why: Plan ends at gate 1 with a request for the owner's yes.
+    any: ['gate 1', '(your|the owner''s|for the) yes', 'say yes', 'approve (it|this|the ticket)']
+  - id: no-code
+    kind: excludes
+    why: Plan writes no product code.
+    any: ['```(ts|typescript|js|javascript|tsx)']

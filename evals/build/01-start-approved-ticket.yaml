@@ -1,0 +1,54 @@
+id: start-approved-ticket
+skill: build
+title: Starting an approved ticket while sitting on main
+purpose: >-
+  Build isolates first (worktree, its own environment, scope check of open PRs), writes the
+  seven-part brief, and plans the red receipt before the fix.
+prompt: |
+  Ticket T3 (tally status --json) is approved. Go build it.
+context:
+  - path: git-status.txt
+    text: |
+      On branch main
+      Your branch is up to date with 'origin/main'.
+      nothing to commit, working tree clean
+  - path: mitchstack.yaml
+    text: |
+      version: 1
+      owner: Sam Rivera
+      profile: team
+      checks:
+        - { name: test, run: npm test }
+        - { name: typecheck, run: npm run typecheck }
+      env:
+        ports: { from: 4100, to: 4999, names: [web] }
+  - path: docs/tickets/T3.md
+    text: |
+      # T3 — tally status --json
+      Change: `tally status --json` prints jobs, running and lastRun as one JSON object.
+      Could break: a cron script parsing the old text output.
+      You'll know I'm wrong: `tally status --json | jq .running` fails or prints the wrong count.
+      Owner's yes: "yes, build T3".
+criteria:
+  - id: isolates
+    kind: includes
+    why: Never build on the default branch; make a worktree first.
+    weight: 2
+    any: ['worktree']
+  - id: env-up
+    kind: includes
+    why: The worktree gets its own ports and env from mitchstack env.
+    any: ['mitchstack env up']
+  - id: scope-check
+    kind: includes
+    why: Open PRs are scope-checked before building.
+    any: ['gh pr (list|diff)', 'open (pull requests|PRs)']
+  - id: seven-part-brief
+    kind: includes
+    why: The brief has all seven parts.
+    weight: 2
+    all: ['impact', 'no-compromise', 'pushback', 'unknowns', 'early exit', 'end state']
+  - id: red-first
+    kind: includes
+    why: The problem is shown failing before it is fixed.
+    any: ['\bred\b', 'failing test', 'fails first', 'fail before']
