@@ -1,6 +1,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { renderCouncilScores } from "../council/markdown.js";
+import type { CouncilLog } from "../council/schema.js";
 import { writeReceipts } from "../receipts/write.js";
 import type { FieldError } from "../result.js";
 import type { Ledger } from "../review/ledger.js";
@@ -15,6 +17,8 @@ export interface PrBodyInput {
   /** Required: exact steps someone can finish in about 30 seconds. */
   tryItYourself?: string[];
   reviews: Ledger[];
+  /** The council run log (factory profile). Absent: no council block, and scores stay "no score". */
+  council?: CouncilLog;
   risks: string[];
   /** Receipts without the door; the door comes from mergeDanger so it is written once. */
   receipts: { head: string; claims: unknown[]; noVisibleChange?: string };
@@ -28,6 +32,7 @@ const SLOTS = [
   "mergeDanger",
   "tryItYourself",
   "reviewerVerdicts",
+  "councilScores",
   "openDisputes",
   "risks",
   "receipts",
@@ -85,13 +90,16 @@ export function renderPrBody(input: PrBodyInput, template = loadPrBodyTemplate()
     mergeDanger: `**Door:** ${DOORS[door]}\n\n**Blast radius:** ${blastRadius}`,
     tryItYourself: steps.map((s, i) => `${i + 1}. ${s}`).join("\n"),
     reviewerVerdicts: renderReviewerVerdicts(input.reviews),
+    councilScores: input.council ? renderCouncilScores(input.council) : "",
     openDisputes: renderOpenDisputes(input.reviews),
     risks:
       input.risks.length === 0 ? "None known." : input.risks.map((r) => `- ${r.trim()}`).join("\n"),
     receipts: receiptsBlock,
   };
+  // No council: drop its line so the body has no empty gap where the block would be.
+  const shaped = input.council ? template : template.replace(/\{\{councilScores\}\}\n*/, "");
   // One pass, so a placeholder that appears inside user text is left alone.
-  const body = template.replace(/\{\{(\w+)\}\}/g, (match, name: string) =>
+  const body = shaped.replace(/\{\{(\w+)\}\}/g, (match, name: string) =>
     (SLOTS as readonly string[]).includes(name) ? values[name as Slot] : match,
   );
   return { ok: true, body };

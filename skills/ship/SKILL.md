@@ -129,9 +129,18 @@ run ends when the owner has the URL.
 
 ## Council (factory profile)
 
-> **Placeholder.** The scored council for the `factory` profile (several providers score
-> before/after pictures, with a control) is added by a later ticket. Until then this section
-> does nothing, and the PR body's verdict table shows "no score".
+AI judges from several providers score the before/after pictures out of 10, with a control
+picture in every call to catch judges drifting. Full rules: [council.md](council.md).
+
+- **Runs only** with `profile: factory`, `council.enabled: true`, a visible change or a one-way
+  door, and judges from at least 2 providers. After the first round, only when a visible file
+  changed since the last round.
+- **Run it** after the pictures are captured and before writing the body:
+  `mitchstack ship council --before … --after … --control … --head … --changed … --log …`,
+  then add `"councilLog"` to `body.json`.
+- **Scores are measurements, never a merge gate.** A round whose control leaves its band is
+  discarded and shows no numbers. An exhausted budget shows "no council (budget)". A missing
+  score says "no score". Never type a score by hand.
 
 ## Done means
 
