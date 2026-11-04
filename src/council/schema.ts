@@ -55,6 +55,11 @@ const round = z.strictObject({
   reason: z.string(),
   judges: z.array(judgeRound),
   costUsd: z.number().min(0),
+  /**
+   * How far past the budget this round's last call took the log. The budget is checked before
+   * each call on estimates and measured spend, so one call can still report more than was left.
+   */
+  overrunUsd: z.number().positive().optional(),
 });
 
 export const councilLogSchema = z.strictObject({

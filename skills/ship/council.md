@@ -61,9 +61,15 @@ for the whole PR and pass it to the body: `"councilLog": ".artifacts/council.jso
 6. **Drift check.** If any judge's control median for the round falls outside its band, the
    **whole round is discarded**: none of its numbers reach the PR body, the drifting judge is
    named, and the remaining judges are not called. The drifted score stays in the log for audit.
-7. **Budget.** `council.budgetUsdPerPr` caps the PR's total spend. A round whose estimated cost
-   does not fit never starts; a call that would cross the cap is never made. Either way the
-   result is **no council (budget)** — never a partial table.
+7. **Budget.** `council.budgetUsdPerPr` is the PR's council budget, **checked before each call**
+   on estimates plus measured spend. A round whose estimated cost does not fit never starts; a
+   call whose price does not fit in what is left is never made. Either way the result is
+   **no council (budget)** — never a partial table. It is **not a hard cap**: a call can cost
+   more than its estimate. Each call is told what is left, and `claude -p` gets it as
+   `--max-budget-usd`; `codex exec` and `cursor-agent` take no spend limit. A call that still
+   goes over ends the round as **no council (budget)**, the overrun is recorded on the round in
+   the log, and the PR body says by how much. So the budget can be exceeded by at most one
+   call's overrun.
 
 ## Cost
 
@@ -83,6 +89,9 @@ Under **Reviewer verdicts**, a **Council scores** block from the latest round on
   without a score says "no score" with the reason.
 - **discarded**: "No council scores", which judge drifted, and no numbers from that round.
 - **no council (budget)**: the reason, no numbers.
+
+The cost line says what was spent against the budget, and an **Overrun** note when spending went
+past it.
 
 Older rounds are listed by status and cost, never by score: they scored older pictures. The
 "Score" column of the reviewer table still says "no score" — reviewers are not judges.

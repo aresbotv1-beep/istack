@@ -1,9 +1,10 @@
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { runClimbCli } from "../src/climb/cli.js";
+import { runClimb } from "../src/climb/engine.js";
 import type { Judge } from "../src/council/run.js";
 
 /**
@@ -148,6 +149,55 @@ describe("mitchstack climb run", () => {
     expect(tracked.err).toMatch(/not git-ignored/);
   });
 
+  // F5: git clean -fd leaves ignored files alone, so a rejected move could leave them changed.
+  it("restores ignored files on revert: removes what the move created, restores what it changed", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "ms-climb-ignored-"));
+    writeFileSync(join(dir, ".gitignore"), ".artifacts/\ncache.txt\nuser-data.txt\nlocal.env\n");
+    writeFileSync(join(dir, "quality.txt"), "5");
+    writeFileSync(
+      join(dir, "bench.mjs"),
+      "import {readFileSync} from 'node:fs'; console.log(Number(readFileSync('quality.txt','utf8')));",
+    );
+    writeFileSync(
+      join(dir, "plan.json"),
+      JSON.stringify({
+        target: 9,
+        minAttempts: 1,
+        runs: 3,
+        noiseFloor: 0.1,
+        k: 2,
+        harness: "node bench.mjs",
+        frozen: ["bench.mjs"],
+        sensitivity: { id: "bad", apply: "echo 1 > quality.txt" },
+        moves: [
+          {
+            id: "rejected",
+            apply: "echo 4 > quality.txt; echo contaminated > cache.txt; echo changed > local.env",
+            expectedGain: 1,
+            cost: 1,
+          },
+        ],
+      }),
+    );
+    const g = (...args: string[]) => execFileSync("git", args, { cwd: dir, stdio: "pipe" });
+    g("init", "-q", "-b", "main");
+    g("config", "user.email", "climb@example.com");
+    g("config", "user.name", "Climb Fixture");
+    g("add", "-A");
+    g("commit", "-q", "-m", "base");
+    // Ignored files that were there before the climb: the user's, never deleted.
+    writeFileSync(join(dir, "user-data.txt"), "precious");
+    writeFileSync(join(dir, "local.env"), "original");
+
+    const r = await cli(["run", "--plan", "plan.json", "--log", ".artifacts/decision.tsv"], dir);
+    expect(r.out).toMatch(/climb short/);
+    expect(existsSync(join(dir, "cache.txt"))).toBe(false);
+    expect(readFileSync(join(dir, "local.env"), "utf8")).toBe("original");
+    expect(readFileSync(join(dir, "user-data.txt"), "utf8")).toBe("precious");
+    expect(readFileSync(join(dir, ".artifacts/decision.tsv"), "utf8")).toMatch(/rejected/);
+    expect(git(dir, "status", "--porcelain")).toBe("");
+  });
+
   it("refuses to climb when the planted bad change does not move the score", async () => {
     const dir = climbFixture();
     const plan = { ...FIXTURE_PLAN, sensitivity: { id: "planted-bad", apply: "echo x > x.txt" } };
@@ -235,5 +285,97 @@ describe("mitchstack climb council-score", () => {
     expect(r.code).toBe(1);
     expect(r.out).toBe("");
     expect(r.err).toMatch(/no score: round 2 discarded: control drift/);
+  });
+
+  // F3: a judge that drops out changes the instrument; the rest of the panel is not a sample.
+  const outage = (id: string, provider: string): Judge => ({
+    id,
+    provider,
+    costUsdPerCall: 0.01,
+    score: async () => ({ kind: "error", message: "provider unavailable" }),
+  });
+
+  it("gives no score when a judge from the first scored round gives none", async () => {
+    const dir = pictures();
+    const both = () => [
+      judge("low (openai)", "openai", 4),
+      judge("high (anthropic)", "anthropic", 8),
+    ];
+    expect(await cli([...args, "--log", "council.json"], dir, { judges: both })).toMatchObject({
+      code: 0,
+      out: "6",
+    });
+    const lowDown = () => [
+      outage("low (openai)", "openai"),
+      judge("high (anthropic)", "anthropic", 8),
+    ];
+    const r = await cli([...args, "--log", "council.json"], dir, { judges: lowDown });
+    expect(r.code).toBe(1);
+    expect(r.out).toBe("");
+    expect(r.err).toMatch(/no score: .*judge panel changed: low \(openai\) gave no score/);
+  });
+
+  it("never keeps an unchanged screen because its lower-scoring judge became unavailable", async () => {
+    const dir = pictures();
+    let state: "base" | "bad" | "candidate" = "base";
+    const judges = () => [
+      state === "candidate"
+        ? outage("low (openai)", "openai")
+        : judge("low (openai)", "openai", state === "bad" ? 1 : 4),
+      judge("high (anthropic)", "anthropic", state === "bad" ? 5 : 8),
+    ];
+    const commits: string[] = [];
+    const result = await runClimb({
+      target: 7,
+      minAttempts: 1,
+      runs: 3,
+      noiseFloor: 0.1,
+      k: 2,
+      confirm: true,
+      sensitivity: {
+        id: "bad",
+        expectedGain: 0,
+        cost: 1,
+        apply: async () => {
+          state = "bad";
+        },
+        revert: async () => {
+          state = "base";
+        },
+      },
+      moves: [
+        {
+          id: "unchanged-ui",
+          expectedGain: 1,
+          cost: 1,
+          apply: async () => {
+            state = "candidate";
+          },
+          revert: async () => {
+            state = "base";
+          },
+        },
+      ],
+      harness: {
+        fingerprint: async () => "frozen",
+        measure: async (n) => {
+          const scores: number[] = [];
+          for (let i = 0; i < n; i += 1) {
+            const r = await cli([...args, "--log", "council.json"], dir, { judges });
+            scores.push(r.code === 0 ? Number(r.out) : Number.NaN);
+          }
+          return scores;
+        },
+        regressions: async () => ({ green: true, detail: "" }),
+        restored: async () => true,
+        commit: async (c) => {
+          commits.push(c.id);
+        },
+      },
+    });
+    expect(result.kept).toEqual([]);
+    expect(commits).toEqual([]);
+    expect(result.status).toBe("short");
+    expect(result.rows.find((r) => r.change === "unchanged-ui")?.decision).toBe("revert");
   });
 });

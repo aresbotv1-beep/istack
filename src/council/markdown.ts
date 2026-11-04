@@ -69,7 +69,17 @@ function costLine(log: CouncilLog): string {
         : measured === 0
           ? "estimated from the price table"
           : `${measured} of ${samples.length} calls measured, the rest estimated`;
-  return `Council cost: ${usd(log.spentUsd)} of the ${usd(log.budgetUsd)} per-PR budget (${basis}).`;
+  const line = `Council cost: ${usd(log.spentUsd)} of the ${usd(log.budgetUsd)} per-PR budget, checked before each call (${basis}).`;
+  const over = roundCents(log.spentUsd - log.budgetUsd);
+  if (over <= 0) return line;
+  // The budget is admitted on estimates and measured spend; a call can still cost more than was left.
+  const rounds = log.rounds.filter((r) => r.overrunUsd).map((r) => r.number);
+  const where = rounds.length > 0 ? ` (round ${rounds.join(", ")})` : "";
+  return `${line} **Overrun:** spending went over the ${usd(log.budgetUsd)} budget by ${usd(over)}${where}: a call cost more than was left. The budget is not a hard cap.`;
+}
+
+function roundCents(value: number): number {
+  return Math.round(value * 100) / 100;
 }
 
 function short(sha: string): string {
