@@ -2,10 +2,12 @@ import { appendFileSync, existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { runProveCli } from "./capture/cli.js";
+import { runClimbCli } from "./climb/cli.js";
 import { loadConfig } from "./config/load.js";
 import { runEnvCli } from "./env/cli.js";
 import type { FetchLike } from "./receipts/github.js";
 import { renderSummary, runReceiptsCheck } from "./receipts/run.js";
+import { runVerifyCli } from "./receipts/verify/cli.js";
 import { runShipCli } from "./ship/cli.js";
 
 export interface CliIo {
@@ -21,9 +23,11 @@ export interface CliIo {
 const USAGE = [
   "usage: mitchstack config check [path-to-mitchstack.yaml]",
   "       mitchstack receipts check [--event path] [--config path] [--files path]",
+  "       mitchstack receipts verify ...",
   "       mitchstack prove capture --url <url> --out <png> | prove receipts --from <claims.json>",
   "       mitchstack ship reviewer|review|body|watch ...",
   "       mitchstack env up|status|down|check-port ...",
+  "       mitchstack climb ladder|run|council-score ...",
 ].join("\n");
 
 /** Returns the process exit code. */
@@ -31,9 +35,11 @@ export async function runCli(args: string[], io: CliIo): Promise<number> {
   const [group, command, ...rest] = args;
   if (group === "config" && command === "check") return configCheck(rest[0], io);
   if (group === "receipts" && command === "check") return receiptsCheck(rest, io);
+  if (group === "receipts" && command === "verify") return runVerifyCli(rest, io);
   if (group === "prove") return runProveCli(args.slice(1), io);
   if (group === "ship") return runShipCli(args.slice(1), io);
   if (group === "env") return runEnvCli(args.slice(1), io);
+  if (group === "climb") return runClimbCli(args.slice(1), io);
   io.err(USAGE);
   return 2;
 }

@@ -185,3 +185,16 @@ describe("ship and env (wired into the main CLI)", () => {
     }
   });
 });
+
+describe("climb and receipts verify (wired into the main CLI)", () => {
+  it("routes 'climb' and 'receipts verify' instead of printing the top-level usage", async () => {
+    for (const args of [
+      ["climb", "--definitely-not-a-flag"],
+      ["receipts", "verify", "--definitely-not-a-flag"],
+    ]) {
+      const err: string[] = [];
+      await runCli(args, { cwd: tmpdir(), out: () => {}, err: (l) => err.push(l) });
+      expect(err.join("\n"), args.join(" ")).not.toMatch(/^usage: mitchstack config check/m);
+    }
+  });
+});
