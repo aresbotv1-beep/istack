@@ -206,7 +206,7 @@ async function council(flags: Map<string, string>, io: CliIo, deps: ShipDeps): P
  * Copy each picture to a fresh directory under a name made from its content hash, so nothing a
  * judge can see (file name, folder) says which picture is the before, the after or the control.
  */
-function stagePictures(
+export function stagePictures(
   paths: { before?: string; after: string; control: string },
   cwd: string,
 ):
@@ -352,7 +352,7 @@ function readJson<T>(flags: Map<string, string>, io: CliIo, schema: z.ZodType<T>
 }
 
 /** Whether an executable file with this name is on PATH. Looks only; runs nothing. */
-function onPath(name: string, path: string): boolean {
+export function onPath(name: string, path: string): boolean {
   return path
     .split(delimiter)
     .filter(Boolean)
