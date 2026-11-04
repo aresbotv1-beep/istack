@@ -39,3 +39,25 @@ ownershipGates:
 council:
   enabled: false
   budgetUsdPerPr: 10
+
+# Per-worktree environment for `mitchstack env up`. Every worktree leases its own ports from the
+# range (recorded in the repo's shared git dir, so two worktrees never collide; `env down` frees
+# them). Ports named in ownershipGates ("port 5432") are never handed out.
+env:
+  ports:
+    from: 4100
+    to: 4999
+    names: [web, api]
+  # Copied from the main checkout when the worktree lacks them; listed keys get this worktree's
+  # ports. Values are never printed.
+  files:
+    - path: .env.local
+      set:
+        PORT: web
+        API_URL: "http://127.0.0.1:{{api}}"
+  # Optional. Runs only with `env up --db`; refused in the main checkout and for any create
+  # command that wipes or migrates.
+  # database:
+  #   name: "{{repo}}_{{worktree}}"
+  #   create: "createdb {{name}}"
+  #   drop: "dropdb {{name}}"

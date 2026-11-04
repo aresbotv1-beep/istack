@@ -47,6 +47,24 @@ describe("loadConfig", () => {
     }
   });
 
+  it("defaults the env section and validates port names used by env files", () => {
+    const base =
+      "version: 1\nowner: Sam\nprofile: solo\nchecks:\n  - name: test\n    run: npm test\n";
+    const plain = loadConfig(base);
+    expect(plain.ok && plain.config.env.ports).toEqual({ from: 4100, to: 4999, names: ["web"] });
+    const bad = loadConfig(
+      `${base}env:\n  files:\n    - path: .env.local\n      set:\n        PORT: "{{nope}}"\n`,
+    );
+    expect(bad.ok).toBe(false);
+    if (!bad.ok) expect(bad.errors[0]?.path).toBe("env.files.0.set.PORT");
+    if (example.includes("env:")) {
+      const shipped = loadConfig(example);
+      expect(shipped.ok && shipped.config.env.files.length).toBeGreaterThan(0);
+    } else {
+      expect.fail("mitchstack.yaml.example should show an env section");
+    }
+  });
+
   it("refuses council in the solo profile", () => {
     const result = loadConfig(
       "version: 1\nowner: Sam\nprofile: solo\nchecks:\n  - name: test\n    run: npm test\ncouncil:\n  enabled: true\n  budgetUsdPerPr: 5\n",

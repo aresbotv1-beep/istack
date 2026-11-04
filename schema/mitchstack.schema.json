@@ -132,6 +132,116 @@
         }
       },
       "additionalProperties": false
+    },
+    "env": {
+      "default": {
+        "ports": {
+          "from": 4100,
+          "to": 4999,
+          "names": [
+            "web"
+          ]
+        },
+        "files": []
+      },
+      "type": "object",
+      "properties": {
+        "ports": {
+          "default": {
+            "from": 4100,
+            "to": 4999,
+            "names": [
+              "web"
+            ]
+          },
+          "description": "each worktree leases one port per name from this range",
+          "type": "object",
+          "properties": {
+            "from": {
+              "default": 4100,
+              "type": "integer",
+              "minimum": 1024,
+              "maximum": 65535
+            },
+            "to": {
+              "default": 4999,
+              "type": "integer",
+              "minimum": 1024,
+              "maximum": 65535
+            },
+            "names": {
+              "default": [
+                "web"
+              ],
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "files": {
+          "default": [],
+          "description": "copied from the main checkout when absent, with port keys rewritten",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "description": "relative to the checkout, e.g. .env.local"
+              },
+              "set": {
+                "default": {},
+                "description": "KEY: port name or template, e.g. PORT: web, API_URL: 'http://127.0.0.1:{{api}}'",
+                "type": "object",
+                "propertyNames": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+                },
+                "additionalProperties": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "required": [
+              "path"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "database": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "default": "{{repo}}_{{worktree}}",
+              "description": "must include {{worktree}} so each worktree gets its own",
+              "type": "string",
+              "minLength": 1
+            },
+            "create": {
+              "type": "string",
+              "minLength": 1,
+              "description": "shell command, e.g. 'createdb {{name}}'"
+            },
+            "drop": {
+              "description": "run on 'env down --db', e.g. 'dropdb {{name}}'",
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "create"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
     }
   },
   "required": [
