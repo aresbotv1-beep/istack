@@ -1,23 +1,23 @@
 {
   "version": 1,
   "skill": "build",
-  "skillHash": "8f00bd9ab3a0bef7567987dbf274387e7767e7594d18b9bca5a9f79342d21dec",
+  "skillHash": "384603e0d1d17218c0a8bb2286182a55c1b308e5c12e5a6d0daf64a1bd8142f0",
   "scenariosHash": "71202edb1cc2bf9a735758f6876ca44f3479d9d65a1ff8b0f09aa20aba8d8dce",
   "producedBy": {
     "runner": "claude -p",
     "provider": "anthropic",
     "model": "claude-sonnet-5-5",
     "runs": 3,
-    "date": "2026-11-04",
+    "date": "2026-11-05",
     "mode": "deterministic",
-    "costUsd": 0.129328,
+    "costUsd": 0.146293,
     "costSource": "measured"
   },
   "score": 100,
   "runScores": [
     100,
     100,
-    100
+    93.33
   ],
   "noise": {
     "floor": 5,
@@ -44,11 +44,11 @@
       "runs": [
         100,
         100,
-        100
+        80
       ],
       "passes": {
         "check-port": 3,
-        "does-not-trust": 3,
+        "does-not-trust": 2,
         "no-claimed-result": 3
       }
     },

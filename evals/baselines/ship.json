@@ -1,22 +1,22 @@
 {
   "version": 1,
   "skill": "ship",
-  "skillHash": "7c28e22e3336826db01f396831f6175330ad08bf073cdf99390095dd12020ebb",
+  "skillHash": "ac9a7a6148e9aa8aecccda4238227166c963f4934a26987195e1152118ab2ca3",
   "scenariosHash": "21d3851202fd377214b6c6dd68ebab2b2e1eac0dec6e39d25e764ed3c088063b",
   "producedBy": {
     "runner": "claude -p",
     "provider": "anthropic",
     "model": "claude-sonnet-5-5",
     "runs": 3,
-    "date": "2026-11-04",
+    "date": "2026-11-05",
     "mode": "deterministic",
-    "costUsd": 0.138051,
+    "costUsd": 0.127996,
     "costSource": "measured"
   },
-  "score": 100,
+  "score": 95.24,
   "runScores": [
     100,
-    100,
+    94.44,
     95.24
   ],
   "noise": {
@@ -43,14 +43,14 @@
       "median": 100,
       "runs": [
         100,
-        100,
+        83.33,
         100
       ],
       "passes": {
         "same-provider-label": 3,
         "reviewer-command": 3,
         "fresh-context": 3,
-        "reply-format": 3,
+        "reply-format": 2,
         "not-self-approved": 3
       }
     },

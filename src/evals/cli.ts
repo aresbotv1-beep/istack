@@ -25,6 +25,7 @@ const USAGE = [
   "       mitchstack evals run      --skill <name|all> [options]   score now; last line is the score",
   "       mitchstack evals baseline --skill <name|all> [options]   write evals/baselines/<skill>.json",
   "       mitchstack evals compare  --skill <name|all> [options] [--from results.json]",
+  "       (baseline --from results.json writes the baseline from a saved run of the current skill)",
   "options: --runs <n> (3)  --runner claude|codex (claude)  --model <id>  --budget <usd> (2)",
   "         --taste (council-score taste criteria; off by default)  --degrade <spec.json>",
   "         --noise-floor <points> (5)  --k <n> (2)  --out <results.json>  --transcript <file.jsonl>",
@@ -69,7 +70,7 @@ export async function runEvalsCli(
   let saved: EvalResult[] | undefined;
   const from = flags.get("from");
   if (from) {
-    if (command !== "compare") return usage(io, "--from only goes with compare");
+    if (command === "run") return usage(io, "--from only goes with compare or baseline");
     try {
       saved = (JSON.parse(readFileSync(resolve(io.cwd, from), "utf8")) as { results: EvalResult[] })
         .results;
@@ -112,6 +113,10 @@ export async function runEvalsCli(
       result = saved.find((r) => r.skill === name);
       if (!result) {
         io.err(`${from} has no result for ${name}`);
+        return 2;
+      }
+      if (command === "baseline" && result.skillHash !== loadSkill(io.cwd, name).hash) {
+        io.err(`${from}: ${name} was scored on other skill text (or degraded); not a baseline`);
         return 2;
       }
     } else {
@@ -218,22 +223,28 @@ function printResult(io: CliIo, r: EvalResult): void {
 
 function list(io: CliIo): number {
   const skills = skillsWithEvals(io.cwd);
-  io.out("| skill | scenarios | baseline | produced by |");
-  io.out("|---|---|---|---|");
+  io.out("| skill | scenarios | baseline | produced by | current |");
+  io.out("|---|---|---|---|---|");
   for (const name of skills) {
-    const n = loadScenarios(io.cwd, name).scenarios.length;
+    const scenarios = loadScenarios(io.cwd, name);
     const path = baselinePath(io.cwd, name);
     let score = "missing";
     let by = "-";
+    let current = "-";
     if (existsSync(path)) {
       const parsed = baselineSchema.safeParse(JSON.parse(readFileSync(path, "utf8")));
       if (parsed.success) {
         const p = parsed.data.producedBy;
         score = String(parsed.data.score);
         by = `${p.runner} · ${p.model} · N=${p.runs} · ${p.mode} · ${p.date}`;
+        // A baseline scores one exact text; after an edit it describes a skill that is gone.
+        if (parsed.data.skillHash !== loadSkill(io.cwd, name).hash)
+          current = "stale: skill changed";
+        else if (parsed.data.scenariosHash !== scenarios.hash) current = "stale: scenarios changed";
+        else current = "yes";
       } else score = "invalid";
     }
-    io.out(`| ${name} | ${n} | ${score} | ${by} |`);
+    io.out(`| ${name} | ${scenarios.scenarios.length} | ${score} | ${by} | ${current} |`);
   }
   return 0;
 }

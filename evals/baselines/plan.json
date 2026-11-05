@@ -7,17 +7,19 @@
     "runner": "claude -p",
     "provider": "anthropic",
     "model": "claude-sonnet-5-5",
-    "runs": 3,
-    "date": "2026-11-04",
+    "runs": 5,
+    "date": "2026-11-05",
     "mode": "deterministic",
-    "costUsd": 0.145976,
+    "costUsd": 0.224532,
     "costSource": "measured"
   },
   "score": 77.28,
   "runScores": [
-    81.82,
+    95.46,
     77.28,
-    77.28
+    77.28,
+    77.28,
+    90.91
   ],
   "noise": {
     "floor": 5,
@@ -29,35 +31,39 @@
       "runs": [
         100,
         100,
+        100,
+        100,
         100
       ],
       "passes": {
-        "the-ask": 3,
-        "no-spec-for-one": 3,
-        "decided-for-you": 3,
-        "acceptance-observable": 3,
-        "names-commit": 3,
-        "asks-for-yes": 3,
-        "no-code": 3
+        "the-ask": 5,
+        "no-spec-for-one": 5,
+        "decided-for-you": 5,
+        "acceptance-observable": 5,
+        "names-commit": 5,
+        "asks-for-yes": 5,
+        "no-code": 5
       }
     },
     "multi-ticket-spec": {
       "median": 54.55,
       "runs": [
-        63.64,
+        90.91,
         54.55,
-        54.55
+        54.55,
+        54.55,
+        81.82
       ],
       "passes": {
-        "seams-before-tickets": 0,
-        "seams-agreed": 3,
-        "vertical-slices": 3,
-        "blocking-edges": 1,
-        "one-pr": 0,
-        "challenge-asked": 3,
+        "seams-before-tickets": 2,
+        "seams-agreed": 4,
+        "vertical-slices": 5,
+        "blocking-edges": 3,
+        "one-pr": 2,
+        "challenge-asked": 5,
         "the-ask": 0,
-        "asks-for-yes": 3,
-        "no-code": 3
+        "asks-for-yes": 4,
+        "no-code": 5
       }
     }
   }
