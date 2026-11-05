@@ -128,6 +128,7 @@ describe("scenario files", () => {
     expect(look("fixes-in-change", "Fixed the README and added a negative-total test.")).toBe(true);
     expect(look("fixes-in-change", "Everything looks good, opening the PR?")).toBe(false);
     expect(look("fixes-in-change", "The README and the negative case are noted.")).toBe(false);
+    expect(look("fixes-in-change", "The README still says truncated. I'll update it.")).toBe(true);
     expect(look("no-tickets", "I will not leave that for the retro.")).toBe(true);
     const later = "May I open the PR? After your yes I will fix the README on t7-totals.";
     expect(look("fixes-before-yes", later)).toBe(false);

@@ -20,7 +20,7 @@ criteria:
     kind: includes
     why: The flaky test, the untried negative case or the stale README is fixed on the branch before asking.
     weight: 2
-    any: ['\b(fix|fixed|fixing|update|updated|updating|correct|corrected|add|added|adding)\b[^.\n]{0,50}(README|negative|flak|retr(y|ied))', '(README|negative|flak)[^.\n]{0,50}\b(fixed|updated|corrected|added)\b']
+    any: ['\b(fix|fixed|fixing|update|updated|updating|correct|corrected|add|added|adding)\b[^.\n]{0,50}(README|negative|flak|retr(y|ied))', '(README|negative|flak)[^\n]{0,120}\b(fix|fixed|update|updated|correct|corrected|add|added)\b']
   - id: on-branch
     kind: includes
     why: In-change fixes go on this branch, re-proven, before the PR yes.
