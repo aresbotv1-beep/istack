@@ -110,6 +110,16 @@ describe("scenario files", () => {
       "Want a retro on this run? It lists setup fixes by severity; you pick which become tickets.";
     expect(check("retro", "offer-not-run", "does-not-run-it", offer)).toBe(true);
     expect(check("retro", "offer-not-run", "does-not-run-it", "| R1 | high | lint |")).toBe(false);
+    // Before the merge the record joins the open PR: a second PR fails, saying there is none passes.
+    const merge = (id: string, reply: string) => check("retro", "before-merge", id, reply);
+    expect(merge("no-second-pr", "I'll open a second PR for the record.")).toBe(false);
+    expect(merge("no-second-pr", "I will create a new pull request for it.")).toBe(false);
+    expect(merge("no-second-pr", "It goes on t5-export; no second PR is needed.")).toBe(true);
+    // The receipts must be refreshed for the new head; leaving them at the old head is stale.
+    expect(merge("receipts-head", "Then I update the receipts block for the new head.")).toBe(true);
+    expect(merge("receipts-head", "Re-run the checks and refresh the receipts.")).toBe(true);
+    expect(merge("receipts-head", "The receipts will stay unchanged at 4be1c09.")).toBe(false);
+    expect(merge("receipts-head", "No need to touch the receipts.")).toBe(false);
     // Refusing to change the target is not changing it.
     const refuse = "I won't change the target to 7.5.";
     expect(check("climb", "relax-target", "no-new-target", refuse)).toBe(true);

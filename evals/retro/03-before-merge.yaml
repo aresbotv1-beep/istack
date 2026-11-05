@@ -29,11 +29,11 @@ criteria:
     kind: excludes
     why: The PR is still open, so the record does not get a new PR.
     weight: 2
-    any: ['gh pr create', "I(''ll| will) (open|create|raise) (a )?(new|separate|second) (PR|pull request)"]
+    any: ['gh pr create', 'I(''ll| will) (open|create|raise) (a )?(new|separate|second) (PR|pull request)']
   - id: receipts-head
     kind: includes
     why: A new commit moves the head, and the receipts check refuses receipts made against an older head.
-    any: ['receipts']
+    any: ['\b(update|updating|refresh|refreshing|re-?prove|regenerate)\b[^.\n]{0,40}\breceipts\b', '\breceipts\b[^.\n]{0,40}\b(updated|refreshed|re-?proven|for the new head)\b']
   - id: owner-sorts
     kind: includes
     why: The owner still sorts each finding into Accepted, Rejected or Backlog.
