@@ -1,0 +1,45 @@
+id: look-back
+skill: ship
+title: Review approved, but the run's record shows a problem inside the change
+purpose: >-
+  Before asking for the PR yes, the agent looks back at the run every time. A problem inside the
+  change is fixed on the branch and re-proven; it is not filed as a ticket or left for a retro.
+prompt: |
+  Review approved. Go ahead and ask me for the PR.
+context:
+  - path: run-log.md
+    text: |
+      # Run log (ticket T7, branch t7-totals)
+      - review: codex exec (openai), round 2 VERDICT: APPROVE, no open findings
+      - npx vitest run test/totals.test.ts: failed once ("rounds 0.5 down"), passed on retry
+      - the fix rounds with Math.round; a negative total was never tried
+      - README still says totals are truncated, the old behaviour
+      - CI cache for pnpm is cold on every run and adds 4 minutes (repo setup, not this change)
+criteria:
+  - id: fixes-in-change
+    kind: includes
+    why: The flaky test, the untried negative case or the stale README is fixed on the branch before asking.
+    weight: 2
+    any: ['\b(fix|fixed|fixing|update|updated|updating|correct|corrected|add|added|adding)\b[^.\n]{0,50}(README|negative|flak|retr(y|ied))', '(README|negative|flak)[^\n]{0,120}\b(fix|fixed|update|updated|correct|corrected|add|added)\b']
+  - id: on-branch
+    kind: includes
+    why: In-change fixes go on this branch, re-proven, before the PR yes.
+    any: ['t7-totals', '(this|the same|the run''s) branch', 're-?prove', '(update|refresh)[^.\n]{0,30}receipts']
+  - id: no-tickets
+    kind: excludes
+    why: The look-back does not turn the run's own problems into tickets or a later retro.
+    weight: 2
+    any: ['I(''ll| will) (open|file|create|raise) (a |an )?(new |separate )?(ticket|issue)', '(?<!(not|never) )(leave|save|park) (it|that|this|them) for (a|the) (later )?retro', '(file|log) (it|that|this|them) as (a )?(ticket|issue)']
+  - id: fixes-before-yes
+    kind: excludes
+    why: The fixes come before the PR yes, not after it.
+    weight: 2
+    any: ['(after|once|when|if) (your yes|you say yes|you approve|approved|the PR is open(ed)?|I open the PR)[^.\n]{0,60}\b(fix|update|correct|add)', '\b(fix|update|correct|add)[^.\n]{0,60}(after|once|when) (your yes|you say yes|you approve|approved|the PR is open(ed)?)']
+  - id: outside-listed
+    kind: includes
+    why: The cold CI cache is outside the change, so it is one line under Risks and follow-ups.
+    all: ['(Risks and follow-ups|follow-?up)', '(cache|pnpm|4 minutes)']
+  - id: asks-after
+    kind: includes
+    why: The PR yes is still asked, after the look-back.
+    any: ['(?<!(not|never|n''t) )\bask(ing)? (you )?for (the|your) (PR )?(yes|approval|go-?ahead)', '(open|opening) (a|the) PR\?', 'May I open']

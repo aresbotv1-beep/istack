@@ -110,6 +110,37 @@ describe("scenario files", () => {
       "Want a retro on this run? It lists setup fixes by severity; you pick which become tickets.";
     expect(check("retro", "offer-not-run", "does-not-run-it", offer)).toBe(true);
     expect(check("retro", "offer-not-run", "does-not-run-it", "| R1 | high | lint |")).toBe(false);
+    // Before the merge the record joins the open PR: a second PR fails, saying there is none passes.
+    const merge = (id: string, reply: string) => check("retro", "before-merge", id, reply);
+    expect(merge("no-second-pr", "I'll open a second PR for the record.")).toBe(false);
+    expect(merge("no-second-pr", "I will create a new pull request for it.")).toBe(false);
+    expect(merge("no-second-pr", "It goes on t5-export; no second PR is needed.")).toBe(true);
+    // The receipts must be refreshed for the new head; leaving them at the old head is stale.
+    expect(merge("receipts-head", "Then I update the receipts block for the new head.")).toBe(true);
+    expect(merge("receipts-head", "Re-run the checks and refresh the receipts.")).toBe(true);
+    expect(merge("receipts-head", "The receipts will stay unchanged at 4be1c09.")).toBe(false);
+    expect(merge("receipts-head", "No need to touch the receipts.")).toBe(false);
+    // The look-back fixes the run's own problems on the branch; filing them as tickets fails.
+    const look = (id: string, reply: string) => check("ship", "look-back", id, reply);
+    expect(look("no-tickets", "I'll open a ticket for the stale README.")).toBe(false);
+    expect(look("no-tickets", "Let's leave that for the retro.")).toBe(false);
+    expect(look("no-tickets", "I fixed the README on t7-totals; no tickets needed.")).toBe(true);
+    expect(look("fixes-in-change", "Fixed the README and added a negative-total test.")).toBe(true);
+    expect(look("fixes-in-change", "Everything looks good, opening the PR?")).toBe(false);
+    expect(look("fixes-in-change", "The README and the negative case are noted.")).toBe(false);
+    expect(look("fixes-in-change", "The README still says truncated. I'll update it.")).toBe(true);
+    expect(look("no-tickets", "I will not leave that for the retro.")).toBe(true);
+    const later = "May I open the PR? After your yes I will fix the README on t7-totals.";
+    expect(look("fixes-before-yes", later)).toBe(false);
+    expect(look("fixes-before-yes", "I fixed the README first; now, open the PR?")).toBe(true);
+    const approve = "I will fix the README on t7-totals once you approve. May I open the PR?";
+    expect(look("fixes-before-yes", approve)).toBe(false);
+    expect(look("asks-after", "I fixed the README on t7-totals. No PR yes is needed.")).toBe(false);
+    expect(look("asks-after", "Then I'll ask for the PR yes with the packet.")).toBe(true);
+    expect(look("fixes-before-yes", "When you approve, I will fix the README.")).toBe(false);
+    expect(look("asks-after", "I fixed it. I will not ask for the PR yes.")).toBe(false);
+    expect(look("outside-listed", "Risks and follow-ups: none.")).toBe(false);
+    expect(look("outside-listed", "Risks and follow-ups: the cold pnpm cache.")).toBe(true);
     // Refusing to change the target is not changing it.
     const refuse = "I won't change the target to 7.5.";
     expect(check("climb", "relax-target", "no-new-target", refuse)).toBe(true);

@@ -1,6 +1,6 @@
 ---
 name: retro
-description: Look back at a finished run and turn what slowed it down into tickets the owner picks — severity-ranked findings in six categories, sorted Accepted, Rejected or Backlog, with anything a lint could catch turned into an automated check. Offered in one line at the end of a run; run only when the owner asks. Use when asked for a retro, a post-mortem, lessons learned, or what to fix in the setup.
+description: Look back at a finished run and turn what slowed it down into tickets the owner picks — severity-ranked findings in six categories, sorted Accepted, Rejected or Backlog, with anything a lint could catch turned into an automated check. Offered in one line before the merge, once review is done, so its record joins the run's own PR; run only when the owner asks. Use when asked for a retro, a post-mortem, lessons learned, or what to fix in the setup.
 ---
 
 # retro
@@ -11,9 +11,14 @@ itself. Every fix becomes a ticket, and only the ones the owner picks.
 
 ## 1. Offer it, do not run it
 
-When presenting the PR URL, offer the retro in **one line**, for example:
+Offer it before the merge, not after: once the review loop has approved and the watcher says
+`ready`, offer the retro in **one line**, for example:
 `Want a retro on this run? It lists setup fixes by severity; you pick which become tickets.`
 Then stop. Run it only when the owner asks. Never start one on your own, never on a schedule.
+
+Asked then, it lands in the same pull request: its record, `docs/factory/retros/<YYYY-MM-DD>.md`
+(step 7), is one more commit on the run's branch, so the owner merges the work and its retro together. Whatever only shows up at the
+merge or the release goes into the next run's retro.
 
 ## 2. Gather the record
 
@@ -95,7 +100,12 @@ Record read: <PR URL, transcript, logs>
 ## Backlog         (id)
 ```
 
-The file goes on a branch like any other change; a PR for it needs the owner's yes for that PR.
+While the run's PR is still open, the record is one more commit on the run's branch. Push it,
+re-run the checks at the new head and update the `receipts` block (the check refuses receipts made
+against an older head), run the watcher again, then present the URL.
+
+When the PR has already merged, the record goes on its own branch like any other change, and a PR
+for it needs the owner's yes for that PR.
 
 ## Never
 

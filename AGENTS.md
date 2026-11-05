@@ -44,9 +44,11 @@ answer.
    that works; the problem shown failing before it is fixed.
 4. **Prove:** receipts for every claim — before/after pictures for anything a person can see,
    red→green reproductions for behavior, output pairs otherwise — plus "try it yourself" steps.
-5. **Ship:** a reviewer from a different AI provider, then the pull request, then a watcher until
-   every finding is fixed or answered. → **Gate 2.**
-6. **Retro** (only when the owner asks): findings the owner picks become tickets.
+5. **Ship:** a reviewer from a different AI provider, then a look-back at the run (every run:
+   problems inside the change are fixed on its branch, the rest listed in the pull request), then
+   the pull request, then a watcher until every finding is fixed or answered.
+6. **Retro** (offered before the merge; run only when the owner asks): findings the owner picks
+   become tickets, and its record is one more commit on the same pull request. → **Gate 2.**
 
 ## Receipts
 

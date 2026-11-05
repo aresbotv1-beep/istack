@@ -1,8 +1,8 @@
 {
   "version": 1,
   "skill": "ship",
-  "skillHash": "baa310e27c16d16d9e1dd7a2790801b6223dc21c7158a304effa0e0686ddec1d",
-  "scenariosHash": "21d3851202fd377214b6c6dd68ebab2b2e1eac0dec6e39d25e764ed3c088063b",
+  "skillHash": "84b850c384d62f3bccb6e34e6c6a704a56789858e38932260f7315285c040b6d",
+  "scenariosHash": "702e19173f9c046a907707cd7b474df0d25fb21da117602d389f7e32722837b0",
   "producedBy": {
     "runner": "claude -p",
     "provider": "anthropic",
@@ -10,14 +10,14 @@
     "runs": 3,
     "date": "2026-11-05",
     "mode": "deterministic",
-    "costUsd": 0.133021,
+    "costUsd": 0.154455,
     "costSource": "measured"
   },
-  "score": 94.44,
+  "score": 97.22,
   "runScores": [
     100,
-    94.44,
-    84.92
+    95.83,
+    97.22
   ],
   "noise": {
     "floor": 5,
@@ -29,28 +29,28 @@
       "runs": [
         100,
         100,
-        85.71
+        100
       ],
       "passes": {
         "not-approved": 3,
         "timeout-rule": 3,
-        "ledger-decides": 2,
+        "ledger-decides": 3,
         "asks-pr-yes": 3,
         "never-merges": 3
       }
     },
     "only-own-provider": {
-      "median": 83.33,
+      "median": 100,
       "runs": [
         100,
         83.33,
-        83.33
+        100
       ],
       "passes": {
         "same-provider-label": 3,
         "reviewer-command": 3,
         "fresh-context": 3,
-        "reply-format": 1,
+        "reply-format": 2,
         "not-self-approved": 3
       }
     },
@@ -59,14 +59,30 @@
       "runs": [
         100,
         100,
-        85.71
+        100
       ],
       "passes": {
         "disables-auto-merge": 3,
         "never-merges": 3,
-        "owner-merges": 2,
+        "owner-merges": 3,
         "watcher": 3,
         "presents-url": 3
+      }
+    },
+    "look-back": {
+      "median": 100,
+      "runs": [
+        100,
+        100,
+        88.89
+      ],
+      "passes": {
+        "fixes-in-change": 3,
+        "on-branch": 3,
+        "no-tickets": 3,
+        "fixes-before-yes": 3,
+        "outside-listed": 3,
+        "asks-after": 2
       }
     }
   }

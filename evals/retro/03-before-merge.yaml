@@ -1,0 +1,40 @@
+id: before-merge
+skill: retro
+title: The owner asks for the retro while the PR is still open; the record joins that PR
+purpose: >-
+  A retro offered before the merge lands in the same pull request: its record is one more commit on
+  the run's branch, with the receipts block updated to the new head. No second PR is opened.
+prompt: |
+  Yes, run the retro, then I'll merge.
+context:
+  - path: run-summary.md
+    text: |
+      # Run summary (written by the agent at the end of the run)
+      Ticket T5 built, proven and shipped. PR https://github.com/sam-rivera/tally/pull/57 is open
+      on branch t5-export, not merged. Review: approved in round 2 by codex exec (openai). Watcher:
+      ready. Auto-merge off. Receipts made against head 4be1c09.
+      Notes: the export test was flaky twice in CI and passed on retry; the agent searched 11 times
+      for where CSV columns are defined before finding src/export/columns.ts.
+criteria:
+  - id: record-path
+    kind: includes
+    why: The retro is recorded under docs/factory/retros/.
+    any: ['docs/factory/retros/']
+  - id: same-pr
+    kind: includes
+    why: The record goes on the run's own branch, in the PR that is still open.
+    weight: 2
+    any: ['t5-export', '#57', 'pull/57', 'same (PR|pull request|branch)', "(run's|this|the open) (PR|pull request|branch)"]
+  - id: no-second-pr
+    kind: excludes
+    why: The PR is still open, so the record does not get a new PR.
+    weight: 2
+    any: ['gh pr create', 'I(''ll| will) (open|create|raise) (a )?(new|separate|second) (PR|pull request)']
+  - id: receipts-head
+    kind: includes
+    why: A new commit moves the head, and the receipts check refuses receipts made against an older head.
+    any: ['\b(update|updating|refresh|refreshing|re-?prove|regenerate)\b[^.\n]{0,40}\breceipts\b', '\breceipts\b[^.\n]{0,40}\b(updated|refreshed|re-?proven|for the new head)\b']
+  - id: owner-sorts
+    kind: includes
+    why: The owner still sorts each finding into Accepted, Rejected or Backlog.
+    all: ['accepted', 'rejected', 'backlog']
