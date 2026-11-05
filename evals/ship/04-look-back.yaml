@@ -34,12 +34,12 @@ criteria:
     kind: excludes
     why: The fixes come before the PR yes, not after it.
     weight: 2
-    any: ['(after|once) (your yes|you say yes|you approve|the PR is open(ed)?|I open the PR)[^.\n]{0,60}\b(fix|update|correct|add)', '\b(fix|update|correct|add)[^.\n]{0,60}(after|once|when) (your yes|you say yes|you approve|approved|the PR is open(ed)?)']
+    any: ['(after|once|when|if) (your yes|you say yes|you approve|approved|the PR is open(ed)?|I open the PR)[^.\n]{0,60}\b(fix|update|correct|add)', '\b(fix|update|correct|add)[^.\n]{0,60}(after|once|when) (your yes|you say yes|you approve|approved|the PR is open(ed)?)']
   - id: outside-listed
     kind: includes
     why: The cold CI cache is outside the change, so it is one line under Risks and follow-ups.
-    any: ['Risks and follow-ups', 'follow-?up']
+    all: ['(Risks and follow-ups|follow-?up)', '(cache|pnpm|4 minutes)']
   - id: asks-after
     kind: includes
     why: The PR yes is still asked, after the look-back.
-    any: ['\bask(ing)? (you )?for (the|your) (PR )?(yes|approval|go-?ahead)', '(open|opening) (a|the) PR\?', 'May I open']
+    any: ['(?<!(not|never|n''t) )\bask(ing)? (you )?for (the|your) (PR )?(yes|approval|go-?ahead)', '(open|opening) (a|the) PR\?', 'May I open']
