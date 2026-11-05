@@ -39,10 +39,7 @@ function load(file: string): { workflow: Workflow; steps: Step[] } {
 
 const checkouts = (steps: Step[]) => steps.filter((s) => s.uses?.startsWith("actions/checkout@"));
 
-for (const [file, action] of [
-  ["receipts.yml", "action/receipts"],
-  ["receipts-verified.yml", "action/receipts/verified"],
-] as const) {
+for (const [file, action] of [["receipts-verified.yml", "action/receipts/verified"]] as const) {
   describe(`${file} runs the checker from the base commit, never the PR head`, () => {
     it("parses as YAML", () => {
       expect(() => load(file)).not.toThrow();
@@ -114,9 +111,31 @@ describe("receipts-verified.yml treats the PR head as the thing under test", () 
   });
 });
 
-describe("receipts.yml never checks out the PR head at all", () => {
-  it("has only the base checkout", () => {
+/**
+ * The present tier is pinned the way AGENTS.md tells every user to pin it: this repo's own action at
+ * a full commit SHA that is already published. No checkout at all, so neither the PR head nor
+ * anything else from the PR runs; a PR that edits the checker's code changes nothing until a
+ * deliberate PR moves the pin. (The base-commit approach could not run on the PR that introduces
+ * the checker.)
+ */
+describe("receipts.yml runs the checker pinned to a full commit SHA, never from the PR", () => {
+  it("triggers on pull_request only, with read-only permissions", () => {
+    const { workflow } = load("receipts.yml");
+    expect(Object.keys(workflow.on)).toEqual(["pull_request"]);
+    for (const level of Object.values(workflow.permissions)) expect(level).toBe("read");
+  });
+
+  it("has no checkout and no local action", () => {
     const { steps } = load("receipts.yml");
-    expect(checkouts(steps).map((s) => s.with?.ref)).toEqual([BASE_SHA]);
+    expect(checkouts(steps)).toEqual([]);
+    expect(steps.filter((s) => s.uses?.startsWith("./"))).toEqual([]);
+    for (const s of steps) if (s.run) expect(s.run).not.toMatch(/\b(node|npm|npx|mitchstack)\b/);
+  });
+
+  it("uses this repo's action at a full 40-character commit SHA", () => {
+    const { steps } = load("receipts.yml");
+    const uses = steps.map((s) => s.uses).filter(Boolean);
+    expect(uses).toHaveLength(1);
+    expect(uses[0]).toMatch(/^aresbotv1-beep\/mitchstack\/action\/receipts@[0-9a-f]{40}$/);
   });
 });

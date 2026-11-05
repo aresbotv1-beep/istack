@@ -32,11 +32,11 @@ opt-in, and why it should not be the only gate.
 
 ### This repository's own workflows
 
-This repo dogfoods its own actions, so it cannot pin a remote SHA of itself.
-`.github/workflows/receipts.yml` and `receipts-verified.yml` instead check out the PR's **base**
-commit into `./trusted`, then build and run the checker from there. The PR head is only data. For
-the verified tier, the head is checked out separately into `./pr` as the thing under test.
+`.github/workflows/receipts.yml` pins this repo's own action the same way you would: at a full
+commit SHA that is already published, with no checkout. A PR that edits the checker changes
+nothing until a separate change moves the pin.
 
-**Bootstrap:** the first PR that introduces the checker has none on its base commit. That job
-fails with `could not run: checker not present on base`. It never falls back to the PR's copy.
-`test/workflows.test.ts` checks both workflow files for this shape.
+`receipts-verified.yml` (opt-in) checks out the PR's **base** commit into `./trusted` and runs the
+verifier from there; the head is checked out separately into `./pr` as the thing under test. On a
+PR whose base has no verifier yet, it fails with `could not run: checker not present on base`, and
+never falls back to the PR's copy. `test/workflows.test.ts` checks both workflow files.
