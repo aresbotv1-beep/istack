@@ -284,6 +284,35 @@ describe("runSkillEvals", () => {
     const otherRunner = { ...r, runner: { ...r.runner, id: "codex exec" } };
     expect(compareToBaseline(baseline, otherRunner).reasons.join()).toMatch(/runner/);
   });
+
+  it("refuses to compare runs on different models (v1: an Opus run against a Sonnet baseline)", async () => {
+    const run = await runSkillEvals({
+      skill: demoSkill,
+      scenarios: scenarioSet(),
+      runner: scripted(["hi"]),
+      runs: 3,
+    });
+    const r = {
+      ...run,
+      runner: { id: "claude -p", provider: "anthropic", model: "claude-opus-5-5" },
+    };
+    const baseline = {
+      ...toBaseline(
+        { ...r, runner: { ...r.runner, model: "claude-sonnet-5-5" } },
+        {
+          date: "d",
+          noiseFloor: 5,
+          k: 2,
+        },
+      ),
+    };
+    const c = compareToBaseline(baseline, r);
+    expect(c.comparable).toBe(false);
+    expect(c.reasons.join()).toMatch(/model claude-opus-5-5 vs baseline claude-sonnet-5-5/);
+    // A runner that cannot report its model is not refused on that ground alone.
+    const unknown = { ...r, runner: { ...r.runner, model: "unknown" } };
+    expect(compareToBaseline(baseline, unknown).reasons.join()).not.toMatch(/model/);
+  });
 });
 
 /** A text judge that scores replies by a script and knows nothing of roles. */

@@ -290,6 +290,11 @@ export function compareToBaseline(baseline: Baseline, result: EvalResult): Compa
   if (result.runner.id !== baseline.producedBy.runner) {
     reasons.push(`runner ${result.runner.id} vs baseline ${baseline.producedBy.runner}`);
   }
+  const model = result.runner.model;
+  const baselineModel = baseline.producedBy.model;
+  if (model !== "unknown" && baselineModel !== "unknown" && model !== baselineModel) {
+    reasons.push(`model ${model} vs baseline ${baselineModel}`);
+  }
   const noise = noiseOf(
     baseline.runScores,
     result.runScores.length > 0 ? result.runScores : [0],

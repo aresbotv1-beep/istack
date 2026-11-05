@@ -135,3 +135,26 @@ describe("skill eval sensitivity", () => {
     expect(lines.join("\n")).toMatch(/groundbreak.*dropped/);
   });
 });
+
+describe("evals pick the baseline's model when none is given", () => {
+  it("asks the runner for the model the baseline was made with", async () => {
+    const cwd = mkdtempSync(join(tmpdir(), "ms-evals-model-"));
+    cpSync(join(ROOT, "skills"), join(cwd, "skills"), { recursive: true });
+    cpSync(join(ROOT, "evals"), join(cwd, "evals"), { recursive: true });
+    const asked: Array<{ runner: string; model?: string }> = [];
+    const lines: string[] = [];
+    const io = { cwd, out: (l: string) => lines.push(l), err: (l: string) => lines.push(l) };
+    const deps = {
+      runner: (spec: { runner: string; model?: string }) => {
+        asked.push(spec);
+        return fakeRunner();
+      },
+    };
+    await runEvalsCli(["run", "--skill", "retro", "--runs", "1"], io, deps);
+    expect(asked).toEqual([{ runner: "claude", model: "claude-sonnet-5-5" }]);
+    expect(lines.join("\n")).toMatch(/model claude-sonnet-5-5 \(from the retro baseline\)/);
+    asked.length = 0;
+    await runEvalsCli(["run", "--skill", "retro", "--runs", "1", "--model", "opus"], io, deps);
+    expect(asked).toEqual([{ runner: "claude", model: "opus" }]);
+  });
+});

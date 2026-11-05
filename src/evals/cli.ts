@@ -26,7 +26,7 @@ const USAGE = [
   "       mitchstack evals baseline --skill <name|all> [options]   write evals/baselines/<skill>.json",
   "       mitchstack evals compare  --skill <name|all> [options] [--from results.json]",
   "       (baseline --from results.json writes the baseline from a saved run of the current skill)",
-  "options: --runs <n> (3)  --runner claude|codex (claude)  --model <id>  --budget <usd> (2)",
+  "options: --runs <n> (3)  --runner claude|codex (claude)  --model <id> (the baseline's)  --budget <usd> (2)",
   "         --taste (council-score taste criteria; off by default)  --degrade <spec.json>",
   "         --noise-floor <points> (5)  --k <n> (2)  --out <results.json>  --transcript <file.jsonl>",
 ].join("\n");
@@ -86,15 +86,37 @@ export async function runEvalsCli(
   }
   const runnerName = flags.get("runner") ?? "claude";
   const model = flags.get("model");
-  let runner: AgentRunner | undefined;
-  if (!saved) {
-    try {
-      runner = (deps.runner ?? defaultRunner)({ runner: runnerName, ...(model ? { model } : {}) });
-    } catch (error) {
-      io.err((error as Error).message);
-      return 2;
+  /**
+   * The agent under test. Without --model it is the model the skill's baseline was made with: a
+   * run on another model can't be compared with it (v1: an Opus run against a Sonnet baseline).
+   */
+  const runnerFor = (name: string): AgentRunner | string => {
+    let pick = model;
+    if (!pick) {
+      const path = baselinePath(io.cwd, name);
+      const parsed = existsSync(path)
+        ? baselineSchema.safeParse(JSON.parse(readFileSync(path, "utf8")))
+        : undefined;
+      const made = parsed?.success ? parsed.data.producedBy : undefined;
+      if (
+        made &&
+        made.runner.startsWith(runnerName) &&
+        made.model !== "unknown" &&
+        !made.model.includes(",")
+      ) {
+        pick = made.model;
+        io.out(`${name}: model ${pick} (from the ${name} baseline)`);
+      }
     }
-  }
+    try {
+      return (deps.runner ?? defaultRunner)({
+        runner: runnerName,
+        ...(pick ? { model: pick } : {}),
+      });
+    } catch (error) {
+      return (error as Error).message;
+    }
+  };
   let judges: Judge[] | undefined;
   if (flags.has("taste") && !saved) {
     judges = (deps.judges ?? (() => defaultJudges(io)))();
@@ -133,10 +155,15 @@ export async function runEvalsCli(
         io.err((error as Error).message);
         return 2;
       }
+      const runner = runnerFor(name);
+      if (typeof runner === "string") {
+        io.err(runner);
+        return 2;
+      }
       result = await runSkillEvals({
         skill,
         scenarios,
-        runner: runner as AgentRunner,
+        runner,
         runs,
         budgetUsd: Math.max(0, budgetUsd - spent),
         ...(judges ? { taste: { judges, stageDir: join(tmpdir(), "ms-evals-taste") } } : {}),
