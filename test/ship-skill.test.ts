@@ -53,6 +53,27 @@ describe("skills/ship/SKILL.md", () => {
     expect(skill).toContain("the look-back done");
   });
 
+  it("describes the one-minute body: problem first, not tested, folded log and receipts", () => {
+    const write = skill.slice(
+      skill.indexOf("## 4. Write the body"),
+      skill.indexOf("## 5. Open it"),
+    );
+    for (const needle of [
+      "**Problem**",
+      "**Not tested**",
+      "**Review**",
+      "<details>",
+      "2,500",
+      "BAD:",
+      "GOOD:",
+      "Nothing left out.",
+    ]) {
+      expect(write, needle).toContain(needle);
+    }
+    expect(write.indexOf("**Problem**")).toBeLessThan(write.indexOf("**Summary**"));
+    expect(write).not.toContain("**Reviewer verdicts**");
+  });
+
   it("points to the council rules instead of a placeholder", () => {
     expect(skill).toMatch(/## Council \(factory profile\)/);
     expect(skill).not.toMatch(/placeholder/i);
