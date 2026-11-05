@@ -63,6 +63,7 @@ A claim without a receipt does not count.
   `uses: <owner>/mitchstack/action/receipts@<full-sha>` and protect the workflow file (CODEOWNERS
   or a required workflow).
 - A mock, a fixture or a green suite on stubs is not proof that the real thing works.
+- A check passes only when its exit code is 0, shown with the run. Blank output is not a pass.
 - Never capture secrets, keys, tokens, customer data or payment details.
 
 ## Review
