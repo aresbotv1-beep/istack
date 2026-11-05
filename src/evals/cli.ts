@@ -99,8 +99,7 @@ export async function runEvalsCli(
         : undefined;
       const made = parsed?.success ? parsed.data.producedBy : undefined;
       if (
-        made &&
-        made.runner.startsWith(runnerName) &&
+        made?.runner.startsWith(runnerName) &&
         made.model !== "unknown" &&
         !made.model.includes(",")
       ) {
