@@ -1,0 +1,255 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "number",
+      "const": 1
+    },
+    "owner": {
+      "type": "string",
+      "minLength": 1,
+      "description": "the human who holds both gates"
+    },
+    "profile": {
+      "type": "string",
+      "enum": [
+        "solo",
+        "team",
+        "factory"
+      ]
+    },
+    "checks": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "run": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "name",
+          "run"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "visibleChange": {
+      "default": {
+        "include": [
+          "**/*.{tsx,jsx,vue,svelte,astro,html,css,scss}",
+          "**/templates/**",
+          "public/**"
+        ],
+        "exclude": []
+      },
+      "type": "object",
+      "properties": {
+        "include": {
+          "default": [
+            "**/*.{tsx,jsx,vue,svelte,astro,html,css,scss}",
+            "**/templates/**",
+            "public/**"
+          ],
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "exclude": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "ownershipGates": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "resource": {
+            "type": "string",
+            "minLength": 1,
+            "description": "e.g. 'port 3200', 'shared local database', 'production deploy'"
+          },
+          "owner": {
+            "type": "string",
+            "minLength": 1
+          },
+          "rule": {
+            "type": "string",
+            "minLength": 1,
+            "description": "what an agent must do: usually 'ask the owner first'"
+          }
+        },
+        "required": [
+          "resource",
+          "owner",
+          "rule"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "council": {
+      "default": {
+        "enabled": false,
+        "budgetUsdPerPr": 10,
+        "providers": []
+      },
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "default": false,
+          "type": "boolean"
+        },
+        "budgetUsdPerPr": {
+          "default": 10,
+          "description": "council spend per PR in USD, checked before each judge call on estimates plus measured spend; not a hard cap: one call can overrun it, and the overrun is logged and shown",
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "providers": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "env": {
+      "default": {
+        "ports": {
+          "from": 4100,
+          "to": 4999,
+          "names": [
+            "web"
+          ]
+        },
+        "files": []
+      },
+      "type": "object",
+      "properties": {
+        "ports": {
+          "default": {
+            "from": 4100,
+            "to": 4999,
+            "names": [
+              "web"
+            ]
+          },
+          "description": "each worktree leases one port per name from this range",
+          "type": "object",
+          "properties": {
+            "from": {
+              "default": 4100,
+              "type": "integer",
+              "minimum": 1024,
+              "maximum": 65535
+            },
+            "to": {
+              "default": 4999,
+              "type": "integer",
+              "minimum": 1024,
+              "maximum": 65535
+            },
+            "names": {
+              "default": [
+                "web"
+              ],
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "files": {
+          "default": [],
+          "description": "copied from the main checkout when absent, with port keys rewritten",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "description": "relative to the checkout, e.g. .env.local"
+              },
+              "set": {
+                "default": {},
+                "description": "KEY: port name or template, e.g. PORT: web, API_URL: 'http://127.0.0.1:{{api}}'",
+                "type": "object",
+                "propertyNames": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+                },
+                "additionalProperties": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "required": [
+              "path"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "database": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "default": "{{repo}}_{{worktree}}",
+              "description": "must include {{worktree}} (the worktree directory name plus an 8-char hash of its real path) so each worktree gets its own; capped at 63 bytes",
+              "type": "string",
+              "minLength": 1
+            },
+            "create": {
+              "type": "string",
+              "minLength": 1,
+              "description": "shell command, e.g. 'createdb {{name}}'"
+            },
+            "drop": {
+              "description": "run on 'env down --db', e.g. 'dropdb {{name}}'",
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "create"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "version",
+    "owner",
+    "profile",
+    "checks"
+  ],
+  "additionalProperties": false
+}

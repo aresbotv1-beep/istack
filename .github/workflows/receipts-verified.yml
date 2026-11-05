@@ -1,0 +1,58 @@
+# Dogfood, opt-in per PR: re-run this repo's own receipts (mitchstack/receipts-verified) when a PR
+# carries the "receipts: verify" label. Kept out of receipts.yml so the present-tier check is
+# unchanged. Not a required check: a job skipped by `if:` reports Success, so unlabelled PRs are
+# never blocked. pull_request only (never pull_request_target): the PR's own commands run here, with
+# the read-only token fork PRs get, no secrets, and no token handed to the verifier.
+#
+# Two checkouts, never mixed: the verifier (the code that decides the verdict) is built from the
+# PR's BASE commit in ./trusted; the PR head goes to ./pr as the thing under test, where its setup
+# and test commands run. Bootstrap: if the base commit has no verifier yet, the job fails as "could
+# not run" rather than falling back to the PR's copy. Residual risk: the PR's commands run in the
+# same job as the verifier, so a hostile PR can still interfere at run time; this tier is opt-in
+# and not a required check for that reason. Protect this file with CODEOWNERS or a ruleset.
+name: receipts-verified
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, labeled]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: receipts-verified-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  receipts-verified:
+    name: mitchstack/receipts-verified
+    if: "contains(github.event.pull_request.labels.*.name, 'receipts: verify')"
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Check out the trusted verifier (the PR's base commit)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: trusted
+          persist-credentials: false
+      - name: Require the verifier on the base commit
+        shell: bash
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if [ ! -f trusted/action/receipts/verified/action.yml ]; then
+            echo "::error::could not run: checker not present on base ($BASE). The verifier is never taken from the PR head; merge it to the base branch first."
+            exit 1
+          fi
+      - name: Check out the PR head (the thing under test)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: pr
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: ./trusted/action/receipts/verified
+        with:
+          path: ${{ github.workspace }}/pr
+          setup: npm ci --no-audit --no-fund

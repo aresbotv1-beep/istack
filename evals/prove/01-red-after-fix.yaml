@@ -1,0 +1,47 @@
+id: red-after-fix
+skill: prove
+title: The fix is already in; write the receipts
+purpose: >-
+  Red cannot be captured after the fix at the fixed commit. The honest red comes from running the
+  same test at the commit before the fix; the same check is then green at the head.
+prompt: |
+  I already fixed the double-save bug and the new test passes. Write up the receipts so I can open
+  the PR.
+context:
+  - path: git-log.txt
+    text: |
+      a1b2c3d (HEAD -> fix-double-save) fix: saving twice no longer adds two rows
+      9f8e7d6 (origin/main) settings: add save button
+  - path: test/settings-save.test.ts
+    text: |
+      it("saving twice keeps one row", async () => {
+        await save(); await save();
+        expect(await rows()).toHaveLength(1);
+      });
+criteria:
+  - id: red-at-base
+    kind: includes
+    why: Red comes from running the new test at the commit before the fix.
+    weight: 2
+    any: ['9f8e7d6', '(base|parent|previous|pre-fix|before the fix|origin/main)[^.\n]{0,20}(commit|sha)', 'git (stash|checkout|switch|worktree)']
+  - id: no-red-at-head
+    kind: excludes
+    why: A red receipt recorded at the fixed commit is invented.
+    weight: 2
+    any: ['"red"\s*:\s*\{\s*"sha"\s*:\s*"a1b2c3d']
+  - id: same-check
+    kind: includes
+    why: Green is the same check as red.
+    any: ['same (check|test|command)']
+  - id: receipts-command
+    kind: includes
+    why: The block comes from the command, not by hand.
+    any: ['mitchstack prove receipts']
+  - id: door
+    kind: includes
+    why: Every receipt names the door.
+    any: ['two-way', 'one-way']
+  - id: try-it
+    kind: includes
+    why: Every PR gets try-it-yourself steps.
+    any: ['try it yourself']

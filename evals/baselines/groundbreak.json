@@ -1,0 +1,101 @@
+{
+  "version": 1,
+  "skill": "groundbreak",
+  "skillHash": "0b947a77dcd6ad2a468060a03e192a3d6bf83b026158c2a303d0bad7a7f505d7",
+  "scenariosHash": "d7f151696d69701512a9ce38df7f467112f932955496c36841b83bfb63a9de14",
+  "producedBy": {
+    "runner": "claude -p",
+    "provider": "anthropic",
+    "model": "claude-sonnet-5-5",
+    "runs": 3,
+    "date": "2026-11-05",
+    "mode": "deterministic",
+    "costUsd": 0.289393,
+    "costSource": "measured"
+  },
+  "score": 97.73,
+  "runScores": [
+    97.73,
+    97.73,
+    97.73
+  ],
+  "noise": {
+    "floor": 5,
+    "k": 2
+  },
+  "scenarios": {
+    "founding-session": {
+      "median": 100,
+      "runs": [
+        100,
+        100,
+        100
+      ],
+      "passes": {
+        "lane-full-engine": 3,
+        "not-express": 3,
+        "names-domain": 3,
+        "research-first": 3,
+        "no-invented-sources": 3,
+        "no-asking-known-facts": 3,
+        "weak-points": 3,
+        "few-questions": 3,
+        "recommends": 3,
+        "no-code": 3
+      }
+    },
+    "express-settled-flag": {
+      "median": 100,
+      "runs": [
+        100,
+        100,
+        100
+      ],
+      "passes": {
+        "lane-express": 3,
+        "no-full-engine": 3,
+        "last-question-wrong": 3,
+        "at-most-five": 3,
+        "shows-cut-count": 3,
+        "no-asking-known-facts": 3,
+        "recommends": 3,
+        "short": 3
+      }
+    },
+    "express-bugfix": {
+      "median": 90.91,
+      "runs": [
+        90.91,
+        90.91,
+        90.91
+      ],
+      "passes": {
+        "lane-express": 3,
+        "no-full-engine": 3,
+        "last-question-wrong": 3,
+        "almost-no-questions": 3,
+        "no-asking-known-facts": 3,
+        "draft-ticket": 3,
+        "no-code": 3,
+        "short": 0
+      }
+    },
+    "open-ambition": {
+      "median": 100,
+      "runs": [
+        100,
+        100,
+        100
+      ],
+      "passes": {
+        "lane-full-engine": 3,
+        "not-express": 3,
+        "research-first": 3,
+        "launch-post": 3,
+        "no-invented-sources": 3,
+        "weak-points": 3,
+        "few-questions": 3
+      }
+    }
+  }
+}

@@ -1,0 +1,85 @@
+name: mitchstack receipts
+description: >-
+  The mitchstack/receipts check (present tier). Reads the receipts block from the PR body and fails
+  a visible change that has no before/after pair, a stale head SHA, or a missing merge-danger door.
+  Needs only the read-only GITHUB_TOKEN: no other secrets, no LLM calls.
+
+# Use it from a workflow triggered by `pull_request` (never `pull_request_target`), with types
+# [opened, edited, synchronize, reopened] — receipts live in the body, so `edited` matters — and
+# with NO `paths:` filter: a required check skipped by `paths:` stays Pending and blocks the merge.
+# The check decides in-job whether the PR has a visible change.
+#
+#   on:
+#     pull_request:
+#       types: [opened, edited, synchronize, reopened]
+#   permissions:
+#     contents: read
+#     pull-requests: read
+#   jobs:
+#     receipts:
+#       name: mitchstack/receipts
+#       runs-on: ubuntu-latest
+#       steps:
+#         - uses: aresbotv1-beep/mitchstack/action/receipts@<full-40-char-commit-sha>
+#
+# No checkout is needed: the PR's files and the base commit's mitchstack.yaml come from the API.
+#
+# Trust: the code that decides the verdict must never come from the PR being checked. Pin this
+# action to a full commit SHA (not a branch or tag, which can move), never run it as a local
+# `uses: ./...` from the PR's own checkout, and protect the workflow file itself (CODEOWNERS plus
+# branch protection, or a required workflow / ruleset), since a PR can edit its own workflow. See
+# action/receipts/README.md.
+
+inputs:
+  token:
+    description: Token for reading the PR's files and the base commit's mitchstack.yaml.
+    default: ${{ github.token }}
+  apply-label:
+    description: >-
+      "true" to add the "receipts: present, not verified" label on pass and remove it on fail.
+      Needs `pull-requests: write`; skipped quietly when the token is read-only (fork PRs).
+    default: "false"
+
+outputs:
+  conclusion:
+    description: pass or fail
+    value: ${{ steps.check.outputs.conclusion }}
+  labels:
+    description: JSON array of labels the result carries
+    value: ${{ steps.check.outputs.labels }}
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22
+
+    - name: Build mitchstack
+      shell: bash
+      working-directory: ${{ github.action_path }}/../..
+      run: npm ci --ignore-scripts --no-audit --no-fund && npm run build
+
+    - name: Check receipts
+      id: check
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+      run: node "$GITHUB_ACTION_PATH/../../dist/bin/mitchstack.js" receipts check
+
+    - name: Apply label
+      if: always() && inputs.apply-label == 'true' && steps.check.outputs.conclusion != ''
+      continue-on-error: true
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        REPO: ${{ github.repository }}
+        PR: ${{ github.event.pull_request.number }}
+        CONCLUSION: ${{ steps.check.outputs.conclusion }}
+        LABELS: ${{ steps.check.outputs.labels }}
+      run: |
+        if [ "$CONCLUSION" = pass ] && [ "$LABELS" != "[]" ]; then
+          gh api --method POST "repos/$REPO/issues/$PR/labels" -f "labels[]=receipts: present, not verified" >/dev/null
+        else
+          gh api --method DELETE "repos/$REPO/issues/$PR/labels/receipts:%20present,%20not%20verified" >/dev/null 2>&1 || true
+        fi

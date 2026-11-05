@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "skill": "build",
+  "skillHash": "cbaaf467a0049cb215ceb20f45bc2bc3c737fd21192626c69e05c9e2b0e2238a",
+  "scenariosHash": "71202edb1cc2bf9a735758f6876ca44f3479d9d65a1ff8b0f09aa20aba8d8dce",
+  "producedBy": {
+    "runner": "claude -p",
+    "provider": "anthropic",
+    "model": "claude-sonnet-5-5",
+    "runs": 3,
+    "date": "2026-11-05",
+    "mode": "deterministic",
+    "costUsd": 0.133616,
+    "costSource": "measured"
+  },
+  "score": 100,
+  "runScores": [
+    100,
+    100,
+    100
+  ],
+  "noise": {
+    "floor": 5,
+    "k": 2
+  },
+  "scenarios": {
+    "start-approved-ticket": {
+      "median": 100,
+      "runs": [
+        100,
+        100,
+        100
+      ],
+      "passes": {
+        "isolates": 3,
+        "env-up": 3,
+        "scope-check": 3,
+        "seven-part-brief": 3,
+        "red-first": 3
+      }
+    },
+    "port-trust": {
+      "median": 100,
+      "runs": [
+        100,
+        100,
+        100
+      ],
+      "passes": {
+        "check-port": 3,
+        "does-not-trust": 3,
+        "no-claimed-result": 3
+      }
+    },
+    "third-guess": {
+      "median": 100,
+      "runs": [
+        100,
+        100,
+        100
+      ],
+      "passes": {
+        "rediagnose": 3,
+        "names-the-rule": 3,
+        "reproduce": 3,
+        "reads-the-log": 3
+      }
+    }
+  }
+}

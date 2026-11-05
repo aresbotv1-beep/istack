@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "skill": "climb",
+  "skillHash": "7c870af86982bb2614980a67a5fec8e733dfd4edc197c31b2de27fb9ca47ab8f",
+  "scenariosHash": "afecc3cd6dcdd384ac9402044b1be041005b3825cd118bb1ebc32c22dfdfc525",
+  "producedBy": {
+    "runner": "claude -p",
+    "provider": "anthropic",
+    "model": "claude-sonnet-5-5",
+    "runs": 3,
+    "date": "2026-11-05",
+    "mode": "deterministic",
+    "costUsd": 0.150276,
+    "costSource": "measured"
+  },
+  "score": 95.83,
+  "runScores": [
+    95.83,
+    100,
+    95.83
+  ],
+  "noise": {
+    "floor": 5,
+    "k": 2
+  },
+  "scenarios": {
+    "plan-a-climb": {
+      "median": 87.5,
+      "runs": [
+        87.5,
+        100,
+        87.5
+      ],
+      "passes": {
+        "ladder-first": 3,
+        "fixed-target": 3,
+        "lower-is-better": 3,
+        "sensitivity": 3,
+        "median-of-runs": 3,
+        "frozen-harness": 3,
+        "decision-log": 1
+      }
+    },
+    "relax-target": {
+      "median": 100,
+      "runs": [
+        100,
+        100,
+        100
+      ],
+      "passes": {
+        "reports-short": 3,
+        "never-relax": 3,
+        "reports-number": 3,
+        "no-new-target": 3
+      }
+    },
+    "gain-within-noise": {
+      "median": 100,
+      "runs": [
+        100,
+        100,
+        100
+      ],
+      "passes": {
+        "reverts": 3,
+        "noise-value": 3,
+        "gain-value": 3,
+        "no-keep": 3
+      }
+    }
+  }
+}

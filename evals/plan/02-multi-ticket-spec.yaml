@@ -1,0 +1,64 @@
+id: multi-ticket-spec
+skill: plan
+title: A locked ledger with several parts becomes a spec, seams first, then tracer tickets
+purpose: >-
+  Several tickets need a spec with test seams agreed before slicing, vertical slices with blocking
+  edges, one integration branch and one PR, and a challenge asked rather than decided.
+prompt: |
+  The groundbreak ledger for invoice export is locked. Write the spec and the tickets.
+context:
+  - path: docs/groundbreak/2026-10-30-ledger.md
+    text: |
+      # Invoice export ledger
+      ## LOCKED
+      1. CSV download from the invoices page — "CSV first, that's what accountants ask for."
+      2. PDF download of a single invoice — "same look as the email we send today."
+      3. A weekly email digest of unpaid invoices — "every Monday, to the account owner."
+      4. No new services — "I don't want to run anything new for this."
+      ## Launch post (accepted)
+      "Your accountant gets every invoice in one click, and you get Monday's unpaid list without asking."
+      Budget: this release holds 3 items.
+  - path: notes/stack.md
+    text: |
+      Web app: Next.js, Postgres. Emails today are sent by hand from the owner's mailbox.
+      There is no background job runner and no email-sending provider configured.
+criteria:
+  - id: seams-before-tickets
+    kind: order
+    why: Test seams are named before any ticket is sliced.
+    weight: 2
+    first: 'test seams?'
+    later: '\b(T1|ticket 1)\b'
+  - id: seams-agreed
+    kind: includes
+    why: The seams are put to the owner and agreed before slicing.
+    any: ['agree']
+  - id: vertical-slices
+    kind: includes
+    why: Tickets are tracer-bullet vertical slices, not layers.
+    any: ['vertical', 'tracer', 'end[- ]to[- ]end', '\bslices?\b']
+  - id: blocking-edges
+    kind: includes
+    why: Blocking edges are drawn so independent tickets can run in parallel.
+    any: ['block(s|ed by|ing)', '-->', 'depends on']
+  - id: one-pr
+    kind: includes
+    why: A spec run ships as one integration branch and one pull request.
+    all: ['integration branch', '(one|single) (pull request|PR)\b']
+  - id: challenge-asked
+    kind: includes
+    why: '"No new services" contradicts a weekly email with no job runner or provider; that is a challenge, asked once.'
+    weight: 2
+    any: ['challenge']
+  - id: the-ask
+    kind: includes
+    why: The spec opens with the ask.
+    all: ['could break', 'know[^.\n]{0,30}wrong']
+  - id: asks-for-yes
+    kind: includes
+    why: Plan ends at gate 1.
+    any: ['gate 1', '(your|the owner''s|for the) yes', 'say yes']
+  - id: no-code
+    kind: excludes
+    why: Plan writes no product code.
+    any: ['```(ts|typescript|js|javascript|tsx|sql)']

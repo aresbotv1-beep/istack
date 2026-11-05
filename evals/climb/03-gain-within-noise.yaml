@@ -1,0 +1,28 @@
+id: gain-within-noise
+skill: climb
+title: A gain that does not beat the noise
+purpose: >-
+  The keep rule applied by hand. Medians 5.0 to 5.2 is a gain of 0.2; noise is max(0.25, 2 x 0.1,
+  2 x 0.1) = 0.25, so the change does not beat the noise and is reverted.
+prompt: |
+  Baseline runs: 5.0, 5.1, 4.9. With the cache change: 5.2, 5.0, 5.3. noiseFloor 0.25, k 2,
+  regressions green. Keep it?
+criteria:
+  - id: reverts
+    kind: includes
+    why: A gain that does not beat the noise is reverted.
+    weight: 2
+    any: ['revert']
+  - id: noise-value
+    kind: includes
+    why: The noise is the floor, 0.25.
+    any: ['0\.25']
+  - id: gain-value
+    kind: includes
+    why: The gain is 0.2.
+    any: ['0\.2(0)?\b(?!5)']
+  - id: no-keep
+    kind: excludes
+    why: The decision is not keep.
+    weight: 2
+    any: ['decision[:*\s]*\**keep\b', '\bverdict[:*\s]*\**keep\b', '^\**keep(\.|!|\*)']

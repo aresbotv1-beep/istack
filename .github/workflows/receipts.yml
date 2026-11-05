@@ -1,0 +1,29 @@
+# Dogfood: run the mitchstack/receipts check on this repo's own pull requests.
+# pull_request only (never pull_request_target); no paths: filter — the check decides in-job.
+#
+# Pinned exactly as AGENTS.md tells every user to pin it: this repo's own action at a full commit
+# SHA that is already published. Nothing is checked out, so no code from the PR being checked
+# ever runs; a PR that edits the checker changes nothing until a separate, deliberate change moves
+# this pin. Protect this file with CODEOWNERS or a ruleset, since a PR can still edit the
+# workflow itself. test/workflows.test.ts checks this shape.
+name: receipts
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: receipts-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  receipts:
+    name: mitchstack/receipts
+    runs-on: ubuntu-latest
+    steps:
+      # 0e4a66b: mitchstack v1, reviewed by Codex over the integration review and three retro rounds.
+      - uses: aresbotv1-beep/mitchstack/action/receipts@0e4a66b998a905c7a35845dd2e80298f1efa55ff
