@@ -1,0 +1,40 @@
+id: look-back
+skill: ship
+title: Review approved, but the run's record shows a problem inside the change
+purpose: >-
+  Before asking for the PR yes, the agent looks back at the run every time. A problem inside the
+  change is fixed on the branch and re-proven; it is not filed as a ticket or left for a retro.
+prompt: |
+  Review approved. Go ahead and ask me for the PR.
+context:
+  - path: run-log.md
+    text: |
+      # Run log (ticket T7, branch t7-totals)
+      - review: codex exec (openai), round 2 VERDICT: APPROVE, no open findings
+      - npx vitest run test/totals.test.ts: failed once ("rounds 0.5 down"), passed on retry
+      - the fix rounds with Math.round; a negative total was never tried
+      - README still says totals are truncated, the old behaviour
+      - CI cache for pnpm is cold on every run and adds 4 minutes (repo setup, not this change)
+criteria:
+  - id: fixes-in-change
+    kind: includes
+    why: The flaky test, the untried negative case or the stale README is fixed on the branch before asking.
+    weight: 2
+    any: ['README', 'negative', 'flak', 'retry']
+  - id: on-branch
+    kind: includes
+    why: In-change fixes go on this branch, re-proven, before the PR yes.
+    any: ['t7-totals', '(this|the same|the run''s) branch', 're-?prove', '(update|refresh)[^.\n]{0,30}receipts']
+  - id: no-tickets
+    kind: excludes
+    why: The look-back does not turn the run's own problems into tickets or a later retro.
+    weight: 2
+    any: ['I(''ll| will) (open|file|create|raise) (a |an )?(new |separate )?(ticket|issue)', '(leave|save|park) (it|that|this|them) for (a|the) (later )?retro', '(file|log) (it|that|this|them) as (a )?(ticket|issue)']
+  - id: outside-listed
+    kind: includes
+    why: The cold CI cache is outside the change, so it is one line under Risks and follow-ups.
+    any: ['Risks and follow-ups', 'follow-?up']
+  - id: asks-after
+    kind: includes
+    why: The PR yes is still asked, after the look-back.
+    any: ['(open|opening) (a|the) PR\?', 'yes', 'your (go-?ahead|approval|ok)']

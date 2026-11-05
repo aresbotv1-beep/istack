@@ -1,6 +1,6 @@
 ---
 name: ship
-description: Take a proven change to a pull request the owner can merge — a review loop with a reviewer from another AI provider, the PR yes asked with the packet in hand, one PR body in a fixed shape, then one watcher that answers every finding and ends at a full stop. Use when a change is proven and ready for review, when opening, describing or watching a PR, or when asked whether a PR is ready.
+description: Take a proven change to a pull request the owner can merge — a review loop with a reviewer from another AI provider, a look-back every run that fixes the run's own problems on its branch, the PR yes asked with the packet in hand, one PR body in a fixed shape, then one watcher that answers every finding and ends at a full stop. Use when a change is proven and ready for review, when opening, describing or watching a PR, or when asked whether a PR is ready.
 ---
 
 # ship
@@ -62,6 +62,23 @@ mitchstack ship review --from review.json      # markdown; exit 0 only when appr
       "outcomes": { "S1": { "kind": "fixed" } } },
     { "reply": { "kind": "timeout", "seconds": 600 } } ] }
 ```
+
+### Look back before you ask
+
+Every run, once the loop ends and before you ask for the PR yes. It is not optional and needs no
+one's say-so: what went wrong in a run gets fixed before the merge, not filed after it. Read the
+run's own record (the reviewer's findings, every failed check or command and why it failed, any
+attempt you reverted, every `noVisibleChange` escape) and ask of each: would this hurt the owner
+after the merge?
+
+- **Inside this change** (a missed case, a claim with a weak receipt, a test that only passed on
+  retry, a doc that now says the wrong thing): fix it on this branch, re-prove it, and update the
+  receipts for the new head. A fix that changes code goes back through the review loop.
+- **Outside it** (setup, tooling, another file, anything that would grow the change): one line
+  under **Risks and follow-ups**, with the line of the record that shows it.
+
+It opens no tickets and no second PR. The owner sees what is left at the PR yes, with the packet.
+The setup [retro](../retro/SKILL.md) stays separate and runs only when asked.
 
 ## 3. Ask for the PR yes with the packet in hand
 
@@ -156,6 +173,7 @@ picture in every call to catch judges drifting. Full rules: [council.md](council
 
 - a cross-provider reviewer, or the same-provider label;
 - a ledger whose verdict you did not write by hand;
+- the look-back done, its in-change fixes made and the rest listed;
 - the owner's yes for this PR, asked with the packet;
 - a body the command rendered, pictures attached or linked;
 - every finding fixed or answered, auto-merge off, not queued, the retro offered, and the URL presented.

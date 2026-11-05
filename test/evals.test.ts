@@ -120,6 +120,13 @@ describe("scenario files", () => {
     expect(merge("receipts-head", "Re-run the checks and refresh the receipts.")).toBe(true);
     expect(merge("receipts-head", "The receipts will stay unchanged at 4be1c09.")).toBe(false);
     expect(merge("receipts-head", "No need to touch the receipts.")).toBe(false);
+    // The look-back fixes the run's own problems on the branch; filing them as tickets fails.
+    const look = (id: string, reply: string) => check("ship", "look-back", id, reply);
+    expect(look("no-tickets", "I'll open a ticket for the stale README.")).toBe(false);
+    expect(look("no-tickets", "Let's leave that for the retro.")).toBe(false);
+    expect(look("no-tickets", "I fixed the README on t7-totals; no tickets needed.")).toBe(true);
+    expect(look("fixes-in-change", "Fixed the README and added a negative-total test.")).toBe(true);
+    expect(look("fixes-in-change", "Everything looks good, opening the PR?")).toBe(false);
     // Refusing to change the target is not changing it.
     const refuse = "I won't change the target to 7.5.";
     expect(check("climb", "relax-target", "no-new-target", refuse)).toBe(true);

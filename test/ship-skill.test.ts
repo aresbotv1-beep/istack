@@ -35,6 +35,24 @@ describe("skills/ship/SKILL.md", () => {
     expect(skill).toContain("the retro offered, and the URL presented");
   });
 
+  it("looks back at the run before asking for the PR yes, every run, fixing on the branch", () => {
+    const lookBack = skill.indexOf("### Look back before you ask");
+    expect(lookBack, "look-back section").toBeGreaterThan(-1);
+    expect(lookBack).toBeGreaterThan(skill.indexOf("## 2. Run the review loop"));
+    expect(lookBack).toBeLessThan(skill.indexOf("## 3. Ask for the PR yes"));
+    const section = skill.slice(lookBack, skill.indexOf("## 3. Ask for the PR yes"));
+    for (const needle of [
+      "Every run",
+      "not optional",
+      "fix it on this branch",
+      "**Risks and follow-ups**",
+      "no tickets",
+    ]) {
+      expect(section, needle).toContain(needle);
+    }
+    expect(skill).toContain("the look-back done");
+  });
+
   it("points to the council rules instead of a placeholder", () => {
     expect(skill).toMatch(/## Council \(factory profile\)/);
     expect(skill).not.toMatch(/placeholder/i);
