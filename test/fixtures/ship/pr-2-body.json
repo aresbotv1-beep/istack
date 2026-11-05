@@ -1,0 +1,96 @@
+{
+  "problem": "The retro was offered only after the PR URL was handed over, so its record needed a second PR and a second yes, and a run's own mistakes were filed as tickets instead of fixed. Now every run looks back and fixes its own problems before the PR yes, and the retro is offered while the PR is still open.",
+  "summary": "```\nship  review loop ─▶ look-back (every run) ─┬─ inside the ticket ─▶ fix on branch ▸ re-prove ▸ fresh review\n                                            └─ outside ─▶ one line in Risks and follow-ups\n      ─▶ PR yes ▸ body ▸ PR ▸ watch ─▶ ready ─▶ offer retro ─yes─▶ record commits to this PR ▸ receipts refreshed\n```\n\nSkills, docs and evals only: `skills/ship`, `skills/retro`, `AGENTS.md`, two new evals.",
+  "evidence": "| Check | Before | After (head 093f4ef) |\n|---|---|---|\n| The PR's tests at base 753583d | exit 1: 3 failed | exit 0: 47 passed |\n| Look-back test at 1af21b6 | exit 1: 1 failed | exit 0: 6 passed |\n| `npx vitest run` · `tsc` · `biome` | 405 passed | 408 passed · exit 0 · exit 0 |\n| Ship eval baseline (claude -p, 3 runs) | 94.44 | 97.22 |",
+  "notTested": "The look-back scorer is keyword-based; an adversarial wording can still slip past it. The round-3 fixes (S3, S5, S6) were not re-reviewed.",
+  "mergeDanger": {
+    "door": "two-way",
+    "blastRadius": "How agents finish a run with the ship and retro skills. No code path, check or schema changes."
+  },
+  "tryItYourself": [
+    "`git switch claude/retro-before-merge && npm ci`",
+    "`npx vitest run test/retro-climb-skills.test.ts test/ship-skill.test.ts test/evals.test.ts`: 47 passed"
+  ],
+  "reviews": [
+    {
+      "reviewer": "codex · gpt-6.1-sol (openai), via T3 delegate_task",
+      "rounds": [
+        {
+          "reply": {
+            "kind": "reply",
+            "text": "VERDICT: CHANGES\nS1 [should] the eval YAML needs single quotes\nS2 [should] the record must refresh the receipts"
+          },
+          "outcomes": {
+            "S1": { "kind": "fixed", "note": "1af21b6: single-quoted YAML; controls" },
+            "S2": { "kind": "fixed", "note": "1af21b6: stale-head controls" }
+          }
+        },
+        { "reply": { "kind": "reply", "text": "VERDICT: APPROVE" } }
+      ]
+    },
+    {
+      "reviewer": "codex exec · gpt-6.1-sol (openai), look-back commits",
+      "rounds": [
+        {
+          "reply": {
+            "kind": "reply",
+            "text": "VERDICT: CHANGES\nS1 [should] a fix must start a fresh review loop\nS2 [should] define inside the ticket\nS3 [should] leading when/if passes the scorer\nS4 [should] negations pass the scorer"
+          },
+          "outcomes": {
+            "S1": { "kind": "fixed", "note": "6a7d3b3: fresh loop and ledger" },
+            "S2": { "kind": "fixed", "note": "6a7d3b3: anything the ticket covers" },
+            "S3": { "kind": "fixed", "note": "6a7d3b3" },
+            "S4": { "kind": "fixed", "note": "6a7d3b3: negation lookbehind" }
+          }
+        },
+        {
+          "reply": {
+            "kind": "reply",
+            "text": "VERDICT: CHANGES\nS3 [should] leading when/if still passes\nS5 [should] a negated ask passes"
+          },
+          "outcomes": {
+            "S3": { "kind": "fixed", "note": "093f4ef" },
+            "S5": { "kind": "fixed", "note": "093f4ef" }
+          }
+        },
+        {
+          "reply": {
+            "kind": "reply",
+            "text": "VERDICT: CHANGES\nS3 [should] leading when/if still passes\nS5 [should] a negated ask passes\nS6 [should] the cache item must be named"
+          },
+          "outcomes": {
+            "S3": { "kind": "fixed", "note": "093f4ef, not re-reviewed" },
+            "S5": { "kind": "fixed", "note": "093f4ef, not re-reviewed" },
+            "S6": { "kind": "fixed", "note": "093f4ef, not re-reviewed" }
+          }
+        }
+      ]
+    }
+  ],
+  "risks": [
+    "The look-back commits were added by a second Claude Code session on Isaac's go-ahead.",
+    "aresbotv1-beep/workflow still offers the retro after the URL; left alone by Isaac's choice."
+  ],
+  "receipts": {
+    "head": "093f4ef140bba915201c1a8aa79c9a8764445634",
+    "claims": [
+      {
+        "id": "retro-before-merge",
+        "kind": "red-green",
+        "statement": "The ship skill looks back at every run before the PR yes and fixes the run's own problems on its branch; the retro is offered before the merge with its record on the run's own PR; the evals refuse a second PR, stale receipts, deferred fixes and tickets.",
+        "command": "npx vitest run test/retro-climb-skills.test.ts test/ship-skill.test.ts test/evals.test.ts",
+        "red": { "sha": "753583d7e9e98d0a859a457c6dd4c382dc5550fd", "exitCode": 1 },
+        "green": { "sha": "093f4ef140bba915201c1a8aa79c9a8764445634", "exitCode": 0 }
+      },
+      {
+        "id": "look-back-every-run",
+        "kind": "red-green",
+        "statement": "The ship skill has a look-back before the PR yes that runs every run, fixes inside-the-ticket problems on the branch and lists the rest under Risks and follow-ups.",
+        "command": "npx vitest run test/ship-skill.test.ts",
+        "red": { "sha": "1af21b64abeba5066d7c4f9a6bcf810362d4622b", "exitCode": 1 },
+        "green": { "sha": "093f4ef140bba915201c1a8aa79c9a8764445634", "exitCode": 0 }
+      }
+    ],
+    "noVisibleChange": "skills, docs, evals and tests only; nothing renders"
+  }
+}

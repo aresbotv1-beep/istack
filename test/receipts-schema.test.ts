@@ -35,6 +35,12 @@ describe("extractReceipts", () => {
     if (result.ok) expect(result.receipts.claims).toHaveLength(2);
   });
 
+  it("finds the block folded inside a <details> element, as the PR body renders it", () => {
+    const folded = `## Risks\n\nNone.\n\n<details><summary>Receipts</summary>\n\n${block(valid)}\n</details>\n`;
+    const result = extractReceipts(folded);
+    expect(result.ok).toBe(true);
+  });
+
   it("reports a missing block distinctly from an invalid one", () => {
     const result = extractReceipts("## Summary\nno receipts here");
     expect(result.ok).toBe(false);
