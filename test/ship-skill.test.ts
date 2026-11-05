@@ -27,6 +27,14 @@ describe("skills/ship/SKILL.md", () => {
     }
   });
 
+  it("offers the retro at the full stop, before presenting the URL", () => {
+    const fullStop = skill.slice(skill.indexOf("## 7. Full stop"), skill.indexOf("## Council"));
+    const offer = fullStop.indexOf("offer the retro in one line");
+    expect(offer, "retro offer in the full stop").toBeGreaterThan(-1);
+    expect(fullStop.indexOf("Then present the URL")).toBeGreaterThan(offer);
+    expect(skill).toContain("the retro offered, and the URL presented");
+  });
+
   it("points to the council rules instead of a placeholder", () => {
     expect(skill).toMatch(/## Council \(factory profile\)/);
     expect(skill).not.toMatch(/placeholder/i);

@@ -128,7 +128,11 @@ The watcher uses that header to tell your answers from the owner's own words.
 
 Before every push and at the end: **auto-merge off** (already off, or not allowed by the repo,
 is fine) and the PR **not in a merge queue**. If either is on, the watcher says so and you turn
-it off (`gh pr merge <n> --disable-auto`; take it out of the queue). Then present the URL.
+it off (`gh pr merge <n> --disable-auto`; take it out of the queue).
+
+Once the watcher says `ready`, offer the retro in one line ([retro](../retro/SKILL.md)). If the
+owner asks for it, its record is one more commit on this branch: push it, update the `receipts`
+block for the new head, watch again, and come back here. Then present the URL.
 
 **Never merge.** Not with `gh pr merge`, not through a queue, not by enabling auto-merge. The
 run ends when the owner has the URL.
@@ -154,4 +158,4 @@ picture in every call to catch judges drifting. Full rules: [council.md](council
 - a ledger whose verdict you did not write by hand;
 - the owner's yes for this PR, asked with the packet;
 - a body the command rendered, pictures attached or linked;
-- every finding fixed or answered, auto-merge off, not queued, and the URL presented.
+- every finding fixed or answered, auto-merge off, not queued, the retro offered, and the URL presented.

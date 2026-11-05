@@ -1,21 +1,21 @@
 {
   "version": 1,
   "skill": "retro",
-  "skillHash": "a62e4e91a145426c9a47a05fdacb5423e905efad89ed30c3ef5402a785313564",
-  "scenariosHash": "00d112301e565422b3f5bef26737560623f0d195008b02340e8feaa531d26398",
+  "skillHash": "e095a8c1587b4ddb4943d05b9dd198b37469b9abe2de57cb359f27d3c27010f7",
+  "scenariosHash": "584beca337a2d776d9ab20e94f49ca1179e6c78e13c1162edff256f3b5eed876",
   "producedBy": {
     "runner": "claude -p",
     "provider": "anthropic",
     "model": "claude-sonnet-5-5",
     "runs": 3,
-    "date": "2026-11-04",
+    "date": "2026-11-05",
     "mode": "deterministic",
-    "costUsd": 0.076516,
+    "costUsd": 0.150415,
     "costSource": "measured"
   },
   "score": 100,
   "runScores": [
-    100,
+    95.24,
     100,
     100
   ],
@@ -54,6 +54,21 @@
         "no-person": 3,
         "not-filed-yet": 3,
         "record-path": 3
+      }
+    },
+    "before-merge": {
+      "median": 100,
+      "runs": [
+        85.71,
+        100,
+        100
+      ],
+      "passes": {
+        "record-path": 2,
+        "same-pr": 3,
+        "no-second-pr": 3,
+        "receipts-head": 3,
+        "owner-sorts": 3
       }
     }
   }

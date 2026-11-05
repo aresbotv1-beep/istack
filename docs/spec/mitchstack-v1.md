@@ -27,7 +27,7 @@ different from anything else on GitHub.
 groundbreak ─▶ plan ─▶ [GATE 1: Isaac's yes on the ticket/graph]
    (express lane = grill)
 build (isolate + env + brief + repro-first) ─▶ prove (receipts) ─▶ ship (review ▸ council ▸ PR ▸ watch)
-   ─▶ [GATE 2: human merges] ─▶ retro (human-picked → tickets)
+   ─▶ retro offer (human-picked → tickets; record on the same PR) ─▶ [GATE 2: human merges]
 climb: separate mode, also used to improve mitchstack's own skills
 ```
 
@@ -108,11 +108,12 @@ template opens with **the ask**. Ends at gate 1.
    `gh --attach`; Actions artifacts as fallback (forks).
 4. **Watch:** one watcher per PR; every actionable finding fixed or answered in writing after every
    push; comments carry an author header. **Full-stop ending:** auto-merge off (already-off is fine),
-   not in a merge queue, rechecked before every push; verdict ready / waiting / blocked; present the
-   URL.
+   not in a merge queue, rechecked before every push; verdict ready / waiting / blocked; offer the
+   retro; present the URL.
 
 ### 6. `retro` — human-picked, becomes tickets
-Offered in one line; run only on request. Categories: navigation, automated checks, standards,
+Offered in one line before the merge, once the watcher says ready; run only on request. Its
+record is one more commit on the run's own PR (a retro after the merge needs its own PR yes). Categories: navigation, automated checks, standards,
 steering-file bloat, tool economy, information access. Sorted Accepted / Rejected / Backlog;
 anything a lint could catch becomes a check. Picks become `gh issue create` tickets. Recorded in
 `docs/factory/retros/`.

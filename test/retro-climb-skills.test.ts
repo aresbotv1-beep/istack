@@ -91,6 +91,15 @@ describe("retro", () => {
   it("records the retro in docs/factory/retros", () => {
     expect(retro).toContain("docs/factory/retros/<YYYY-MM-DD>.md");
   });
+
+  it("is offered before the merge, so its record lands on the run's own PR", () => {
+    expectInOrder(retro, ["## 1. Offer it, do not run it", "before the merge"]);
+    expect(retro).toContain("one more commit on the run's branch");
+    // The receipts check refuses receipts made against an older head.
+    expect(retro).toContain("update the `receipts` block");
+    // After the merge it is a separate change that needs its own PR yes.
+    expectInOrder(retro, ["When the PR has already merged", "the owner's yes for that PR"]);
+  });
 });
 
 describe("climb", () => {

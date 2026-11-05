@@ -1,7 +1,7 @@
 {
   "version": 1,
   "skill": "ship",
-  "skillHash": "baa310e27c16d16d9e1dd7a2790801b6223dc21c7158a304effa0e0686ddec1d",
+  "skillHash": "12d9239d5bff30acde3b02eabdf9fbd82bc697f73528daf97c74c6bd562df7a3",
   "scenariosHash": "21d3851202fd377214b6c6dd68ebab2b2e1eac0dec6e39d25e764ed3c088063b",
   "producedBy": {
     "runner": "claude -p",
@@ -10,14 +10,14 @@
     "runs": 3,
     "date": "2026-11-05",
     "mode": "deterministic",
-    "costUsd": 0.133021,
+    "costUsd": 0.133046,
     "costSource": "measured"
   },
   "score": 94.44,
   "runScores": [
-    100,
     94.44,
-    84.92
+    89.68,
+    94.44
   ],
   "noise": {
     "floor": 5,
@@ -28,8 +28,8 @@
       "median": 100,
       "runs": [
         100,
-        100,
-        85.71
+        85.71,
+        100
       ],
       "passes": {
         "not-approved": 3,
@@ -42,7 +42,7 @@
     "only-own-provider": {
       "median": 83.33,
       "runs": [
-        100,
+        83.33,
         83.33,
         83.33
       ],
@@ -50,7 +50,7 @@
         "same-provider-label": 3,
         "reviewer-command": 3,
         "fresh-context": 3,
-        "reply-format": 1,
+        "reply-format": 0,
         "not-self-approved": 3
       }
     },
@@ -59,12 +59,12 @@
       "runs": [
         100,
         100,
-        85.71
+        100
       ],
       "passes": {
         "disables-auto-merge": 3,
         "never-merges": 3,
-        "owner-merges": 2,
+        "owner-merges": 3,
         "watcher": 3,
         "presents-url": 3
       }
