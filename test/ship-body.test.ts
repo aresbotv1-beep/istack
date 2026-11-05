@@ -143,6 +143,14 @@ describe("renderPrBody", () => {
     expect(result.visibleChars).toBeLessThan(result.body.length);
   });
 
+  it("counts a literal <details> in the author's text as visible (S1)", () => {
+    const code = "```html\n<details>\n" + "x".repeat(2600) + "\n</details>\n```";
+    const result = renderPrBody(input({ evidence: code }));
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.visibleChars).toBeGreaterThan(2600);
+  });
+
   it("re-renders PR #2's content under 2,500 visible characters, unhappy verdict in view", () => {
     const fixture = JSON.parse(
       readFileSync(new URL("./fixtures/ship/pr-2-body.json", import.meta.url), "utf8"),

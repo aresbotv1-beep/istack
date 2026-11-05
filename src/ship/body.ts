@@ -140,12 +140,20 @@ export function renderPrBody(input: PrBodyInput, template = loadPrBodyTemplate()
   const body = shaped.replace(/\{\{(\w+)\}\}/g, (match, name: string) =>
     (SLOTS as readonly string[]).includes(name) ? values[name as Slot] : match,
   );
-  return { ok: true, body, visibleChars: visibleLength(body) };
+  // Only the blocks this renderer folds count as hidden; a <details> in the author's own text
+  // (say, inside a code sample) is measured as visible.
+  const folded = values.reviewLog.length + foldedLength(shaped, "receipts", receiptsBlock);
+  return { ok: true, body, visibleChars: body.length - folded };
 }
 
-/** Characters a reader sees without opening a folded <details> block. */
-export function visibleLength(body: string): number {
-  return body.replace(/<details>[\s\S]*?<\/details>/g, "").length;
+/** Length, once filled, of the template's <details>…</details> block that holds `{{slot}}`. */
+function foldedLength(template: string, slot: string, value: string): number {
+  const at = template.indexOf(`{{${slot}}}`);
+  const open = template.lastIndexOf("<details>", at);
+  const close = template.indexOf("</details>", at);
+  if (at < 0 || open < 0 || close < 0) return 0;
+  const between = template.slice(open, at).includes("</details>");
+  return between ? 0 : close + "</details>".length - open - `{{${slot}}}`.length + value.length;
 }
 
 function withPrefix(prefix: string, path: string): string {
