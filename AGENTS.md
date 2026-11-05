@@ -54,7 +54,8 @@ A claim without a receipt does not count.
 
 - **Red → green.** Before fixing, show the problem happening: a failing test, a failing command, or
   a "before" picture. After fixing, the same check passes. One focused test when nothing covers the
-  behavior; no pile of smoke tests.
+  behavior; no pile of smoke tests. For a visible change, a before picture of the broken state is
+  the red receipt; it does not also need a failing command.
 - **Pictures for visible changes.** Headless before/after pairs from the real running app. Never a
   desktop screen recording. A short headless clip only when the change is about motion or timing.
 - **Receipts live in the pull request body** as one fenced `receipts` JSON block (schema in

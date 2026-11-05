@@ -129,9 +129,10 @@ the eval score.
 - Reads the receipts block from the PR body with the read-only token; needs no secrets or LLM calls;
   triggers on `pull_request`, never `pull_request_target`; no `paths:` filter (decides in-job).
 - **Present tier (default):** visible-change patterns from `mitchstack.yaml` changed → requires a
-  before/after pair with differing hashes tied to the head SHA, a merge-danger door, and a red→green
-  record; labels the PR "receipts: present, not verified". Escape: `no-visible-change: <reason>`,
-  counted by retro.
+  before/after pair with differing hashes tied to the head SHA and a merge-danger door (a before
+  picture of the broken state is the red receipt; no separate red→green command is required);
+  labels the PR "receipts: present, not verified". Escape: `no-visible-change: <reason>`, counted
+  by retro.
 - **Verified tier (opt-in):** CI re-runs the evidence — the claimed test fails at base + new test
   and passes at head; the repo's Playwright script re-captures at base and head.
 

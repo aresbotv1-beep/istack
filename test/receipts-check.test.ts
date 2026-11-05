@@ -131,3 +131,30 @@ describe("visibleChangeFromConfig", () => {
     expect(result.notes.join("\n")).toMatch(/invalid/);
   });
 });
+
+describe("a before picture is the red receipt for a visible change", () => {
+  it("passes a visual PR that carries the pair and no separate red→green command", () => {
+    const text = body("honest-visual.md");
+    const json = JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1));
+    json.claims = json.claims.filter((c: { kind: string }) => c.kind === "visual");
+    const visualOnly = `## Evidence\n\n\`\`\`receipts\n${JSON.stringify(json, null, 2)}\n\`\`\`\n`;
+    const result = checkReceipts({
+      body: visualOnly,
+      headSha: HEAD,
+      changedFiles: VISIBLE,
+      visibleChange,
+    });
+    expect(result.conclusion).toBe("pass");
+  });
+
+  it("is written down in AGENTS.md and the spec", () => {
+    const rule = /a before\s+picture\s+of\s+the\s+broken\s+state\s+is\s+the\s+red\s+receipt/i;
+    expect(readFileSync(join(import.meta.dirname, "..", "AGENTS.md"), "utf8")).toMatch(rule);
+    const spec = readFileSync(
+      join(import.meta.dirname, "..", "docs/spec/mitchstack-v1.md"),
+      "utf8",
+    );
+    expect(spec).toMatch(rule);
+    expect(spec).not.toMatch(/a merge-danger door, and a red→green\s+record/);
+  });
+});
