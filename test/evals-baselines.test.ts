@@ -58,3 +58,48 @@ describe("committed eval baselines", () => {
     );
   });
 });
+
+describe("baseline --from (review G5, G6)", () => {
+  const savedRun = (copy: string, overrides: Record<string, unknown>) => {
+    const r = {
+      skill: "retro",
+      status: "complete",
+      skillHash: loadSkill(copy, "retro").hash,
+      scenariosHash: loadScenarios(copy, "retro").hash,
+      runScores: [100, 100, 100],
+      ...overrides,
+    };
+    const path = join(copy, "r.json");
+    writeFileSync(path, JSON.stringify({ results: [r] }));
+    return path;
+  };
+  const attempt = async (copy: string, path: string) => {
+    const err: string[] = [];
+    const code = await runEvalsCli(["baseline", "--skill", "retro", "--from", path], {
+      cwd: copy,
+      out: () => {},
+      err: (l) => err.push(l),
+    });
+    return { code, err: err.join("\n") };
+  };
+  const fresh = () => {
+    const copy = mkdtempSync(join(tmpdir(), "ms-evals-from-"));
+    cpSync(join(root, "skills"), join(copy, "skills"), { recursive: true });
+    cpSync(join(root, "evals"), join(copy, "evals"), { recursive: true });
+    return copy;
+  };
+
+  it("refuses a run scored on other scenarios", async () => {
+    const copy = fresh();
+    const r = await attempt(copy, savedRun(copy, { scenariosHash: "old" }));
+    expect(r.code).toBe(2);
+    expect(r.err).toMatch(/other scenarios/);
+  });
+
+  it("refuses a saved run of fewer than 3 runs", async () => {
+    const copy = fresh();
+    const r = await attempt(copy, savedRun(copy, { runScores: [100] }));
+    expect(r.code).toBe(2);
+    expect(r.err).toMatch(/1 run/);
+  });
+});

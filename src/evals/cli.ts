@@ -136,9 +136,23 @@ export async function runEvalsCli(
         io.err(`${from} has no result for ${name}`);
         return 2;
       }
-      if (command === "baseline" && result.skillHash !== loadSkill(io.cwd, name).hash) {
-        io.err(`${from}: ${name} was scored on other skill text (or degraded); not a baseline`);
-        return 2;
+      if (command === "baseline") {
+        // The written baseline must describe the skill and scenarios as they are now, from a
+        // median of at least 3 complete runs, exactly as a fresh `evals baseline` would.
+        const problem =
+          result.skillHash !== loadSkill(io.cwd, name).hash
+            ? "was scored on other skill text (or degraded)"
+            : result.scenariosHash !== loadScenarios(io.cwd, name).hash
+              ? "was scored on other scenarios"
+              : result.status !== "complete"
+                ? `did not complete (${result.status})`
+                : (result.runScores?.length ?? 0) < 3
+                  ? `has ${result.runScores?.length ?? 0} run${result.runScores?.length === 1 ? "" : "s"}; a baseline needs 3 or more`
+                  : undefined;
+        if (problem) {
+          io.err(`${from}: ${name} ${problem}; not a baseline`);
+          return 2;
+        }
       }
     } else {
       let skill: ReturnType<typeof loadSkill>;
