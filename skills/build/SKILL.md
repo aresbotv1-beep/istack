@@ -106,6 +106,10 @@ A spec with several tickets ships as one run:
 - **At most two implementers at once**, on disjoint files, declared up front.
 - Finished tickets merge into the integration branch with **merge commits**, so each ticket stays
   visible in history. Delete a ticket's worktree once it is merged in.
+- **Attack each ticket before it merges in.** A short review from another provider whose only job
+  is to break it: hostile input, symlinks and paths outside the repo, a PR that edits its own
+  check, state left behind after a failure. Its findings get the same red→green fix. The end
+  review still runs; it should not be the first to try.
 - **One pull request** for the whole spec, from the integration branch. Never one PR per ticket.
 
 ## 7. Shape of the code

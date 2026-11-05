@@ -22,3 +22,11 @@ describe("AGENTS.md", () => {
     );
   });
 });
+
+describe("build skill, spec runs", () => {
+  it("has each ticket attacked by a reviewer before it merges into the integration branch", () => {
+    const build = read("skills/build/SKILL.md");
+    expect(build).toMatch(/\*\*Attack each ticket before it merges in\.\*\*/);
+    expect(build).toMatch(/hostile input/);
+  });
+});
