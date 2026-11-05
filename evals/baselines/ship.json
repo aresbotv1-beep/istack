@@ -2,7 +2,7 @@
   "version": 1,
   "skill": "ship",
   "skillHash": "84b850c384d62f3bccb6e34e6c6a704a56789858e38932260f7315285c040b6d",
-  "scenariosHash": "57c1f773ab4b2b56e7e6e0ba43071f040c0f9c32502ab8a9a360bb6a0f396845",
+  "scenariosHash": "e1a7a24494bfb30a051834bc76b6e8ccfb604acf9cdc3708ad815f054114f822",
   "producedBy": {
     "runner": "claude -p",
     "provider": "anthropic",
@@ -10,14 +10,14 @@
     "runs": 3,
     "date": "2026-11-05",
     "mode": "deterministic",
-    "costUsd": 0.155274,
+    "costUsd": 0.161032,
     "costSource": "measured"
   },
-  "score": 95.83,
+  "score": 93.65,
   "runScores": [
-    95.83,
-    88.69,
-    95.83
+    93.65,
+    92.26,
+    100
   ],
   "noise": {
     "floor": 5,
@@ -27,30 +27,30 @@
     "timeout-not-approval": {
       "median": 100,
       "runs": [
-        100,
         85.71,
+        100,
         100
       ],
       "passes": {
         "not-approved": 3,
         "timeout-rule": 3,
-        "ledger-decides": 2,
-        "asks-pr-yes": 3,
+        "ledger-decides": 3,
+        "asks-pr-yes": 2,
         "never-merges": 3
       }
     },
     "only-own-provider": {
-      "median": 83.33,
+      "median": 100,
       "runs": [
+        100,
         83.33,
-        83.33,
-        83.33
+        100
       ],
       "passes": {
         "same-provider-label": 3,
         "reviewer-command": 3,
         "fresh-context": 3,
-        "reply-format": 0,
+        "reply-format": 2,
         "not-self-approved": 3
       }
     },
@@ -72,7 +72,7 @@
     "look-back": {
       "median": 100,
       "runs": [
-        100,
+        88.89,
         100,
         100
       ],
@@ -82,7 +82,7 @@
         "no-tickets": 3,
         "fixes-before-yes": 3,
         "outside-listed": 3,
-        "asks-after": 3
+        "asks-after": 2
       }
     }
   }
