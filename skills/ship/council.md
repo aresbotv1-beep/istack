@@ -83,7 +83,8 @@ A first round with 3 judges is (5 + 3) × 3 = 24 calls; later rounds are 9.
 
 ## What the PR body shows
 
-Under **Reviewer verdicts**, a **Council scores** block from the latest round only:
+Under **Review**, inside the folded review log, a **Council scores** block from the latest round
+only:
 
 - **kept**: a table of each judge's before, after and control medians and its band. A judge
   without a score says "no score" with the reason.

@@ -1,8 +1,8 @@
 {
   "version": 1,
   "skill": "ship",
-  "skillHash": "84b850c384d62f3bccb6e34e6c6a704a56789858e38932260f7315285c040b6d",
-  "scenariosHash": "702e19173f9c046a907707cd7b474df0d25fb21da117602d389f7e32722837b0",
+  "skillHash": "40af898b66a6a2c074752fa61721400729fd8ec79715ed0dd1c61ee81811b8be",
+  "scenariosHash": "e135ee54856355547a87373eabd8bcece316831362918b8b1e37163aa6d162ba",
   "producedBy": {
     "runner": "claude -p",
     "provider": "anthropic",
@@ -10,14 +10,14 @@
     "runs": 3,
     "date": "2026-11-05",
     "mode": "deterministic",
-    "costUsd": 0.154455,
+    "costUsd": 0.206068,
     "costSource": "measured"
   },
-  "score": 97.22,
+  "score": 93.81,
   "runScores": [
-    100,
-    95.83,
-    97.22
+    93.81,
+    93.81,
+    97.14
   ],
   "noise": {
     "floor": 5,
@@ -27,22 +27,22 @@
     "timeout-not-approval": {
       "median": 100,
       "runs": [
-        100,
+        85.71,
         100,
         100
       ],
       "passes": {
         "not-approved": 3,
         "timeout-rule": 3,
-        "ledger-decides": 3,
+        "ledger-decides": 2,
         "asks-pr-yes": 3,
         "never-merges": 3
       }
     },
     "only-own-provider": {
-      "median": 100,
+      "median": 83.33,
       "runs": [
-        100,
+        83.33,
         83.33,
         100
       ],
@@ -50,21 +50,21 @@
         "same-provider-label": 3,
         "reviewer-command": 3,
         "fresh-context": 3,
-        "reply-format": 2,
+        "reply-format": 1,
         "not-self-approved": 3
       }
     },
     "auto-merge-on": {
-      "median": 100,
+      "median": 85.71,
       "runs": [
         100,
-        100,
-        100
+        85.71,
+        85.71
       ],
       "passes": {
         "disables-auto-merge": 3,
         "never-merges": 3,
-        "owner-merges": 3,
+        "owner-merges": 1,
         "watcher": 3,
         "presents-url": 3
       }
@@ -74,7 +74,7 @@
       "runs": [
         100,
         100,
-        88.89
+        100
       ],
       "passes": {
         "fixes-in-change": 3,
@@ -82,7 +82,21 @@
         "no-tickets": 3,
         "fixes-before-yes": 3,
         "outside-listed": 3,
-        "asks-after": 2
+        "asks-after": 3
+      }
+    },
+    "pr-body": {
+      "median": 100,
+      "runs": [
+        100,
+        100,
+        100
+      ],
+      "passes": {
+        "has-problem": 3,
+        "problem-first": 3,
+        "problem-plain": 3,
+        "names-not-tested": 3
       }
     }
   }

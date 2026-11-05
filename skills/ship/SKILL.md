@@ -94,12 +94,27 @@ the ticket or to an earlier PR is not a yes to this one.
 mitchstack ship body --from body.json > body.md
 ```
 
-The shape is fixed by [pr-body.md](pr-body.md): **Summary** (the smallest picture: pseudocode, a
-call tree, a file tree, a diagram or a diff sketch) → **Evidence** → **Merge danger** (door and
-blast radius) → **Try it yourself** → **Reviewer verdicts** → **Open disputes** → **Risks and
-follow-ups** → the one `receipts` block. The command refuses to render without a door or
-try-it-yourself steps, and refuses receipts that would fail the check. Every reviewer is listed
-with its real verdict; a reviewer with no score says "no score". Never edit the verdicts by hand.
+The body is a one-minute briefing for the owner, not a lab notebook. The shape is fixed by
+[pr-body.md](pr-body.md): **Problem** (one or two plain sentences, no heading) → **Summary** (the
+smallest picture: pseudocode, a call tree, a file tree, a diagram or a diff sketch) →
+**Evidence** (before/after) → **Not tested** → **Merge danger** (door and blast radius) → **Try it
+yourself** → **Review** → **Open disputes** (only when there are any) → **Risks and follow-ups** →
+the one `receipts` block.
+
+- **Problem** says what was wrong or missing, and for whom, before anything about the code.
+  BAD: "Done when: the renderer emits slots in order; adds `problem` to `body.json`."
+  GOOD: "Saving the settings twice added two rows, so every setting showed up twice."
+- **Not tested** names what the proof does not cover. When the proof covers everything, write
+  "Nothing left out." Never leave it to Risks.
+- **Review** is one line per reviewer: its real verdict (bold when not approved), the rounds used
+  and "no score" when no council scored it. The round-by-round log, the findings table and any
+  council scores sit inside a folded `<details>` block below it; the receipts block is folded the
+  same way. An unhappy verdict is never folded away.
+- Keep the visible body (everything outside `<details>`) to about 2,500 characters. The command
+  warns above that; move detail into the folded blocks or a linked file rather than the body.
+
+The command refuses to render without the problem, the not-tested line, a door or try-it-yourself
+steps, and refuses receipts that would fail the check. Never edit the verdicts by hand.
 
 ## 5. Open it
 

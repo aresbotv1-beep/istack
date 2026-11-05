@@ -7,16 +7,38 @@ import type { BuilderOutcome, FindingRecord, Ledger, LedgerRound } from "./ledge
  */
 export function renderReviewerVerdicts(ledgers: Ledger[]): string {
   if (ledgers.length === 0) return "No reviewer ran. **not approved**.";
-  const lines = [
+  return [
     "| Reviewer | Verdict | Rounds | Score | Why |",
     "|---|---|---|---|---|",
     ...ledgers.map(
       (l) =>
         `| ${cell(l.reviewer)} | ${verdictText(l)} | ${l.rounds.length} of ${l.budget} | no score | ${cell(l.reason)} |`,
     ),
-  ];
+    "",
+    renderReviewRounds(ledgers),
+  ].join("\n");
+}
+
+/**
+ * One line per reviewer for the PR body: its real verdict (bold when not approved), the rounds
+ * used and "no score". The rounds themselves go in the folded review log.
+ */
+export function renderReviewerLines(ledgers: Ledger[]): string {
+  if (ledgers.length === 0) return "No reviewer ran. **not approved**.";
+  return ledgers
+    .map(
+      (l) =>
+        `- **${l.reviewer.replaceAll("\n", " ")}**: ${verdictText(l)}, ${l.rounds.length} of ${l.budget} rounds, no score. ${sentence(l.reason)}`,
+    )
+    .join("\n");
+}
+
+/** Each reviewer's rounds and findings table: the detail behind the verdict lines. */
+export function renderReviewRounds(ledgers: Ledger[]): string {
+  const lines: string[] = [];
   for (const ledger of ledgers) {
-    lines.push("", `**${ledger.reviewer}**, round by round; budget ${ledger.budgetReason}:`, "");
+    if (lines.length > 0) lines.push("");
+    lines.push(`**${ledger.reviewer}**, round by round; budget ${ledger.budgetReason}:`, "");
     for (const round of ledger.rounds) lines.push(`- ${roundText(round)}`);
     if (ledger.rounds.length === 0) lines.push("- no reply yet");
     if (ledger.findings.length > 0) {
@@ -75,4 +97,9 @@ function describe(outcome: BuilderOutcome): string {
 
 function cell(text: string): string {
   return text.replaceAll("|", "\\|").replaceAll("\n", " ");
+}
+
+function sentence(text: string): string {
+  const flat = text.replaceAll("\n", " ").trim();
+  return flat.charAt(0).toUpperCase() + flat.slice(1);
 }

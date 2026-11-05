@@ -117,8 +117,10 @@ describe("mitchstack ship council", () => {
     writeFileSync(
       join(dir, "body.json"),
       JSON.stringify({
+        problem: "The home page header was cut off on small screens.",
         summary: "new header",
         evidence: "pictures attached",
+        notTested: "Nothing left out.",
         mergeDanger: { door: "two-way", blastRadius: "the home page header" },
         tryItYourself: ["`npm run dev`"],
         reviews: [],
@@ -132,8 +134,12 @@ describe("mitchstack ship council", () => {
     expect(body.out).toContain("### Council scores");
     expect(body.out).toContain("No council scores.");
     expect(body.out).not.toMatch(/\| (9|10) \|/);
+    // Folded into the review log under Review, before Risks and the receipts.
+    const folded = body.out.indexOf("<details><summary>Review log</summary>");
+    expect(folded).toBeGreaterThan(body.out.indexOf("## Review"));
+    expect(body.out.indexOf("### Council scores")).toBeGreaterThan(folded);
     expect(body.out.indexOf("### Council scores")).toBeLessThan(
-      body.out.indexOf("## Open disputes"),
+      body.out.indexOf("## Risks and follow-ups"),
     );
   });
 

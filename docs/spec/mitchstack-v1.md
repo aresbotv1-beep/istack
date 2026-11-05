@@ -102,9 +102,11 @@ template opens with **the ask**. Ends at gate 1.
    the band is discarded. Rescored only when visible files changed. Per-PR budget cap → "no
    council" when exhausted. Scores are measurements; a council remark blocks only once turned into
    a repro.
-3. **Ask for the PR yes with the packet in hand**, then open it. Body: Summary (smallest picture) →
-   Evidence → Merge danger (door + blast radius) → Try it yourself → reviewer verdicts + score table
-   (unhappy ones included, "no score" never invented) → Open disputes → risks. Media via
+3. **Ask for the PR yes with the packet in hand**, then open it. Body (a one-minute briefing,
+   ~2,500 visible characters): Problem → Summary (smallest picture) → Evidence → Not tested →
+   Merge danger (door + blast radius) → Try it yourself → Review, one line per reviewer (unhappy
+   ones included, "no score" never invented; round log and council scores folded in `<details>`)
+   → Open disputes when any → risks → receipts, folded. Media via
    `gh --attach`; Actions artifacts as fallback (forks).
 4. **Watch:** one watcher per PR; every actionable finding fixed or answered in writing after every
    push; comments carry an author header. **Full-stop ending:** auto-merge off (already-off is fine),

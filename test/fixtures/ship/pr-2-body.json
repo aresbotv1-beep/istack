@@ -68,8 +68,8 @@
     }
   ],
   "risks": [
-    "The look-back commits were added by a second Claude Code session on Isaac's go-ahead.",
-    "aresbotv1-beep/workflow still offers the retro after the URL; left alone by Isaac's choice."
+    "The look-back commits were added by a second Claude Code session on the owner's go-ahead.",
+    "aresbotv1-beep/workflow still offers the retro after the URL; left alone by the owner's choice."
   ],
   "receipts": {
     "head": "093f4ef140bba915201c1a8aa79c9a8764445634",
