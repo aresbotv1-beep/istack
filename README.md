@@ -18,6 +18,20 @@ build ─▶ prove ─▶ ship ─▶ [you merge]
 Exactly two human decisions: you approve the ticket, and you merge. Everything between is the
 agent's job, and the agent has to show its work. The full contract is in [AGENTS.md](AGENTS.md).
 
+## See it
+
+The proof travels with the pull request, and a check on every pull request reads it. Proof made
+on an older version of the change doesn't count:
+
+![The check failing: the proof was made on an older version of the change](assets/demo/receipts-fail.png)
+
+Proof made on the exact change being merged passes:
+
+![The check passing: the proof matches the change being merged](assets/demo/receipts-pass.png)
+
+Both are the real checker's output on two sample pull requests. Rebuild them with
+`npm run build && node scripts/demo-pictures.mjs`.
+
 ## Install
 
 One line per host:
