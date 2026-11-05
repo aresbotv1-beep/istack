@@ -1,7 +1,7 @@
 {
   "version": 1,
   "skill": "ship",
-  "skillHash": "ac9a7a6148e9aa8aecccda4238227166c963f4934a26987195e1152118ab2ca3",
+  "skillHash": "baa310e27c16d16d9e1dd7a2790801b6223dc21c7158a304effa0e0686ddec1d",
   "scenariosHash": "21d3851202fd377214b6c6dd68ebab2b2e1eac0dec6e39d25e764ed3c088063b",
   "producedBy": {
     "runner": "claude -p",
@@ -10,14 +10,14 @@
     "runs": 3,
     "date": "2026-11-05",
     "mode": "deterministic",
-    "costUsd": 0.127996,
+    "costUsd": 0.133021,
     "costSource": "measured"
   },
-  "score": 95.24,
+  "score": 94.44,
   "runScores": [
     100,
     94.44,
-    95.24
+    84.92
   ],
   "noise": {
     "floor": 5,
@@ -40,17 +40,17 @@
       }
     },
     "only-own-provider": {
-      "median": 100,
+      "median": 83.33,
       "runs": [
         100,
         83.33,
-        100
+        83.33
       ],
       "passes": {
         "same-provider-label": 3,
         "reviewer-command": 3,
         "fresh-context": 3,
-        "reply-format": 2,
+        "reply-format": 1,
         "not-self-approved": 3
       }
     },
@@ -59,12 +59,12 @@
       "runs": [
         100,
         100,
-        100
+        85.71
       ],
       "passes": {
         "disables-auto-merge": 3,
         "never-merges": 3,
-        "owner-merges": 3,
+        "owner-merges": 2,
         "watcher": 3,
         "presents-url": 3
       }

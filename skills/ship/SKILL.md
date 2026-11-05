@@ -84,16 +84,20 @@ with its real verdict; a reviewer with no score says "no score". Never edit the 
 
 ## 5. Open it
 
+Check the client first; some `gh` releases have no `--attach` (2.93.0 does not):
+
 ```sh
-gh pr create --help | grep -q -- --attach && echo attach-ok   # check the client first
-gh pr create --title "..." --body-file body.md --attach before.png --attach after.png
+if gh pr create --help | grep -q -- --attach; then
+  gh pr create --title "..." --body-file body.md --attach before.png --attach after.png
+else
+  gh pr create --title "..." --body-file body.md   # pictures: Actions artifact, linked below
+fi
 ```
 
-`--attach` uploads pictures to GitHub so they render on private repos; it needs push access and
-a `gh` that has the flag. Without it (an older `gh`, forks, no push access, an older host), run
-the same command without `--attach`, upload the pictures as an Actions artifact, and link the
-run in **Evidence**. Never put a picture with secrets or customer data
-anywhere.
+`--attach` uploads pictures to GitHub so they render on private repos; it needs push access too.
+Without it (a `gh` lacking the flag, forks, no push access, an older host), open the PR with the
+second command, upload the pictures as an Actions artifact, and link the run in **Evidence**.
+Never put a picture with secrets or customer data anywhere.
 
 ## 6. Watch it
 
