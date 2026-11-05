@@ -1,8 +1,8 @@
 {
   "version": 1,
   "skill": "ship",
-  "skillHash": "0b7f60f398423f8c1e0c906b6d3332d3c90fbab921aa10e7d1d592aa5da51f14",
-  "scenariosHash": "4244b40b0680d45e37746e1e140c031eb17ecd91a6b0fbf6d666a38a981fbf54",
+  "skillHash": "84b850c384d62f3bccb6e34e6c6a704a56789858e38932260f7315285c040b6d",
+  "scenariosHash": "03729ea13d20c45d559b4a52adf5c020b8d9351a6b7d7a650e6e342cb9085406",
   "producedBy": {
     "runner": "claude -p",
     "provider": "anthropic",
@@ -10,14 +10,14 @@
     "runs": 3,
     "date": "2026-11-05",
     "mode": "deterministic",
-    "costUsd": 0.153202,
+    "costUsd": 0.186307,
     "costSource": "measured"
   },
-  "score": 88.69,
+  "score": 86.7,
   "runScores": [
-    85.12,
-    88.69,
-    95.83
+    92.26,
+    86.7,
+    86.7
   ],
   "noise": {
     "floor": 5,
@@ -25,16 +25,16 @@
   },
   "scenarios": {
     "timeout-not-approval": {
-      "median": 71.43,
+      "median": 85.71,
       "runs": [
-        71.43,
-        71.43,
-        100
+        100,
+        85.71,
+        85.71
       ],
       "passes": {
         "not-approved": 3,
         "timeout-rule": 3,
-        "ledger-decides": 1,
+        "ledger-decides": 3,
         "asks-pr-yes": 1,
         "never-merges": 3
       }
@@ -70,16 +70,17 @@
       }
     },
     "look-back": {
-      "median": 100,
+      "median": 77.78,
       "runs": [
         100,
-        100,
-        100
+        77.78,
+        77.78
       ],
       "passes": {
-        "fixes-in-change": 3,
+        "fixes-in-change": 1,
         "on-branch": 3,
         "no-tickets": 3,
+        "fixes-before-yes": 3,
         "outside-listed": 3,
         "asks-after": 3
       }

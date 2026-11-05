@@ -71,11 +71,13 @@ run's own record (the reviewer's findings, every failed check or command and why
 attempt you reverted, every `noVisibleChange` escape) and ask of each: would this hurt the owner
 after the merge?
 
-- **Inside this change** (a missed case, a claim with a weak receipt, a test that only passed on
-  retry, a doc that now says the wrong thing): fix it on this branch, re-prove it, and update the
-  receipts for the new head. A fix that changes code goes back through the review loop.
-- **Outside it** (setup, tooling, another file, anything that would grow the change): one line
-  under **Risks and follow-ups**, with the line of the record that shows it.
+- **Inside this change**, meaning anything the ticket covers, including a doc or test the change
+  made wrong, wherever it lives (a missed case, a claim with a weak receipt, a test that only
+  passed on retry, a README that now describes the old behaviour): fix it on this branch before
+  you ask, re-prove it, and update the receipts for the new head. A fix that changes code or
+  docs starts a fresh review loop and a fresh ledger; keep the earlier rounds' verdicts in the body.
+- **Outside it** (setup, tooling, anything the ticket did not ask for): one line under
+  **Risks and follow-ups**, with the line of the record that shows it.
 
 It opens no tickets and no second PR. The owner sees what is left at the PR yes, with the packet.
 The setup [retro](../retro/SKILL.md) stays separate and runs only when asked.

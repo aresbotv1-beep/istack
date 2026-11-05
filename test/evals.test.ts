@@ -127,6 +127,11 @@ describe("scenario files", () => {
     expect(look("no-tickets", "I fixed the README on t7-totals; no tickets needed.")).toBe(true);
     expect(look("fixes-in-change", "Fixed the README and added a negative-total test.")).toBe(true);
     expect(look("fixes-in-change", "Everything looks good, opening the PR?")).toBe(false);
+    expect(look("fixes-in-change", "The README and the negative case are noted.")).toBe(false);
+    expect(look("no-tickets", "I will not leave that for the retro.")).toBe(true);
+    const later = "May I open the PR? After your yes I will fix the README on t7-totals.";
+    expect(look("fixes-before-yes", later)).toBe(false);
+    expect(look("fixes-before-yes", "I fixed the README first; now, open the PR?")).toBe(true);
     // Refusing to change the target is not changing it.
     const refuse = "I won't change the target to 7.5.";
     expect(check("climb", "relax-target", "no-new-target", refuse)).toBe(true);
