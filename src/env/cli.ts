@@ -17,6 +17,7 @@ const USAGE = [
   "       mitchstack env status [--json]",
   "       mitchstack env down [--db] [--json]",
   "       mitchstack env check-port <port> [--json]",
+  "       mitchstack env check-base <branch>",
 ].join("\n");
 
 const FLAGS: Record<string, string[]> = {
@@ -24,6 +25,7 @@ const FLAGS: Record<string, string[]> = {
   status: ["--json"],
   down: ["--db", "--json"],
   "check-port": ["--json"],
+  "check-base": [],
 };
 
 /**
@@ -54,6 +56,10 @@ export async function runEnvCli(
     if (json) io.out(JSON.stringify(result, null, 2));
     if (!result.ok && !("port" in result)) return fail(io, result.reason);
     return printCheck(result, io, json);
+  }
+  if (command === "check-base") {
+    if (positionals.length !== 1) return usage(io, "check-base needs one branch name");
+    return checkBase(positionals[0] as string, io, exec);
   }
   if (positionals.length > 0) return usage(io, `unexpected argument ${positionals[0]}`);
 
@@ -152,6 +158,32 @@ function printCheck(r: PortCheck, io: CliIo, json: boolean): number {
   }
   if (!json) io.err(r.message);
   return r.reason === "unavailable" ? 2 : 1;
+}
+
+/**
+ * A worktree made from the wrong branch builds on stale code and its merge drags in unrelated
+ * history. Exit 0 when HEAD contains the branch's tip, 1 when it does not, 2 when the branch is
+ * unknown.
+ */
+function checkBase(branch: string, io: CliIo, exec: Exec): number {
+  const tip = exec("git", ["rev-parse", "--verify", "--quiet", `${branch}^{commit}`], {
+    cwd: io.cwd,
+  });
+  if (tip.code !== 0) {
+    io.err(`no branch or commit named ${branch} here; fetch it first`);
+    return 2;
+  }
+  const want = tip.stdout.trim();
+  const head = exec("git", ["rev-parse", "HEAD"], { cwd: io.cwd }).stdout.trim();
+  const ok = exec("git", ["merge-base", "--is-ancestor", want, "HEAD"], { cwd: io.cwd });
+  if (ok.code === 0) {
+    io.out(`HEAD ${head.slice(0, 7)} contains ${branch} (${want.slice(0, 7)})`);
+    return 0;
+  }
+  io.err(
+    `HEAD ${head.slice(0, 7)} does not contain ${branch} (${want.slice(0, 7)}): this worktree was made from the wrong branch. With no work yet: git reset --hard ${want}`,
+  );
+  return 1;
 }
 
 function fail(io: CliIo, reason: string): number {

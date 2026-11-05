@@ -28,7 +28,7 @@ const USAGE = [
   "       mitchstack receipts verify ...",
   "       mitchstack prove capture --url <url> --out <png> | prove receipts --from <claims.json>",
   "       mitchstack ship reviewer|review|body|watch ...",
-  "       mitchstack env up|status|down|check-port ...",
+  "       mitchstack env up|status|down|check-port|check-base ...",
   "       mitchstack climb ladder|run|council-score ...",
   "       mitchstack evals list|run|baseline|compare ...",
   "       mitchstack install|uninstall --host claude|codex|cursor|all ...",

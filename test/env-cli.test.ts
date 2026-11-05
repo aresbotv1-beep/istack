@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -159,5 +160,30 @@ describe("mitchstack env (real git worktrees)", () => {
     expect(up.code).toBe(1);
     expect(up.err.join("\n")).toMatch(/env\.ports\.from/);
     expect(existsSync(join(a, ".env.local"))).toBe(false);
+  });
+  it("check-base refuses a worktree made from the wrong branch, and passes once it contains it", async () => {
+    const { main, a } = scratchRepo();
+    const g = (cwd: string, ...args: string[]) =>
+      execFileSync("git", ["-c", "user.name=t", "-c", "user.email=t@example.com", ...args], {
+        cwd,
+        encoding: "utf8",
+      }).trim();
+    g(main, "checkout", "-q", "-b", "spec/v1");
+    g(main, "commit", "-q", "--allow-empty", "-m", "integration work");
+    const tip = g(main, "rev-parse", "HEAD");
+    g(main, "checkout", "-q", "main");
+
+    const wrong = await env(a, ["check-base", "spec/v1"]);
+    expect(wrong.code).toBe(1);
+    expect(wrong.err.join("\n")).toContain(tip.slice(0, 7));
+    expect(wrong.err.join("\n")).toMatch(/does not contain spec\/v1/);
+
+    g(a, "reset", "-q", "--hard", "spec/v1");
+    const right = await env(a, ["check-base", "spec/v1"]);
+    expect(right.code).toBe(0);
+    expect(right.out.join("\n")).toMatch(/contains spec\/v1/);
+
+    expect((await env(a, ["check-base", "no-such-branch"])).code).toBe(2);
+    expect((await env(a, ["check-base"])).code).toBe(2);
   });
 });
