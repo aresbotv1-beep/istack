@@ -44,3 +44,11 @@ describe("npm test runs inside a sandbox that cannot launch a browser", () => {
     expect(vitestConfig.test?.exclude).toContain(".artifacts/**");
   });
 });
+
+describe("groundbreak hunt", () => {
+  it("verifies a claim about a tool against the version installed here", () => {
+    const hunt = read("skills/groundbreak/hunt.md");
+    expect(hunt).toMatch(/checked against the version installed here/);
+    expect(hunt).toMatch(/--version/);
+  });
+});

@@ -45,6 +45,10 @@ A synthesizer (not one of the researchers) merges the returns:
 
 - **verified** — two independent sources, or two models from different providers reading different
   sources, agree. Sources that cite each other count once.
+- **A tool the build will use** (a CLI flag, an API, a library call) is verified only when it is
+  also checked against the version installed here: run `<tool> --version` and the command itself
+  (or its `--help`), and write the version in the finding. Docs describe the newest release, not
+  the one on this machine.
 - **single-source** — one source or one model. Kept, and flagged.
 - **inferred** — the synthesizer's reasoning, not a source. Marked as such.
 - **Contradictions become fights.** Two credible sources that disagree are not averaged; they go to
