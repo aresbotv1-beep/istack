@@ -4,10 +4,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { describe, expect, it } from "vitest";
-import { capture } from "../src/capture/capture.js";
+import { capture } from "../../src/capture/capture.js";
 
 const fixture = (name: string) =>
-  pathToFileURL(new URL(`./fixtures/capture/${name}`, import.meta.url).pathname).href;
+  pathToFileURL(new URL(`../fixtures/capture/${name}`, import.meta.url).pathname).href;
 const outDir = () => mkdtempSync(join(tmpdir(), "ms-capture-"));
 
 describe("capture (headless, deterministic)", { timeout: 60_000 }, () => {

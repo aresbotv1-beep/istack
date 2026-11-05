@@ -3,9 +3,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { describe, expect, it } from "vitest";
-import { capture } from "../src/capture/capture.js";
-import { verifyReceipts } from "../src/receipts/verify/verify.js";
-import { git, image, makeFixtureRepo, prBody } from "./verify-fixture.js";
+import { capture } from "../../src/capture/capture.js";
+import { verifyReceipts } from "../../src/receipts/verify/verify.js";
+import { git, image, makeFixtureRepo, prBody } from "../verify-fixture.js";
 
 /**
  * The verified tier with the real headless capture (Chromium): the "agent" captures base and head

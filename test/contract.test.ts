@@ -30,3 +30,17 @@ describe("build skill, spec runs", () => {
     expect(build).toMatch(/hostile input/);
   });
 });
+
+describe("npm test runs inside a sandbox that cannot launch a browser", () => {
+  it("leaves the Chromium tests to npm run test:browser", async () => {
+    expect(vitestConfig.test?.exclude).toContain("test/browser/**");
+    const pkg = JSON.parse(read("package.json"));
+    expect(pkg.scripts["test:browser"]).toBe("vitest run --config vitest.browser.config.ts");
+    const browser = (await import("../vitest.browser.config.js")).default;
+    expect(browser.test?.include).toEqual(["test/browser/**/*.test.ts"]);
+  });
+
+  it("never collects test files from .artifacts/ (evidence copies live there)", () => {
+    expect(vitestConfig.test?.exclude).toContain(".artifacts/**");
+  });
+});

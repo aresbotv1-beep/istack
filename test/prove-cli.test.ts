@@ -17,26 +17,7 @@ const fixture = pathToFileURL(
   new URL("./fixtures/capture/page.html", import.meta.url).pathname,
 ).href;
 
-describe("prove capture", { timeout: 60_000 }, () => {
-  it("captures a page, writes the PNG relative to cwd and prints its sha256", async () => {
-    const dir = mkdtempSync(join(tmpdir(), "ms-prove-"));
-    const args = ["capture", "--url", fixture, "--out", "shot.png", "--viewport", "640x400"];
-    const first = await run(args, dir);
-    const second = await run([...args.slice(0, 4), "again.png", "--viewport", "640x400"], dir);
-    expect(first.code).toBe(0);
-    expect(first.out[0]).toMatch(new RegExp(`^[0-9a-f]{64}  ${join(dir, "shot.png")}$`));
-    expect(second.out[0]?.slice(0, 64)).toBe(first.out[0]?.slice(0, 64));
-  });
-
-  it("accepts repeated --mask selectors", async () => {
-    const dir = mkdtempSync(join(tmpdir(), "ms-prove-"));
-    const { code } = await run(
-      ["capture", "--url", fixture, "--out", "m.png", "--mask", "#clock", "--mask", ".bar"],
-      dir,
-    );
-    expect(code).toBe(0);
-  });
-
+describe("prove capture (argument handling; the real captures are in test/browser)", () => {
   it("rejects a malformed viewport with usage", async () => {
     const { code, err } = await run(
       ["capture", "--url", fixture, "--out", "x.png", "--viewport", "wide"],
