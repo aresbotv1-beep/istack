@@ -1,7 +1,7 @@
 {
   "version": 1,
   "skill": "build",
-  "skillHash": "384603e0d1d17218c0a8bb2286182a55c1b308e5c12e5a6d0daf64a1bd8142f0",
+  "skillHash": "cbaaf467a0049cb215ceb20f45bc2bc3c737fd21192626c69e05c9e2b0e2238a",
   "scenariosHash": "71202edb1cc2bf9a735758f6876ca44f3479d9d65a1ff8b0f09aa20aba8d8dce",
   "producedBy": {
     "runner": "claude -p",
@@ -10,14 +10,14 @@
     "runs": 3,
     "date": "2026-11-05",
     "mode": "deterministic",
-    "costUsd": 0.146293,
+    "costUsd": 0.133616,
     "costSource": "measured"
   },
   "score": 100,
   "runScores": [
     100,
     100,
-    93.33
+    100
   ],
   "noise": {
     "floor": 5,
@@ -44,11 +44,11 @@
       "runs": [
         100,
         100,
-        80
+        100
       ],
       "passes": {
         "check-port": 3,
-        "does-not-trust": 2,
+        "does-not-trust": 3,
         "no-claimed-result": 3
       }
     },

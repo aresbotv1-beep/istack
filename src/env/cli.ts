@@ -166,24 +166,35 @@ function printCheck(r: PortCheck, io: CliIo, json: boolean): number {
  * unknown.
  */
 function checkBase(branch: string, io: CliIo, exec: Exec): number {
-  const tip = exec("git", ["rev-parse", "--verify", "--quiet", `${branch}^{commit}`], {
-    cwd: io.cwd,
-  });
-  if (tip.code !== 0) {
+  const resolve = (ref: string) => {
+    const r = exec("git", ["rev-parse", "--verify", "--quiet", `${ref}^{commit}`], { cwd: io.cwd });
+    return r.code === 0 ? r.stdout.trim() : undefined;
+  };
+  // A local branch can lag the integration branch other agents push to; when origin has a copy,
+  // HEAD must contain that too (review G7).
+  const refs = [branch];
+  if (!branch.startsWith("origin/") && resolve(`refs/remotes/origin/${branch}`)) {
+    refs.push(`origin/${branch}`);
+  }
+  if (!resolve(branch)) {
     io.err(`no branch or commit named ${branch} here; fetch it first`);
     return 2;
   }
-  const want = tip.stdout.trim();
-  const head = exec("git", ["rev-parse", "HEAD"], { cwd: io.cwd }).stdout.trim();
-  const ok = exec("git", ["merge-base", "--is-ancestor", want, "HEAD"], { cwd: io.cwd });
-  if (ok.code === 0) {
-    io.out(`HEAD ${head.slice(0, 7)} contains ${branch} (${want.slice(0, 7)})`);
-    return 0;
+  const head = (resolve("HEAD") ?? "").slice(0, 7);
+  for (const ref of refs) {
+    const want = resolve(ref) as string;
+    const ok = exec("git", ["merge-base", "--is-ancestor", want, "HEAD"], { cwd: io.cwd });
+    if (ok.code !== 0) {
+      io.err(
+        `HEAD ${head} does not contain ${ref} (${want.slice(0, 7)}): this worktree was made from the wrong branch. With no work yet: git reset --hard ${want}`,
+      );
+      return 1;
+    }
   }
-  io.err(
-    `HEAD ${head.slice(0, 7)} does not contain ${branch} (${want.slice(0, 7)}): this worktree was made from the wrong branch. With no work yet: git reset --hard ${want}`,
+  io.out(
+    `HEAD ${head} contains ${refs.join(" and ")} (${(resolve(refs.at(-1) as string) ?? "").slice(0, 7)})`,
   );
-  return 1;
+  return 0;
 }
 
 function fail(io: CliIo, reason: string): number {

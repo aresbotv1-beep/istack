@@ -19,8 +19,8 @@ Before writing a line of code:
    checkouts. If another PR touches the files this ticket needs, stop and ask.
 3. **Make the worktree** from the spec run's integration branch, or from the up-to-date default
    branch when there is none: `git worktree add -b <task-branch> <path> origin/<base>`. Then
-   prove it: `mitchstack env check-base <base>` exits 1 when the worktree was made from another
-   branch (some harnesses always branch from the default one). Sub-agents run it first, too.
+   prove it: `mitchstack env check-base origin/<base>` exits 1 when the worktree was made from
+   another branch (some harnesses always branch from the default one). Sub-agents run it first.
 4. **Give it its own environment:**
 
 ```sh

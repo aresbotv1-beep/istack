@@ -186,4 +186,25 @@ describe("mitchstack env (real git worktrees)", () => {
     expect((await env(a, ["check-base", "no-such-branch"])).code).toBe(2);
     expect((await env(a, ["check-base"])).code).toBe(2);
   });
+  it("check-base also requires origin's copy of the branch, so a stale local branch can't pass", async () => {
+    const { main, a } = scratchRepo();
+    const g = (cwd: string, ...args: string[]) =>
+      execFileSync("git", ["-c", "user.name=t", "-c", "user.email=t@example.com", ...args], {
+        cwd,
+        encoding: "utf8",
+      }).trim();
+    g(main, "branch", "spec/v1");
+    g(main, "checkout", "-q", "-b", "ahead");
+    g(main, "commit", "-q", "--allow-empty", "-m", "integration work pushed by another agent");
+    const ahead = g(main, "rev-parse", "HEAD");
+    g(main, "checkout", "-q", "main");
+    g(main, "update-ref", "refs/remotes/origin/spec/v1", ahead);
+
+    const stale = await env(a, ["check-base", "spec/v1"]);
+    expect(stale.code).toBe(1);
+    expect(stale.err.join("\n")).toMatch(/does not contain origin\/spec\/v1/);
+    g(a, "reset", "-q", "--hard", ahead);
+    expect((await env(a, ["check-base", "spec/v1"])).code).toBe(0);
+    expect((await env(a, ["check-base", "origin/spec/v1"])).code).toBe(0);
+  });
 });
