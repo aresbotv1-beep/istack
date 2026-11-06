@@ -19,6 +19,10 @@ credentials. Every configured check must succeed. It does not test a synthetic m
 run the browser suite or verify an agent's evidence claims. Requiring the branch to be up to date
 before merging complements the head-only checkout.
 
+The package scripts, test exclusions, compiler/linter settings and workflow contract test also
+come from the PR head. CODEOWNERS covers these definitions, but the contract test is a regression
+guard, not an independent security boundary against a PR that changes its own checks.
+
 `mitchstack/receipts` remains the separately pinned present-tier checker. Its green result means
 the receipt structure passed, not that every claimed command ran. `mitchstack/receipts-verified`
 remains opt-in and is not proposed as a required check.
@@ -34,8 +38,9 @@ After this PR's quality job succeeds on GitHub, the proposed branch protection f
 - Apply the checks to administrators; disallow force pushes and branch deletion.
 - Keep auto-merge disabled. Do not require the optional verifier or a merge queue.
 
-The CODEOWNERS file requests the owner's review for workflow/config changes. It is **advisory**
-under the settings above. [GitHub does not let a PR author approve their own PR](https://docs.github.com/en/pull-requests/how-tos/review-pull-requests/approving-a-pull-request-with-required-reviews), and agents currently
+CODEOWNERS can request the owner's review for changes from other accounts. It makes no such
+request when the owner is also the PR author, as in the current agent workflow, and remains
+**advisory** under these settings. [GitHub does not let a PR author approve their own PR](https://docs.github.com/en/pull-requests/how-tos/review-pull-requests/approving-a-pull-request-with-required-reviews), and agents currently
 open PRs on the owner's account. Therefore, requiring code-owner approval from that same account
 would block those PRs. To enforce a separate human approval, first use a distinct agent author
 account (or add another trusted human reviewer), then require code-owner review and one approving

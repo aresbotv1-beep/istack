@@ -2,3 +2,8 @@
 /.github/workflows/ @aresbotv1-beep
 /.github/CODEOWNERS @aresbotv1-beep
 /mitchstack.yaml @aresbotv1-beep
+/package.json @aresbotv1-beep
+/vitest.config.ts @aresbotv1-beep
+/biome.json @aresbotv1-beep
+/tsconfig*.json @aresbotv1-beep
+/test/quality-workflow.test.ts @aresbotv1-beep

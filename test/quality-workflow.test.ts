@@ -20,12 +20,23 @@ it("runs every repo check on the PR head without skipping or masking failures", 
   ]);
 
   const workflow = parse(readFileSync(join(root, ".github/workflows/quality.yml"), "utf8"));
+  // Reject execution overrides too (S1): an npm script-shell env or alternate working
+  // directory can turn the correct command strings into successful no-ops.
+  expect(Object.keys(workflow).sort()).toEqual([
+    "concurrency",
+    "jobs",
+    "name",
+    "on",
+    "permissions",
+  ]);
   // An unconditional pull_request trigger includes forks and avoids pending required checks
   // caused by path/branch filters. The ordinary quality job executes submitted code.
   expect(workflow.on).toEqual({ pull_request: null });
   expect(workflow.permissions).toEqual({ contents: "read" });
   expect(Object.keys(workflow.jobs)).toEqual(["quality"]);
   const job = workflow.jobs.quality;
+  expect(Object.keys(job).sort()).toEqual(["name", "runs-on", "steps", "timeout-minutes"]);
+  expect(job["runs-on"]).toBe("ubuntu-latest");
   expect(job.name).toBe("mitchstack/quality");
   expect(job.if).toBeUndefined();
   expect(job["continue-on-error"]).toBeUndefined();
@@ -45,9 +56,15 @@ it("runs every repo check on the PR head without skipping or masking failures", 
     "persist-credentials": false,
   });
   expect(steps[0]).toEqual(checkouts[0]);
+  expect(steps.flatMap((step) => (step.uses ? [step.uses] : []))).toEqual([
+    expect.stringMatching(/^actions\/checkout@[0-9a-f]{40}$/),
+    expect.stringMatching(/^actions\/setup-node@[0-9a-f]{40}$/),
+  ]);
+  expect(steps[1]?.with).toEqual({ "node-version": 22 });
   const runs = steps.flatMap((step) => (step.run ? [step.run] : []));
   expect(runs).toEqual(["npm ci --ignore-scripts --no-audit --no-fund", ...commands]);
   for (const step of steps) {
+    expect(Object.keys(step).sort()).toEqual(step.uses ? ["uses", "with"] : ["name", "run"]);
     expect(step.if).toBeUndefined();
     expect(step["continue-on-error"]).toBeUndefined();
     if (step.uses) expect(step.uses).toMatch(/@[0-9a-f]{40}$/);
