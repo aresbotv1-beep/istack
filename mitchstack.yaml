@@ -1,0 +1,28 @@
+version: 1
+owner: aresbotv1-beep
+profile: team
+
+# These commands also run in .github/workflows/quality.yml, in this order.
+checks:
+  - name: build
+    run: npm run build
+  - name: config
+    run: node dist/bin/mitchstack.js config check
+  - name: test
+    run: npm test
+  - name: typecheck
+    run: npm run typecheck
+  - name: lint
+    run: npm run lint
+
+# This CLI has no app server, copied env files or database hook.
+env:
+  files: []
+
+ownershipGates:
+  - resource: GitHub repository settings
+    owner: aresbotv1-beep
+    rule: ask the owner before changing branch protections, rulesets or access
+
+council:
+  enabled: false

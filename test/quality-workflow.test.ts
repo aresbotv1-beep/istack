@@ -19,9 +19,7 @@ it("runs every repo check on the PR head without skipping or masking failures", 
     "npm run lint",
   ]);
 
-  const workflow = parse(
-    readFileSync(join(root, ".github/workflows/quality.yml"), "utf8"),
-  );
+  const workflow = parse(readFileSync(join(root, ".github/workflows/quality.yml"), "utf8"));
   // An unconditional pull_request trigger includes forks and avoids pending required checks
   // caused by path/branch filters. The ordinary quality job executes submitted code.
   expect(workflow.on).toEqual({ pull_request: null });

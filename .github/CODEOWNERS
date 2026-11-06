@@ -1,0 +1,4 @@
+# Ownership requests become merge gates only when GitHub requires code-owner reviews.
+/.github/workflows/ @aresbotv1-beep
+/.github/CODEOWNERS @aresbotv1-beep
+/mitchstack.yaml @aresbotv1-beep

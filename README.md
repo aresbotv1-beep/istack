@@ -76,6 +76,8 @@ npx mitchstack config check
 
 ## Why
 
+For local checks, CI scope and proposed branch protection, see [Developing mitchstack](docs/development.md).
+
 I came to software from construction, where every change on a job site gets a before photo, an
 after photo and a sign-off. mitchstack holds agents to the same standard.
 
