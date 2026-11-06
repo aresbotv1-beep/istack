@@ -1,0 +1,41 @@
+id: pr-body
+skill: ship
+title: Proof and review are done; write the PR body input
+purpose: >-
+  The body is a one-minute briefing: it opens with the problem in plain words, before the
+  summary, and names what the proof does not cover in a not-tested line instead of leaving it out.
+prompt: |
+  Proof is done and the review approved. Write the body.json for `mitchstack ship body`. Reply
+  with the JSON only.
+context:
+  - path: run-log.md
+    text: |
+      # Run log (ticket T4, branch t4-save-once)
+      - owner's report: saving the settings page twice showed every setting twice in the list
+      - cause: save() inserted rows without checking for ones already stored
+      - fix: save() -> dedupe(rows) -> write, in src/settings/save.ts
+      - red: npm test -- save failed at 1c2d3e4 (exit 1); green: passed at 5f6a7b8 (exit 0)
+      - not tried: two browser tabs saving at the same moment
+      - review: codex exec (openai), round 1 VERDICT: APPROVE, no findings
+      - door: two-way; blast radius: the settings page only
+      - try it: npm run dev, open /settings, click Save twice
+criteria:
+  - id: has-problem
+    kind: includes
+    why: The body opens with the problem, so the input needs one.
+    weight: 2
+    any: ['"problem"\s*:\s*"[^"]{12,}']
+  - id: problem-first
+    kind: order
+    why: The problem comes before the summary.
+    first: '"problem"\s*:'
+    later: '"summary"\s*:'
+  - id: problem-plain
+    kind: excludes
+    why: The problem says what went wrong for whom, not an implementation inventory.
+    any: ['"problem"\s*:\s*"(Done when|Adds?\b|Implements?\b|Refactors?\b|save\(\)|dedupe)']
+  - id: names-not-tested
+    kind: includes
+    why: What the proof does not cover is named in the not-tested line.
+    weight: 2
+    any: ['"notTested"\s*:\s*"[^"]{0,200}(tab|concurren|same (moment|time)|at once|simultaneous)']

@@ -27,8 +27,10 @@ const timeoutReview = {
 };
 
 const body = {
+  problem: "Save lost the last edit.",
   summary: "one-line fix",
   evidence: "see receipts",
+  notTested: "Nothing left out.",
   mergeDanger: { door: "two-way", blastRadius: "the save button" },
   tryItYourself: ["`npm test -- save`"],
   reviews: [timeoutReview],
@@ -66,6 +68,24 @@ describe("mitchstack ship", () => {
     expect(result.code).toBe(0);
     expect(extractReceipts(result.out).ok).toBe(true);
     expect(result.out).toContain("**not approved**");
+  });
+
+  it("body: warns, without refusing, when the visible body is over 2,500 characters", async () => {
+    const short = await run(["body", "--from", "body.json"], dirWith({ "body.json": body }));
+    expect(short.code).toBe(0);
+    expect(short.err).toBe("");
+    const long = { ...body, evidence: "x".repeat(2600) };
+    const result = await run(["body", "--from", "body.json"], dirWith({ "body.json": long }));
+    expect(result.code).toBe(0);
+    expect(result.err).toMatch(/warning: .*visible.* \d[\d,]* characters.*2,500/);
+    expect(extractReceipts(result.out).ok).toBe(true);
+  });
+
+  it("body: refuses without the problem, naming the field", async () => {
+    const { problem: _p, ...noProblem } = body;
+    const result = await run(["body", "--from", "body.json"], dirWith({ "body.json": noProblem }));
+    expect(result.code).toBe(1);
+    expect(result.err).toMatch(/problem/);
   });
 
   it("body: refuses without a door, naming the field", async () => {

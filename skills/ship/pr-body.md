@@ -1,3 +1,5 @@
+{{problem}}
+
 ## Summary
 
 {{summary}}
@@ -5,6 +7,10 @@
 ## Evidence
 
 {{evidence}}
+
+## Not tested
+
+{{notTested}}
 
 ## Merge danger
 
@@ -14,13 +20,11 @@
 
 {{tryItYourself}}
 
-## Reviewer verdicts
+## Review
 
 {{reviewerVerdicts}}
 
-{{councilScores}}
-
-## Open disputes
+{{reviewLog}}
 
 {{openDisputes}}
 
@@ -28,4 +32,8 @@
 
 {{risks}}
 
+<details><summary>Receipts</summary>
+
 {{receipts}}
+
+</details>

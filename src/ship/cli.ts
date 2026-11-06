@@ -27,7 +27,7 @@ import { chooseReviewer } from "../review/reviewers.js";
 import { reviewInputSchema } from "../review/schema.js";
 import { decide } from "../watch/decide.js";
 import { type Exec, ghSnapshot } from "../watch/gh.js";
-import { renderPrBody } from "./body.js";
+import { PR_BODY_VISIBLE_TARGET, renderPrBody } from "./body.js";
 
 export interface ShipDeps {
   /** Runs gh for `ship watch`. Defaults to the real gh on PATH. */
@@ -50,8 +50,11 @@ const USAGE = [
 ].join("\n");
 
 const bodyInputSchema = z.strictObject({
+  /** Optional here so the renderer can refuse with its own plain message. */
+  problem: z.string().optional(),
   summary: z.string().min(1),
   evidence: z.string().min(1),
+  notTested: z.string().optional(),
   mergeDanger: z
     .strictObject({ door: z.string().optional(), blastRadius: z.string().optional() })
     .default({}),
@@ -301,6 +304,11 @@ function body(flags: Map<string, string>, io: CliIo): number {
     return 1;
   }
   io.out(result.body);
+  if (result.visibleChars > PR_BODY_VISIBLE_TARGET) {
+    io.err(
+      `warning: the visible body is ${result.visibleChars.toLocaleString("en-US")} characters; aim for ${PR_BODY_VISIBLE_TARGET.toLocaleString("en-US")} or fewer (put detail in the folded blocks or a linked file)`,
+    );
+  }
   return 0;
 }
 
