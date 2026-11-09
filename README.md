@@ -74,6 +74,8 @@ Copy [`mitchstack.yaml.example`](mitchstack.yaml.example) to `mitchstack.yaml` a
 npx mitchstack config check
 ```
 
+For local checks, CI scope and proposed branch protection, see [Developing mitchstack](docs/development.md).
+
 ## Why
 
 I came to software from construction, where every change on a job site gets a before photo, an
