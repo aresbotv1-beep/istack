@@ -73,6 +73,10 @@ function fakeGitHub(files: string[], configYaml: string | null): FetchLike {
       if (configYaml === null) return { ok: false, status: 404, text: async () => "Not Found" };
       return { ok: true, status: 200, text: async () => configYaml };
     }
+    // After a 404 for istack.yaml the check looks for a leftover mitchstack.yaml; there is none.
+    if (url.includes("/contents/mitchstack.yaml?ref=65881ed884127d64ec923c1f37f1bd280b5e4e33")) {
+      return { ok: false, status: 404, text: async () => "Not Found" };
+    }
     return { ok: false, status: 500, text: async () => `unexpected ${url}` };
   };
 }

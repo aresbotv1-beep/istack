@@ -157,6 +157,15 @@ describe("AGENTS.md marked block", () => {
     expect(next).toBe(`top\n${text}bottom\n`);
   });
 
+  it("stops before writing anything into a project that still has only mitchstack.yaml", async () => {
+    const project = gitRepo({ "mitchstack.yaml": "version: 1\n", "AGENTS.md": "# Rules\n" });
+    const before = snapshot(project);
+    const r = await install(project, ["install", "--host", "codex", "--project", project]);
+    expect(r.code).not.toBe(0);
+    expect(r.err).toMatch(/found mitchstack\.yaml — rename it to istack\.yaml/);
+    expect(snapshot(project)).toEqual(before);
+  });
+
   it("writes the block to the project AGENTS.md for codex and cursor, once", async () => {
     const project = gitRepo({ "AGENTS.md": "# Project rules\n" });
     await install(project, ["install", "--host", "all", "--project", project]);

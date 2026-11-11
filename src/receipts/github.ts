@@ -92,6 +92,7 @@ export async function fetchConfigText(
     const oldUrl = `${target.apiUrl}/repos/${target.repo}/contents/mitchstack.yaml?ref=${target.ref}`;
     const old = await getText(target, oldUrl, "application/vnd.github.raw+json");
     if (old.ok) return { ok: false, error: `${OLD_CONFIG} at ${target.ref}` };
+    if (old.status !== 404) return { ok: false, error: old.error };
   }
   if (got.status === 404) return { ok: true, text: null };
   return { ok: false, error: got.error };

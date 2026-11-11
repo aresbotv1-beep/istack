@@ -142,4 +142,17 @@ describe("fetchConfigText", () => {
     if (!result.ok)
       expect(result.error).toMatch(/found mitchstack\.yaml — rename it to istack\.yaml/);
   });
+
+  it("fails rather than using defaults when the old-config lookup itself fails", async () => {
+    const OLD = `${API}/repos/example/widgets/contents/mitchstack.yaml?ref=65881ed`;
+    const { fetch } = fakeFetch({ [OLD]: { status: 503, body: "unavailable" } });
+    const result = await fetchConfigText({
+      apiUrl: API,
+      repo: "example/widgets",
+      ref: "65881ed",
+      token: "t0k",
+      fetch,
+    });
+    expect(result.ok).toBe(false);
+  });
 });

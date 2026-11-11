@@ -75,6 +75,8 @@ export function install(options: InstallOptions): Report {
   // the record it would save) and check every destination in that planned record before any
   // write. The same rule as uninstall: nothing outside istack's locations, nothing through a
   // symlink that leaves the root.
+  const old = options.scope.kind === "project" ? oldConfigProblem(options.scope.root) : null;
+  if (old) throw new Error(`${old}, so nothing was written`);
   const planned = installInto(context(options.scope, true), options);
   const problems = checkLocations(planned.manifest, options.scope);
   if (problems.length > 0) {
@@ -357,11 +359,6 @@ function installHook(ctx: Ctx, template: string): void {
   const abs = join(hooksDir, "pre-push");
   const path = rel(ctx, abs);
   const configPath = join(ctx.root, "istack.yaml");
-  const old = oldConfigProblem(ctx.root);
-  if (old) {
-    ctx.items.push({ status: "skipped", path, detail: `pre-push hook: ${old}` });
-    return;
-  }
   if (!existsSync(configPath)) {
     ctx.items.push({
       status: "skipped",
