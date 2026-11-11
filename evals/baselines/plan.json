@@ -1,25 +1,23 @@
 {
   "version": 1,
   "skill": "plan",
-  "skillHash": "2ff08acb8adb2b053ac767a3cdc86a2f8df2fe863871d6188b5818db7c942ab4",
+  "skillHash": "a71bc1481f6642886206eaf9e6272a9e08c56508fb9cccee546a5c19ee09c1ee",
   "scenariosHash": "826b96d5ae73f9d181ab6ee7659bca7b4e51a56c7a1f4a589b158fc8da1d4f85",
   "producedBy": {
     "runner": "claude -p",
     "provider": "anthropic",
     "model": "claude-sonnet-5-5",
-    "runs": 5,
-    "date": "2026-11-05",
+    "runs": 3,
+    "date": "2026-11-11",
     "mode": "deterministic",
-    "costUsd": 0.224532,
+    "costUsd": 0.152443,
     "costSource": "measured"
   },
-  "score": 77.28,
+  "score": 81.82,
   "runScores": [
-    95.46,
     77.28,
-    77.28,
-    77.28,
-    90.91
+    81.82,
+    86.37
   ],
   "noise": {
     "floor": 5,
@@ -31,39 +29,35 @@
       "runs": [
         100,
         100,
-        100,
-        100,
         100
       ],
       "passes": {
-        "the-ask": 5,
-        "no-spec-for-one": 5,
-        "decided-for-you": 5,
-        "acceptance-observable": 5,
-        "names-commit": 5,
-        "asks-for-yes": 5,
-        "no-code": 5
+        "the-ask": 3,
+        "no-spec-for-one": 3,
+        "decided-for-you": 3,
+        "acceptance-observable": 3,
+        "names-commit": 3,
+        "asks-for-yes": 3,
+        "no-code": 3
       }
     },
     "multi-ticket-spec": {
-      "median": 54.55,
+      "median": 63.64,
       "runs": [
-        90.91,
         54.55,
-        54.55,
-        54.55,
-        81.82
+        63.64,
+        72.73
       ],
       "passes": {
-        "seams-before-tickets": 2,
-        "seams-agreed": 4,
-        "vertical-slices": 5,
-        "blocking-edges": 3,
-        "one-pr": 2,
-        "challenge-asked": 5,
+        "seams-before-tickets": 1,
+        "seams-agreed": 3,
+        "vertical-slices": 3,
+        "blocking-edges": 1,
+        "one-pr": 3,
+        "challenge-asked": 2,
         "the-ask": 0,
-        "asks-for-yes": 4,
-        "no-code": 5
+        "asks-for-yes": 2,
+        "no-code": 3
       }
     }
   }

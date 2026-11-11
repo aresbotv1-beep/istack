@@ -16,7 +16,7 @@ gain** (in the harness's units) and the **cost** (any unit, the same for all). O
 hanging first: highest gain per cost, then the cheaper one.
 
 ```sh
-mitchstack climb ladder --plan climb.json   # prints the moves in the order the climb will try them
+istack climb ladder --plan climb.json   # prints the moves in the order the climb will try them
 ```
 
 A move is one change: one idea, small enough to revert. "Refactor and add a cache" is two moves.
@@ -85,7 +85,7 @@ Start from a clean tree on the task branch. The plan:
 ```
 
 ```sh
-mitchstack climb run --plan climb.json --log .artifacts/climb/decision.tsv
+istack climb run --plan climb.json --log .artifacts/climb/decision.tsv
 ```
 
 Each `apply` is a shell command that makes one change. Keep patch files committed or outside the
@@ -105,7 +105,7 @@ For a visible change, the score comes from the council (see the `ship` skill's
 [council rules](../ship/council.md)). The harness captures the after picture, then:
 
 ```sh
-mitchstack climb council-score --after after.png --control control.png \
+istack climb council-score --after after.png --control control.png \
   --log .artifacts/climb/council.json [--budget 25]
 ```
 

@@ -1,9 +1,9 @@
 # Credits
 
-mitchstack is written in its own words under the MIT license. None of the text below is copied;
+istack is written in its own words under the MIT license. None of the text below is copied;
 these are the people whose published ideas shaped a mechanism here. Go read their work.
 
-| Mechanism in mitchstack | Idea from | Source |
+| Mechanism in istack | Idea from | Source |
 |---|---|---|
 | Grill: ask the whole decision frontier, each with a recommendation | Matt Pocock | [mattpocock/skills](https://github.com/mattpocock/skills) `grilling` |
 | Plan: agree test seams first; tracer-bullet tickets with blocking edges | Matt Pocock | `to-spec`, `to-tickets` |

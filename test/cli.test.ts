@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -18,11 +19,11 @@ async function run(args: string[], cwd: string, extra: Partial<CliIo> = {}) {
   return { code, out, err };
 }
 
-describe("mitchstack config check", () => {
+describe("istack config check", () => {
   it("names the bad field and exits 1", async () => {
     const dir = mkdtempSync(join(tmpdir(), "ms-"));
     writeFileSync(
-      join(dir, "mitchstack.yaml"),
+      join(dir, "istack.yaml"),
       "version: 1\nowner: Sam\nprofile: tem\nchecks:\n  - name: t\n    run: npm test\n",
     );
     const { code, err } = await run(["config", "check"], dir);
@@ -33,10 +34,24 @@ describe("mitchstack config check", () => {
   it("exits 0 on a valid config", async () => {
     const dir = mkdtempSync(join(tmpdir(), "ms-"));
     writeFileSync(
-      join(dir, "mitchstack.yaml"),
+      join(dir, "istack.yaml"),
       "version: 1\nowner: Sam\nprofile: solo\nchecks:\n  - name: t\n    run: npm test\n",
     );
     expect((await run(["config", "check"], dir)).code).toBe(0);
+  });
+
+  it("stops on a leftover mitchstack.yaml and says to rename it", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "ms-"));
+    writeFileSync(
+      join(dir, "mitchstack.yaml"),
+      "version: 1\nowner: Sam\nprofile: solo\nchecks:\n  - name: t\n    run: npm test\n",
+    );
+    const { code, err } = await run(["config", "check"], dir);
+    expect(code).toBe(1);
+    expect(err.join("\n")).toMatch(/found mitchstack\.yaml — rename it to istack\.yaml/);
+    execFileSync("git", ["init", "-q"], { cwd: dir });
+    const env = await run(["env", "status"], dir);
+    expect(env.err.join("\n")).toMatch(/found mitchstack\.yaml — rename it to istack\.yaml/);
   });
 
   it("prints usage and exits 2 on an unknown command", async () => {
@@ -47,14 +62,14 @@ describe("mitchstack config check", () => {
 const FIXTURES = join(import.meta.dirname, "fixtures", "receipts");
 const fx = (name: string) => join(FIXTURES, name);
 
-/** Fake GitHub API: the PR's files and (optionally) a mitchstack.yaml at the base commit. */
+/** Fake GitHub API: the PR's files and (optionally) a istack.yaml at the base commit. */
 function fakeGitHub(files: string[], configYaml: string | null): FetchLike {
   return async (url) => {
     if (url.includes("/pulls/7/files")) {
       const page = url.endsWith("page=1") ? files.map((filename) => ({ filename })) : [];
       return { ok: true, status: 200, text: async () => JSON.stringify(page) };
     }
-    if (url.includes("/contents/mitchstack.yaml?ref=65881ed884127d64ec923c1f37f1bd280b5e4e33")) {
+    if (url.includes("/contents/istack.yaml?ref=65881ed884127d64ec923c1f37f1bd280b5e4e33")) {
       if (configYaml === null) return { ok: false, status: 404, text: async () => "Not Found" };
       return { ok: true, status: 200, text: async () => configYaml };
     }
@@ -62,7 +77,7 @@ function fakeGitHub(files: string[], configYaml: string | null): FetchLike {
   };
 }
 
-describe("mitchstack receipts check", () => {
+describe("istack receipts check", () => {
   it("passes an honest visual PR from an event file and a local file list", async () => {
     const { code, out } = await run(
       ["receipts", "check", "--event", fx("event-honest.json"), "--files", fx("files-visible.txt")],
@@ -110,7 +125,7 @@ describe("mitchstack receipts check", () => {
     });
     expect(code).toBe(1);
     expect(err.join("\n")).toMatch(/docs\/install.md/);
-    expect(readFileSync(summary, "utf8")).toMatch(/## mitchstack\/receipts: fail/);
+    expect(readFileSync(summary, "utf8")).toMatch(/## istack\/receipts: fail/);
     expect(readFileSync(output, "utf8")).toMatch(/^conclusion=fail$/m);
   });
 
@@ -151,7 +166,7 @@ describe("mitchstack receipts check", () => {
   });
 });
 
-describe("mitchstack prove (wired into the main CLI)", () => {
+describe("istack prove (wired into the main CLI)", () => {
   it("prints a fenced receipts block from a claims file", async () => {
     const dir = mkdtempSync(join(tmpdir(), "ms-"));
     const claims = {
@@ -181,7 +196,7 @@ describe("ship and env (wired into the main CLI)", () => {
         out: () => {},
         err: (l) => err.push(l),
       });
-      expect(err.join("\n"), group).not.toMatch(/^usage: mitchstack config check/m);
+      expect(err.join("\n"), group).not.toMatch(/^usage: istack config check/m);
     }
   });
 });
@@ -194,7 +209,7 @@ describe("climb and receipts verify (wired into the main CLI)", () => {
     ]) {
       const err: string[] = [];
       await runCli(args, { cwd: tmpdir(), out: () => {}, err: (l) => err.push(l) });
-      expect(err.join("\n"), args.join(" ")).not.toMatch(/^usage: mitchstack config check/m);
+      expect(err.join("\n"), args.join(" ")).not.toMatch(/^usage: istack config check/m);
     }
   });
 });
@@ -208,7 +223,7 @@ describe("evals and install (wired into the main CLI)", () => {
         out: () => {},
         err: (l) => err.push(l),
       });
-      expect(err.join("\n"), group).not.toMatch(/^usage: mitchstack config check/m);
+      expect(err.join("\n"), group).not.toMatch(/^usage: istack config check/m);
     }
   });
 });

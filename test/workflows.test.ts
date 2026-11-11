@@ -76,7 +76,7 @@ for (const [file, action] of [["receipts-verified.yml", "action/receipts/verifie
       // The checker is built and run only inside the (base-pinned) action; no workflow step runs
       // node, npm or the CLI itself.
       for (const s of steps) {
-        if (s.run) expect(s.run).not.toMatch(/\b(node|npm|npx|mitchstack)\b/);
+        if (s.run) expect(s.run).not.toMatch(/\b(node|npm|npx|istack)\b/);
       }
     });
 
@@ -129,7 +129,7 @@ describe("receipts.yml runs the checker pinned to a full commit SHA, never from 
     const { steps } = load("receipts.yml");
     expect(checkouts(steps)).toEqual([]);
     expect(steps.filter((s) => s.uses?.startsWith("./"))).toEqual([]);
-    for (const s of steps) if (s.run) expect(s.run).not.toMatch(/\b(node|npm|npx|mitchstack)\b/);
+    for (const s of steps) if (s.run) expect(s.run).not.toMatch(/\b(node|npm|npx|istack)\b/);
   });
 
   it("uses this repo's action at a full 40-character commit SHA", () => {

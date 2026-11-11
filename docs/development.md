@@ -1,7 +1,7 @@
-# Developing mitchstack
+# Developing istack
 
 Use Node 22 and install with `npm ci --ignore-scripts --no-audit --no-fund`. Run the commands in
-`mitchstack.yaml` in order: build, config validation, `npm test`, typecheck and lint. The build
+`istack.yaml` in order: build, config validation, `npm test`, typecheck and lint. The build
 comes first because config validation uses the compiled CLI.
 
 The default unit suite runs files sequentially. Several integration files create Git repositories
@@ -14,7 +14,7 @@ quality job. They need a machine that can launch Chromium.
 
 ## What CI establishes
 
-`mitchstack/quality` checks the exact PR head, with a read-only token and no persisted checkout
+`istack/quality` checks the exact PR head, with a read-only token and no persisted checkout
 credentials. Every configured check must succeed. It does not test a synthetic merge with main,
 run the browser suite or verify an agent's evidence claims. Requiring the branch to be up to date
 before merging complements the head-only checkout.
@@ -23,15 +23,15 @@ The package scripts, test exclusions, compiler/linter settings and workflow cont
 come from the PR head. CODEOWNERS covers these definitions, but the contract test is a regression
 guard, not an independent security boundary against a PR that changes its own checks.
 
-`mitchstack/receipts` remains the separately pinned present-tier checker. Its green result means
-the receipt structure passed, not that every claimed command ran. `mitchstack/receipts-verified`
+`istack/receipts` remains the separately pinned present-tier checker. Its green result means
+the receipt structure passed, not that every claimed command ran. `istack/receipts-verified`
 remains opt-in and is not proposed as a required check.
 
 ## Proposed main protection — owner action, not active configuration
 
 After this PR's quality job succeeds on GitHub, the proposed branch protection for `main` is:
 
-- Require `mitchstack/quality` and `mitchstack/receipts` from GitHub Actions.
+- Require `istack/quality` and `istack/receipts` from GitHub Actions.
 - Require the branch to be up to date before merging (`strict: true`).
 - Require a pull request, with zero required approving reviews for the current single-account
   workflow; retain the owner's merge decision. Dismiss stale approvals if reviews are used.

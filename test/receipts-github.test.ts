@@ -101,7 +101,7 @@ describe("fetchChangedFiles", () => {
 });
 
 describe("fetchConfigText", () => {
-  const URL = `${API}/repos/example/widgets/contents/mitchstack.yaml?ref=65881ed`;
+  const URL = `${API}/repos/example/widgets/contents/istack.yaml?ref=65881ed`;
 
   it("returns the raw file at the base commit", async () => {
     const { fetch, calls } = fakeFetch({ [URL]: { status: 200, body: "version: 1\n" } });
@@ -116,7 +116,7 @@ describe("fetchConfigText", () => {
     expect(calls[0]?.headers.accept).toBe("application/vnd.github.raw+json");
   });
 
-  it("returns null text when the repo has no mitchstack.yaml", async () => {
+  it("returns null text when the repo has no istack.yaml", async () => {
     const { fetch } = fakeFetch({});
     const result = await fetchConfigText({
       apiUrl: API,

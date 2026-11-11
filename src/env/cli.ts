@@ -13,11 +13,11 @@ import { type Exec, realExec } from "./git.js";
 import type { PortCheck } from "./ownership.js";
 
 const USAGE = [
-  "usage: mitchstack env up [--install] [--db] [--json]",
-  "       mitchstack env status [--json]",
-  "       mitchstack env down [--db] [--json]",
-  "       mitchstack env check-port <port> [--json]",
-  "       mitchstack env check-base <branch>",
+  "usage: istack env up [--install] [--db] [--json]",
+  "       istack env status [--json]",
+  "       istack env down [--db] [--json]",
+  "       istack env check-port <port> [--json]",
+  "       istack env check-base <branch>",
 ].join("\n");
 
 const FLAGS: Record<string, string[]> = {
@@ -131,7 +131,7 @@ function printUp(r: UpReport, io: CliIo): void {
 
 function printStatus(r: StatusReport, io: CliIo): void {
   io.out(`worktree: ${r.worktree}`);
-  if (!r.ports) io.out("no ports leased — run: mitchstack env up");
+  if (!r.ports) io.out("no ports leased — run: istack env up");
   else io.out(`ports: ${portsLine(r.ports)}`);
   for (const l of r.listeners) {
     if (l.ok) io.out(`  ${l.port}: pid ${l.pid} in this worktree`);

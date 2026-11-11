@@ -8,23 +8,23 @@ import { HOSTS, type Host, type Scope } from "./hosts.js";
 import { findKitRoot, loadKit } from "./kit.js";
 
 const USAGE = [
-  "usage: mitchstack install --host claude|codex|cursor|all [--home <dir> | --project <dir>]",
+  "usage: istack install --host claude|codex|cursor|all [--home <dir> | --project <dir>]",
   "                          [--prefix] [--hooks] [--dry-run] [--json]",
-  "       mitchstack uninstall --host claude|codex|cursor|all [--home <dir> | --project <dir>]",
+  "       istack uninstall --host claude|codex|cursor|all [--home <dir> | --project <dir>]",
   "                          [--hooks] [--dry-run] [--json]",
   "",
   "  --home <dir>     user-level install (default: your home directory)",
   "  --project <dir>  install into one repository instead",
-  "  --prefix         install every skill as mitchstack-<name> (never clashes)",
-  "  --hooks          also add a git pre-push hook running mitchstack.yaml checks (needs --project)",
+  "  --prefix         install every skill as istack-<name> (never clashes)",
+  "  --hooks          also add a git pre-push hook running istack.yaml checks (needs --project)",
   "  --dry-run        print what would change; write nothing",
   "",
   "Never overwrites a skill or file it did not create. What it wrote is recorded in",
-  "<root>/.mitchstack/install.json; uninstall removes only those files, and keeps any you edited.",
+  "<root>/.istack/install.json; uninstall removes only those files, and keeps any you edited.",
 ].join("\n");
 
 export interface InstallDeps {
-  /** The mitchstack kit to install from. Defaults to the package this file ships in. */
+  /** The istack kit to install from. Defaults to the package this file ships in. */
   kitRoot?: string;
   homedir?: () => string;
 }
@@ -89,7 +89,7 @@ export async function runInstallCli(
     if (!values.home && env.CODEX_HOME) scope.codexHome = resolve(env.CODEX_HOME);
   }
   if (!existsSync(scope.root) || !statSync(scope.root).isDirectory()) {
-    io.err(`mitchstack ${command}: ${scope.root} is not a directory`);
+    io.err(`istack ${command}: ${scope.root} is not a directory`);
     return 2;
   }
 
@@ -104,7 +104,7 @@ export async function runInstallCli(
       report = uninstall({ scope, hosts, hooks, dryRun });
     }
   } catch (error) {
-    io.err(`mitchstack ${command} could not run: ${(error as Error).message}`);
+    io.err(`istack ${command} could not run: ${(error as Error).message}`);
     return 2;
   }
   if (values.json) io.out(JSON.stringify(report, null, 2));
@@ -114,7 +114,7 @@ export async function runInstallCli(
 
 function print(command: string, report: Report, io: CliIo): void {
   const where = `${report.scope.kind} ${report.scope.root}`;
-  io.out(`mitchstack ${command} → ${where}${report.dryRun ? " — dry run, nothing written" : ""}`);
+  io.out(`istack ${command} → ${where}${report.dryRun ? " — dry run, nothing written" : ""}`);
   const width = Math.max(...report.items.map((i) => i.status.length), 0);
   for (const item of report.items) {
     if (item.status === "note") continue;
@@ -128,7 +128,7 @@ function print(command: string, report: Report, io: CliIo): void {
     if (item.status !== "note") counts.set(item.status, (counts.get(item.status) ?? 0) + 1);
   }
   const summary = [...counts].map(([status, n]) => `${n} ${status}`).join(", ") || "nothing to do";
-  const record = join(report.scope.root, ".mitchstack", "install.json");
+  const record = join(report.scope.root, ".istack", "install.json");
   io.out(`${summary}. ${existsSync(record) ? `Record: ${record}` : "No install record left."}`);
 }
 

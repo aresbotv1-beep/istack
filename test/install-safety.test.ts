@@ -10,7 +10,7 @@ import { gitRepo, install, put, snapshot, tempDir } from "./install-helpers.js";
 const KIT = new URL("..", import.meta.url).pathname;
 const kit = loadKit(KIT);
 const sha = (text: string | Buffer) => createHash("sha256").update(text).digest("hex");
-const MANIFEST = ".mitchstack/install.json";
+const MANIFEST = ".istack/install.json";
 
 function manifest(root: string, entries: unknown[]): void {
   put(root, MANIFEST, JSON.stringify({ version: 1, entries }, null, 2));
@@ -124,7 +124,7 @@ describe("F6: the install record is validated before anything is touched", () =>
 
   it("refuses an entry that escapes through a symlink", async () => {
     const { parent, project } = projectWithVictim();
-    put(parent, "outside/SKILL.md", "not mitchstack's\n");
+    put(parent, "outside/SKILL.md", "not istack's\n");
     mkdirSync(join(project, ".agents/skills"), { recursive: true });
     symlinkSync(join(parent, "outside"), join(project, ".agents/skills/plan"));
     manifest(project, [
@@ -132,7 +132,7 @@ describe("F6: the install record is validated before anything is touched", () =>
         kind: "skill",
         host: "codex",
         dir: ".agents/skills/plan",
-        files: { "SKILL.md": sha("not mitchstack's\n") },
+        files: { "SKILL.md": sha("not istack's\n") },
       },
     ]);
     const before = snapshot(parent);
@@ -141,7 +141,7 @@ describe("F6: the install record is validated before anything is touched", () =>
 
     expect(run.code).toBe(2);
     expect(run.err).toMatch(/symlink|outside/i);
-    expect(readFileSync(join(parent, "outside/SKILL.md"), "utf8")).toBe("not mitchstack's\n");
+    expect(readFileSync(join(parent, "outside/SKILL.md"), "utf8")).toBe("not istack's\n");
     expect(snapshot(parent)).toEqual(before);
   });
 
@@ -163,7 +163,7 @@ describe("F6: the install record is validated before anything is touched", () =>
 
   it("still accepts its own records: install, re-install, uninstall round trip", async () => {
     const project = gitRepo({
-      "mitchstack.yaml":
+      "istack.yaml":
         'version: 1\nowner: Sam\nprofile: solo\nchecks:\n  - name: t\n    run: "true"\n',
     });
     const before = snapshot(project);
@@ -181,7 +181,7 @@ describe("F9: a file the installer did not write is never owned, whatever its by
 
   it("leaves a pre-existing pre-push hook alone even when it is byte-identical", async () => {
     const hookText = renderHook(kit.hookTemplate, [{ name: "check", run: "true" }]);
-    const project = gitRepo({ "mitchstack.yaml": config, ".git/hooks/pre-push": hookText });
+    const project = gitRepo({ "istack.yaml": config, ".git/hooks/pre-push": hookText });
     const hook = join(project, ".git/hooks/pre-push");
 
     const run = await install(project, [
@@ -295,8 +295,8 @@ describe("F13: --prefix keeps cross-skill links working", () => {
     expect((await install(project, args)).code).toBe(0);
     for (const dir of SKILL_DIRS) {
       expect(links(join(project, dir)).filter((l) => !l.ok)).toEqual([]);
-      const climb = readFileSync(join(project, dir, "mitchstack-climb/SKILL.md"), "utf8");
-      expect(climb).toContain("](../mitchstack-ship/council.md)");
+      const climb = readFileSync(join(project, dir, "istack-climb/SKILL.md"), "utf8");
+      expect(climb).toContain("](../istack-ship/council.md)");
     }
   });
 

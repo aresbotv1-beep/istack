@@ -19,17 +19,17 @@ Before writing a line of code:
    checkouts. If another PR touches the files this ticket needs, stop and ask.
 3. **Make the worktree** from the spec run's integration branch, or from the up-to-date default
    branch when there is none: `git worktree add -b <task-branch> <path> origin/<base>`. Then
-   prove it: `mitchstack env check-base origin/<base>` exits 1 when the worktree was made from
+   prove it: `istack env check-base origin/<base>` exits 1 when the worktree was made from
    another branch (some harnesses always branch from the default one). Sub-agents run it first.
 4. **Give it its own environment:**
 
 ```sh
-mitchstack env up            # ports, env files, dependency check, database plan
-mitchstack env up --install  # also runs the lockfile's install command
-mitchstack env up --db       # also creates this worktree's own database
+istack env up            # ports, env files, dependency check, database plan
+istack env up --install  # also runs the lockfile's install command
+istack env up --db       # also creates this worktree's own database
 ```
 
-`env up` leases ports for this worktree from the range in `mitchstack.yaml` (two worktrees never
+`env up` leases ports for this worktree from the range in `istack.yaml` (two worktrees never
 get the same ones), copies listed env files from the main checkout with the port keys rewritten,
 and names the install command. It never prints env values. The database hook only ever targets a
 name derived from the worktree; it refuses the main checkout and any create step that wipes or
@@ -38,13 +38,13 @@ migrates.
 Before trusting anything on a port, confirm it answers **this** worktree:
 
 ```sh
-mitchstack env check-port 4123
+istack env check-port 4123
 ```
 
 Exit 0 means the listener runs from this worktree. Exit 1 names the pid and directory of whoever
 else holds it, or says nothing is listening. Never test against a server you did not start.
 
-`mitchstack env status` shows the lease and who is listening; `mitchstack env down` frees the
+`istack env status` shows the lease and who is listening; `istack env down` frees the
 ports when the worktree is finished (`--db` also runs the configured drop for its own database).
 
 ## 2. Write the brief
@@ -80,7 +80,7 @@ agent has: give it the files, the owned paths and the stop point.
 2. **Fix**, then run **the same check** again. It must pass. That is green.
 3. **One focused test** when nothing covers the behavior. Not a pile of smoke tests that assert
    the code runs; a test that fails for the bug and passes for the fix.
-4. Run the repo's checks from `mitchstack.yaml`. A green suite on stubs proves the stubs; prove
+4. Run the repo's checks from `istack.yaml`. A green suite on stubs proves the stubs; prove
    the real thing too.
 5. Two failed fixes on the same point mean the diagnosis is wrong. Re-diagnose; do not guess a
    third time.

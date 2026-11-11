@@ -50,7 +50,7 @@ export interface Manifest {
   entries: Entry[];
 }
 
-export const MANIFEST_PATH = join(".mitchstack", "install.json");
+export const MANIFEST_PATH = join(".istack", "install.json");
 
 export function sha256(data: Buffer | string): string {
   return createHash("sha256").update(data).digest("hex");
@@ -72,7 +72,7 @@ export function readManifest(root: string): Manifest {
       .slice(0, 5)
       .map((i) => `${i.path.join(".") || "(root)"}: ${i.message}`)
       .join("; ");
-    throw new Error(`${file} is not a mitchstack install manifest (${problems}) — nothing changed`);
+    throw new Error(`${file} is not a istack install manifest (${problems}) — nothing changed`);
   }
   return parsed.data;
 }

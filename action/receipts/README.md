@@ -1,10 +1,10 @@
-# mitchstack receipts actions
+# istack receipts actions
 
 Two GitHub Actions check the `receipts` block in a pull request body:
 
-- `action/receipts`: the present tier (`mitchstack/receipts`). It reads the receipts and the PR's
+- `action/receipts`: the present tier (`istack/receipts`). It reads the receipts and the PR's
   changed files. It needs no checkout.
-- `action/receipts/verified`: the opt-in verified tier (`mitchstack/receipts-verified`). It re-runs
+- `action/receipts/verified`: the opt-in verified tier (`istack/receipts-verified`). It re-runs
   each claim against the PR's checkout.
 
 Usage examples are in the comments at the top of each `action.yml`.
@@ -16,7 +16,7 @@ so that it always passes. The code that decides the verdict has to come from a r
 cannot change:
 
 1. **Pin the action to a full commit SHA**, such as
-   `uses: <owner>/mitchstack/action/receipts@<full-40-char-sha>`. A branch or tag can move. Never
+   `uses: <owner>/istack/action/receipts@<full-40-char-sha>`. A branch or tag can move. Never
    point `uses: ./...` at a local action inside the PR's own checkout.
 2. **Protect the workflow file.** A PR can edit the workflow that runs the check. Make the
    workflow file owned in `CODEOWNERS` and require code-owner review on the default branch. You

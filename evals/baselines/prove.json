@@ -1,23 +1,23 @@
 {
   "version": 1,
   "skill": "prove",
-  "skillHash": "4b9494824b8963f9056c2b7636f98b7a9639209498089b2ad5e635b91dab720f",
-  "scenariosHash": "42c95bb9fb97431339d87a527b9b5175e3452c88176a80a585dd8725c8c9f5b9",
+  "skillHash": "733a65c80d7e1f62ad7e7645eafa7c0c33a9aad32dfe15e1b96230c0229bc174",
+  "scenariosHash": "ad1caadff4ad8dc0e01975f0217bdc51003f133e6778bdd67e9c7671312a29f3",
   "producedBy": {
     "runner": "claude -p",
     "provider": "anthropic",
     "model": "claude-sonnet-5-5",
     "runs": 3,
-    "date": "2026-11-04",
+    "date": "2026-11-11",
     "mode": "deterministic",
-    "costUsd": 0.146558,
+    "costUsd": 0.16052,
     "costSource": "measured"
   },
   "score": 95.83,
   "runScores": [
     95.83,
-    100,
-    86.11
+    95.83,
+    90.28
   ],
   "noise": {
     "floor": 5,
@@ -25,19 +25,19 @@
   },
   "scenarios": {
     "red-after-fix": {
-      "median": 100,
+      "median": 87.5,
       "runs": [
         100,
-        100,
-        75
+        87.5,
+        87.5
       ],
       "passes": {
         "red-at-base": 3,
         "no-red-at-head": 3,
         "same-check": 3,
-        "receipts-command": 2,
+        "receipts-command": 3,
         "door": 3,
-        "try-it": 2
+        "try-it": 1
       }
     },
     "visual-change": {

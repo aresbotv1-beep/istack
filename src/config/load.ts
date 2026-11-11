@@ -1,12 +1,24 @@
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { parseDocument } from "yaml";
 import { type FieldError, toFieldErrors } from "../result.js";
-import { configSchema, type MitchstackConfig } from "./schema.js";
+import { configSchema, type IstackConfig } from "./schema.js";
 
 export type LoadConfigResult =
-  | { ok: true; config: MitchstackConfig }
+  | { ok: true; config: IstackConfig }
   | { ok: false; errors: FieldError[] };
 
-/** Parse and validate the text of a mitchstack.yaml. Never throws. */
+/**
+ * The project was called mitchstack. A repo still holding only the old config file gets told to
+ * rename it, instead of being silently run with defaults. Null when there is nothing to say.
+ */
+export function oldConfigProblem(dir: string): string | null {
+  if (existsSync(join(dir, "istack.yaml")) || !existsSync(join(dir, "mitchstack.yaml")))
+    return null;
+  return `found mitchstack.yaml — rename it to istack.yaml (mitchstack is now istack) in ${dir}`;
+}
+
+/** Parse and validate the text of an istack.yaml. Never throws. */
 export function loadConfig(text: string): LoadConfigResult {
   const doc = parseDocument(text, { prettyErrors: true });
   if (doc.errors.length > 0) {

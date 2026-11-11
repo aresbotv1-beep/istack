@@ -1,6 +1,6 @@
-name: mitchstack receipts (verified)
+name: istack receipts (verified)
 description: >-
-  The mitchstack/receipts-verified check (opt-in). Re-runs the proof instead of trusting it: each
+  The istack/receipts-verified check (opt-in). Re-runs the proof instead of trusting it: each
   red-green claim must fail at the merge base with only the PR's test files applied and pass at the
   head; each visual claim is re-captured at both commits and compared to the claimed hashes.
   No token, no secrets, no LLM calls.
@@ -15,7 +15,7 @@ description: >-
 #     contents: read
 #   jobs:
 #     receipts-verified:
-#       name: mitchstack/receipts-verified
+#       name: istack/receipts-verified
 #       runs-on: ubuntu-latest
 #       timeout-minutes: 60
 #       steps:
@@ -24,11 +24,11 @@ description: >-
 #             ref: ${{ github.event.pull_request.head.sha }}
 #             fetch-depth: 0             # the base, the head and their merge base must all be here
 #             persist-credentials: false # the PR's commands run in this job
-#         - uses: aresbotv1-beep/mitchstack/action/receipts/verified@<full-40-char-commit-sha>
+#         - uses: aresbotv1-beep/istack/action/receipts/verified@<full-40-char-commit-sha>
 #           with:
 #             setup: npm ci
 #
-# Trust: pin this action to a full commit SHA so the verifier comes from mitchstack, never from the
+# Trust: pin this action to a full commit SHA so the verifier comes from istack, never from the
 # PR's checkout, and protect the workflow file (CODEOWNERS / required workflow / ruleset). The PR's
 # checkout is only the thing under test. See action/receipts/README.md.
 #
@@ -44,7 +44,7 @@ description: >-
 #   At the head it must exit 0, retried up to `attempts`. Exit 126/127, signals and timeouts are
 #   "could not verify", never a pass.
 # - visual: re-captured at the merge base and the head with the repo's capture script, or, for a
-#   repo-relative file surface such as public/index.html, with mitchstack's deterministic capture.
+#   repo-relative file surface such as public/index.html, with istack's deterministic capture.
 #   before: "absent" means the surface must not exist at the merge base (a file surface is missing,
 #   or the capture script exits 3); if it exists, the claim fails. Exact hash match = verified.
 #   Pixel-exact hashes only reproduce in the same rendering environment (OS, fonts, Chromium), so a
@@ -63,12 +63,12 @@ inputs:
     default: ""
   capture:
     description: >-
-      The repo's capture script, run per visual claim in each worktree with MITCHSTACK_SURFACE,
-      MITCHSTACK_CAPTURE_OUT, MITCHSTACK_SIDE (base|head) and MITCHSTACK_CLAIM. Writes a PNG to
-      MITCHSTACK_CAPTURE_OUT and exits 0, or exits 3 when the surface does not exist at that commit.
+      The repo's capture script, run per visual claim in each worktree with ISTACK_SURFACE,
+      ISTACK_CAPTURE_OUT, ISTACK_SIDE (base|head) and ISTACK_CLAIM. Writes a PNG to
+      ISTACK_CAPTURE_OUT and exits 0, or exits 3 when the surface does not exist at that commit.
     default: ""
   test-globs:
-    description: Newline-separated globs for the PR's test files. Empty uses mitchstack's defaults.
+    description: Newline-separated globs for the PR's test files. Empty uses istack's defaults.
     default: ""
   timeout:
     description: Seconds per command run or capture; a timeout is "could not verify".
@@ -86,7 +86,7 @@ inputs:
     default: lenient
   install-browser:
     description: >-
-      auto (default): install Chromium for mitchstack's built-in capture only when the PR claims a
+      auto (default): install Chromium for istack's built-in capture only when the PR claims a
       visual change and no capture script is given. Costs roughly 1-2 minutes and ~150 MB. true or
       false to force.
     default: auto
@@ -103,7 +103,7 @@ runs:
       with:
         node-version: 22
 
-    - name: Build mitchstack
+    - name: Build istack
       shell: bash
       working-directory: ${{ github.action_path }}/../../..
       run: npm ci --ignore-scripts --no-audit --no-fund && npm run build
@@ -154,4 +154,4 @@ runs:
         while IFS= read -r glob; do
           [ -n "$glob" ] && args+=(--test-glob "$glob")
         done <<< "$TEST_GLOBS"
-        node "$GITHUB_ACTION_PATH/../../../dist/bin/mitchstack.js" "${args[@]}"
+        node "$GITHUB_ACTION_PATH/../../../dist/bin/istack.js" "${args[@]}"

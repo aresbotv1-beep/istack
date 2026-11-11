@@ -10,7 +10,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { dirname, join, relative, resolve, sep } from "node:path";
-import { loadConfig } from "../config/load.js";
+import { loadConfig, oldConfigProblem } from "../config/load.js";
 import { mergeBlock, removeBlock, renderBlock } from "./block.js";
 import { type Host, hostTarget, type Scope } from "./hosts.js";
 import { type Kit, prefixSkills } from "./kit.js";
@@ -63,7 +63,7 @@ export interface InstallOptions {
   scope: Scope;
   hosts: Host[];
   kit: Kit;
-  /** Install every skill as `mitchstack-<name>` so it cannot clash with a personal skill. */
+  /** Install every skill as `istack-<name>` so it cannot clash with a personal skill. */
   prefix?: boolean;
   /** Also write a git pre-push hook running the repo's checks (project scope only). */
   hooks?: boolean;
@@ -73,13 +73,13 @@ export interface InstallOptions {
 export function install(options: InstallOptions): Report {
   // A fresh install has no record to check, so plan it first (a dry run writes nothing but fills
   // the record it would save) and check every destination in that planned record before any
-  // write. The same rule as uninstall: nothing outside mitchstack's locations, nothing through a
+  // write. The same rule as uninstall: nothing outside istack's locations, nothing through a
   // symlink that leaves the root.
   const planned = installInto(context(options.scope, true), options);
   const problems = checkLocations(planned.manifest, options.scope);
   if (problems.length > 0) {
     throw new Error(
-      `the install would write outside mitchstack's install locations, so nothing was written: ${problems.join("; ")}`,
+      `the install would write outside istack's install locations, so nothing was written: ${problems.join("; ")}`,
     );
   }
   if (options.dryRun) return finish(planned, options.scope);
@@ -89,7 +89,7 @@ export function install(options: InstallOptions): Report {
 function installInto(ctx: Ctx, options: InstallOptions): Ctx {
   const { scope, kit } = options;
   const blocks = new Map<string, Host[]>();
-  const skills = options.prefix ? prefixSkills(kit.skills, "mitchstack-") : kit.skills;
+  const skills = options.prefix ? prefixSkills(kit.skills, "istack-") : kit.skills;
   for (const host of options.hosts) {
     const target = hostTarget(host, scope);
     for (const skill of skills) installSkill(ctx, host, target.skillsDir, skill);
@@ -148,7 +148,7 @@ export function uninstall(options: UninstallOptions): Report {
 // — internals —
 
 /**
- * Read and check the install record before anything is touched. A record naming any path mitchstack
+ * Read and check the install record before anything is touched. A record naming any path istack
  * could not have written (outside the host locations, `..`, absolute, or out through a symlink) is
  * refused whole: the run throws and nothing changes.
  */
@@ -157,7 +157,7 @@ function context(scope: Scope, dryRun: boolean): Ctx {
   const problems = checkLocations(manifest, scope);
   if (problems.length > 0) {
     throw new Error(
-      `${join(scope.root, MANIFEST_PATH)} names paths outside mitchstack's install locations, so it is refused and nothing changed: ${problems.join("; ")}`,
+      `${join(scope.root, MANIFEST_PATH)} names paths outside istack's install locations, so it is refused and nothing changed: ${problems.join("; ")}`,
     );
   }
   return { root: scope.root, manifest, dryRun, items: [] };
@@ -253,7 +253,7 @@ function installSkill(ctx: Ctx, host: Host, skillsDir: string, skill: Kit["skill
     ctx.items.push({
       status: "skipped",
       path: dirRel,
-      detail: `${host}: a skill named ${skill.name} already exists and is not mitchstack's — left untouched (use --prefix to install as mitchstack-${skill.name})`,
+      detail: `${host}: a skill named ${skill.name} already exists and is not istack's — left untouched (use --prefix to install as istack-${skill.name})`,
     });
     return;
   }
@@ -311,7 +311,7 @@ function installBlock(ctx: Ctx, abs: string, hosts: Host[], contract: string): v
     ctx.items.push({
       status: "skipped",
       path,
-      detail: `${who}: AGENTS.md already has a mitchstack block this install did not write — left untouched and not recorded (remove it and re-run to let the installer own it)`,
+      detail: `${who}: AGENTS.md already has a istack block this install did not write — left untouched and not recorded (remove it and re-run to let the installer own it)`,
     });
     return;
   }
@@ -332,7 +332,7 @@ function installBlock(ctx: Ctx, abs: string, hosts: Host[], contract: string): v
   ctx.items.push({
     status: existing === null ? "created" : changed ? "updated" : "unchanged",
     path,
-    detail: `${who}: the mitchstack contract between ${"<!-- mitchstack:begin/end -->"} markers; text outside them untouched`,
+    detail: `${who}: the istack contract between ${"<!-- istack:begin/end -->"} markers; text outside them untouched`,
   });
 }
 
@@ -344,7 +344,7 @@ export function renderHook(
   template: string,
   checks: ReadonlyArray<{ name: string; run: string }>,
 ): string {
-  const lines = checks.map((c) => `mitchstack_check ${shellQuote(c.name)} ${shellQuote(c.run)}`);
+  const lines = checks.map((c) => `istack_check ${shellQuote(c.name)} ${shellQuote(c.run)}`);
   return template.replace("# @@CHECKS@@", lines.join("\n"));
 }
 
@@ -356,12 +356,17 @@ function installHook(ctx: Ctx, template: string): void {
   }
   const abs = join(hooksDir, "pre-push");
   const path = rel(ctx, abs);
-  const configPath = join(ctx.root, "mitchstack.yaml");
+  const configPath = join(ctx.root, "istack.yaml");
+  const old = oldConfigProblem(ctx.root);
+  if (old) {
+    ctx.items.push({ status: "skipped", path, detail: `pre-push hook: ${old}` });
+    return;
+  }
   if (!existsSync(configPath)) {
     ctx.items.push({
       status: "skipped",
       path,
-      detail: "pre-push hook: no mitchstack.yaml, so no checks to run",
+      detail: "pre-push hook: no istack.yaml, so no checks to run",
     });
     return;
   }
@@ -370,7 +375,7 @@ function installHook(ctx: Ctx, template: string): void {
     ctx.items.push({
       status: "skipped",
       path,
-      detail: "pre-push hook: mitchstack.yaml is invalid (run mitchstack config check)",
+      detail: "pre-push hook: istack.yaml is invalid (run istack config check)",
     });
     return;
   }
@@ -385,7 +390,7 @@ function installHook(ctx: Ctx, template: string): void {
       status: "skipped",
       path,
       detail:
-        "pre-push hook: this repo already has a pre-push hook mitchstack did not write — left untouched and not recorded; call your checks from it, or remove it and re-run with --hooks",
+        "pre-push hook: this repo already has a pre-push hook istack did not write — left untouched and not recorded; call your checks from it, or remove it and re-run with --hooks",
     });
     return;
   }

@@ -1,4 +1,4 @@
-# mitchstack.yaml — one per repo. Validate with: npx mitchstack config check
+# istack.yaml — one per repo. Validate with: npx istack config check
 version: 1
 
 # The human who holds both gates: says yes to the ticket, and is the only one who merges.
@@ -40,7 +40,7 @@ council:
   enabled: false
   budgetUsdPerPr: 10
 
-# Per-worktree environment for `mitchstack env up`. Every worktree leases its own ports from the
+# Per-worktree environment for `istack env up`. Every worktree leases its own ports from the
 # range (recorded in the repo's shared git dir, so two worktrees never collide; `env down` frees
 # them). Ports named in ownershipGates ("port 5432") are never handed out.
 env:

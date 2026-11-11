@@ -54,10 +54,10 @@ export interface ClimbDeps {
 }
 
 const USAGE = [
-  "usage: mitchstack climb ladder --plan <climb.json>",
-  "       mitchstack climb run --plan <climb.json> --log <decision.tsv>",
-  "       mitchstack climb council-score --after <png> --control <png> --log <council.json>",
-  "                                      [--config mitchstack.yaml] [--budget <usd>] [--seed <n>]",
+  "usage: istack climb ladder --plan <climb.json>",
+  "       istack climb run --plan <climb.json> --log <decision.tsv>",
+  "       istack climb council-score --after <png> --control <png> --log <council.json>",
+  "                                      [--config istack.yaml] [--budget <usd>] [--seed <n>]",
 ].join("\n");
 
 const move = z.strictObject({
@@ -283,7 +283,7 @@ async function councilScoreCommand(
   if (!(budget > 0)) return usage(io, "--budget is a positive number of dollars");
 
   let providers: string[] = [];
-  const configPath = resolve(io.cwd, flags.get("config") ?? "mitchstack.yaml");
+  const configPath = resolve(io.cwd, flags.get("config") ?? "istack.yaml");
   if (existsSync(configPath)) {
     const loaded = loadConfig(readFileSync(configPath, "utf8"));
     if (!loaded.ok) {

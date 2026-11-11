@@ -92,7 +92,7 @@ export function allocatePorts(input: AllocateInput): AllocateResult {
     }
     return {
       ok: false,
-      reason: `no free block of ${size} port(s) left in ${range.from}-${range.to}; run 'mitchstack env down' in a finished worktree`,
+      reason: `no free block of ${size} port(s) left in ${range.from}-${range.to}; run 'istack env down' in a finished worktree`,
     };
   });
 }

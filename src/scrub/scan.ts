@@ -3,8 +3,8 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { extname, join, relative, sep } from "node:path";
 
 /**
- * Terms from the private workflow mitchstack was extracted from. Shipped files must be generic:
- * owners, ports and repos come from the user's mitchstack.yaml, never from the kit itself.
+ * Terms from the private workflow istack was extracted from. Shipped files must be generic:
+ * owners, ports and repos come from the user's istack.yaml, never from the kit itself.
  *
  * The terms themselves are private, so only the SHA-256 of each normalised term ships (see
  * `normaliseTerm`). The scan hashes every word, hyphen part and 2-3 word phrase of a file and
@@ -70,7 +70,7 @@ const SCANNED = [
   "CREDITS.md",
   "README.md",
   "package.json",
-  "mitchstack.yaml.example",
+  "istack.yaml.example",
   "skills",
   "templates",
   "schema",

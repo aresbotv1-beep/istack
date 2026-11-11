@@ -10,14 +10,14 @@ prompt: |
 context:
   - path: env-status.txt
     text: |
-      $ mitchstack env status
+      $ istack env status
       worktree: ../tally-t3-status-json (branch t3-status-json)
       lease: web 4123
       listening on 4123: pid 48211
 criteria:
   - id: check-port
     kind: includes
-    why: '`mitchstack env check-port` confirms the listener runs from this worktree.'
+    why: '`istack env check-port` confirms the listener runs from this worktree.'
     weight: 2
     any: ['check-port']
   - id: does-not-trust

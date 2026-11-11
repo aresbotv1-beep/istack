@@ -96,7 +96,7 @@ describe("skills/ship/council.md", () => {
       "no council (budget)",
       "no score",
       "does not gate the merge",
-      "mitchstack ship council",
+      "istack ship council",
       "Theo Browne",
     ]) {
       expect(council, needle).toContain(needle);

@@ -5,8 +5,8 @@ import { gitRepo, install, put, snapshot, tempDir } from "./install-helpers.js";
 
 const KIT = new URL("..", import.meta.url).pathname;
 const SKILLS = readdirSync(join(KIT, "skills")).sort();
-const BEGIN = "<!-- mitchstack:begin -->";
-const END = "<!-- mitchstack:end -->";
+const BEGIN = "<!-- istack:begin -->";
+const END = "<!-- istack:end -->";
 
 const theirSkill = "---\nname: groundbreak\ndescription: my own brainstorm skill\n---\n\nMine.\n";
 
@@ -108,7 +108,7 @@ describe("install never destroys an existing setup", () => {
     expect(existsSync(join(home, ".claude/skills/build"))).toBe(false);
   });
 
-  it("--prefix installs every skill as mitchstack-<name>, with the frontmatter name to match", async () => {
+  it("--prefix installs every skill as istack-<name>, with the frontmatter name to match", async () => {
     const home = tempDir();
     put(home, ".cursor/skills/groundbreak/SKILL.md", theirSkill);
     const run = await install(home, ["install", "--host", "cursor", "--home", home, "--prefix"]);
@@ -116,9 +116,9 @@ describe("install never destroys an existing setup", () => {
     expect(readFileSync(join(home, ".cursor/skills/groundbreak/SKILL.md"), "utf8")).toBe(
       theirSkill,
     );
-    const ours = readFileSync(join(home, ".cursor/skills/mitchstack-groundbreak/SKILL.md"), "utf8");
-    expect(ours).toMatch(/^---\nname: mitchstack-groundbreak\n/);
-    expect(existsSync(join(home, ".cursor/skills/mitchstack-plan/SKILL.md"))).toBe(true);
+    const ours = readFileSync(join(home, ".cursor/skills/istack-groundbreak/SKILL.md"), "utf8");
+    expect(ours).toMatch(/^---\nname: istack-groundbreak\n/);
+    expect(existsSync(join(home, ".cursor/skills/istack-plan/SKILL.md"))).toBe(true);
   });
 
   it("--dry-run writes nothing", async () => {
@@ -193,7 +193,7 @@ checks:
 `;
 
   it("writes a pre-push hook that runs the repo's checks, and removes only its own", async () => {
-    const project = gitRepo({ "mitchstack.yaml": config });
+    const project = gitRepo({ "istack.yaml": config });
     const run = await install(project, [
       "install",
       "--host",
@@ -206,7 +206,7 @@ checks:
     const hook = join(project, ".git/hooks/pre-push");
     const text = readFileSync(hook, "utf8");
     expect(text).toContain("npm test");
-    expect(text).toContain("mitchstack:pre-push");
+    expect(text).toContain("istack:pre-push");
     expect(statSync(hook).mode & 0o111).not.toBe(0);
     await install(project, ["uninstall", "--host", "all", "--project", project]);
     expect(existsSync(hook)).toBe(false);
@@ -214,7 +214,7 @@ checks:
 
   it("never replaces someone else's pre-push hook", async () => {
     const project = gitRepo({
-      "mitchstack.yaml": config,
+      "istack.yaml": config,
       ".git/hooks/pre-push": "#!/bin/sh\nexit 0\n",
     });
     const run = await install(project, [
@@ -232,7 +232,7 @@ checks:
 
   it("the generated hook really runs the checks and stops the push on failure", async () => {
     const failing = config.replace("npm test", "exit 3");
-    const project = gitRepo({ "mitchstack.yaml": failing });
+    const project = gitRepo({ "istack.yaml": failing });
     await install(project, ["install", "--host", "codex", "--project", project, "--hooks"]);
     const { spawnSync } = await import("node:child_process");
     const result = spawnSync("sh", [".git/hooks/pre-push"], { cwd: project, encoding: "utf8" });

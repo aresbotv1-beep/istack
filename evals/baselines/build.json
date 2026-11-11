@@ -1,22 +1,22 @@
 {
   "version": 1,
   "skill": "build",
-  "skillHash": "cbaaf467a0049cb215ceb20f45bc2bc3c737fd21192626c69e05c9e2b0e2238a",
-  "scenariosHash": "71202edb1cc2bf9a735758f6876ca44f3479d9d65a1ff8b0f09aa20aba8d8dce",
+  "skillHash": "a995f556ff724952616c8a6120b794a5fc3a3e8ec74a5cf3be43d6a44961a548",
+  "scenariosHash": "89c9ebc378a77abd9cc9f1f0266d60d9a0707bdb1d27bf855b8e4abc8e69c3b1",
   "producedBy": {
     "runner": "claude -p",
     "provider": "anthropic",
     "model": "claude-sonnet-5-5",
     "runs": 3,
-    "date": "2026-11-05",
+    "date": "2026-11-11",
     "mode": "deterministic",
-    "costUsd": 0.133616,
+    "costUsd": 0.155108,
     "costSource": "measured"
   },
   "score": 100,
   "runScores": [
     100,
-    100,
+    93.33,
     100
   ],
   "noise": {
@@ -56,12 +56,12 @@
       "median": 100,
       "runs": [
         100,
-        100,
+        80,
         100
       ],
       "passes": {
         "rediagnose": 3,
-        "names-the-rule": 3,
+        "names-the-rule": 2,
         "reproduce": 3,
         "reads-the-log": 3
       }

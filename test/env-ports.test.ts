@@ -11,7 +11,7 @@ function setup() {
     mkdirSync(path, { recursive: true });
     return path;
   };
-  return { registryPath: join(dir, "common", "mitchstack", "ports.json"), wt };
+  return { registryPath: join(dir, "common", "istack", "ports.json"), wt };
 }
 
 const range = { from: 4100, to: 4999 };

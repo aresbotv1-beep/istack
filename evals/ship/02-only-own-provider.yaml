@@ -22,7 +22,7 @@ criteria:
   - id: reviewer-command
     kind: includes
     why: The command picks the reviewer from PATH.
-    any: ['mitchstack ship reviewer']
+    any: ['istack ship reviewer']
   - id: fresh-context
     kind: includes
     why: The fallback is a fresh-context reviewer.

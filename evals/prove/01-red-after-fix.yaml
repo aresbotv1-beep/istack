@@ -36,7 +36,7 @@ criteria:
   - id: receipts-command
     kind: includes
     why: The block comes from the command, not by hand.
-    any: ['mitchstack prove receipts']
+    any: ['istack prove receipts']
   - id: door
     kind: includes
     why: Every receipt names the door.

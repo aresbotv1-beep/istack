@@ -1,8 +1,8 @@
-# AGENTS.md — the mitchstack contract
+# AGENTS.md — the istack contract
 
-Every agent working in a mitchstack repo — Claude Code, Codex, Cursor, or anything else — follows
+Every agent working in a istack repo — Claude Code, Codex, Cursor, or anything else — follows
 this file. Repo-specific facts (the owner, the checks, the shared resources) live in
-`mitchstack.yaml`. Where the two disagree, `mitchstack.yaml` names the facts and this file names
+`istack.yaml`. Where the two disagree, `istack.yaml` names the facts and this file names
 the rules.
 
 **The one-line version:** agents don't get to say "done". They show receipts.
@@ -30,7 +30,7 @@ Between the gates an agent stops only when:
 - the goal is ambiguous in a way that changes the result;
 - another open pull request already touches the same files;
 - a conflict cannot be resolved with confidence;
-- the next step uses a shared resource listed under `ownershipGates` in `mitchstack.yaml`.
+- the next step uses a shared resource listed under `ownershipGates` in `istack.yaml`.
 
 Everything else, the agent decides and lists in its report. When it stops, it does every
 independent step first, then asks once, through the harness's question tool, with a recommended
@@ -61,9 +61,9 @@ A claim without a receipt does not count.
 - **Pictures for visible changes.** Headless before/after pairs from the real running app. Never a
   desktop screen recording. A short headless clip only when the change is about motion or timing.
 - **Receipts live in the pull request body** as one fenced `receipts` JSON block (schema in
-  `schema/receipts.schema.json`), checked by the `mitchstack/receipts` CI check.
+  `schema/receipts.schema.json`), checked by the `istack/receipts` CI check.
 - **The checker is never the PR's own code.** Pin
-  `uses: <owner>/mitchstack/action/receipts@<full-sha>` and protect the workflow file (CODEOWNERS
+  `uses: <owner>/istack/action/receipts@<full-sha>` and protect the workflow file (CODEOWNERS
   or a required workflow).
 - A mock, a fixture or a green suite on stubs is not proof that the real thing works.
 - A check passes only when its exit code is 0, shown with the run. Blank output is not a pass.

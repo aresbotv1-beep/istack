@@ -42,10 +42,10 @@ function upJson(cwd: string) {
   return env(cwd, ["up", "--json"]).then((r) => ({ ...r, json: JSON.parse(r.out.join("\n")) }));
 }
 
-describe("mitchstack env (real git worktrees)", () => {
+describe("istack env (real git worktrees)", () => {
   it("gives two worktrees distinct ports and records both in the shared registry", async () => {
     const { main, a, b } = scratchRepo({
-      "mitchstack.yaml": config,
+      "istack.yaml": config,
       ".env.local": "TOKEN=hunter2\nPORT=3000\n",
     });
     const upA = await upJson(a);
@@ -56,9 +56,7 @@ describe("mitchstack env (real git worktrees)", () => {
     const portsB = Object.values(upB.json.ports) as number[];
     expect(portsA).toHaveLength(2);
     expect(portsA.filter((p) => portsB.includes(p))).toEqual([]);
-    const registry = JSON.parse(
-      readFileSync(join(main, ".git", "mitchstack", "ports.json"), "utf8"),
-    );
+    const registry = JSON.parse(readFileSync(join(main, ".git", "istack", "ports.json"), "utf8"));
     expect(registry.leases).toHaveLength(2);
 
     // env files: copied with ports rewritten, secret untouched and never printed.
@@ -77,23 +75,21 @@ describe("mitchstack env (real git worktrees)", () => {
   });
 
   it("is idempotent, and down releases the lease", async () => {
-    const { main, a } = scratchRepo({ "mitchstack.yaml": config });
+    const { main, a } = scratchRepo({ "istack.yaml": config });
     const first = await upJson(a);
     const second = await upJson(a);
     expect(second.json.ports).toEqual(first.json.ports);
     const down = await env(a, ["down"]);
     expect(down.code).toBe(0);
     expect(down.out.join("\n")).toMatch(/released/);
-    const registry = JSON.parse(
-      readFileSync(join(main, ".git", "mitchstack", "ports.json"), "utf8"),
-    );
+    const registry = JSON.parse(readFileSync(join(main, ".git", "istack", "ports.json"), "utf8"));
     expect(registry.leases).toEqual([]);
     const status = await env(a, ["status"]);
     expect(status.out.join("\n")).toMatch(/no ports leased/);
   });
 
   it("reports the install command and runs it only with --install", async () => {
-    const { a } = scratchRepo({ "mitchstack.yaml": config, "package-lock.json": "{}" });
+    const { a } = scratchRepo({ "istack.yaml": config, "package-lock.json": "{}" });
     const calls: string[] = [];
     const spy: Exec = (cmd, args, opts) => {
       if (cmd === "npm") {
@@ -111,7 +107,7 @@ describe("mitchstack env (real git worktrees)", () => {
   });
 
   it("runs the database hook only with --db and never from the main checkout", async () => {
-    const { main, a } = scratchRepo({ "mitchstack.yaml": config });
+    const { main, a } = scratchRepo({ "istack.yaml": config });
     const shell: string[] = [];
     const spy: Exec = (cmd, args, opts) => {
       if (cmd === "sh") {
@@ -144,7 +140,7 @@ describe("mitchstack env (real git worktrees)", () => {
     expect(fromA.code).toBe(0);
   });
 
-  it("works without a mitchstack.yaml using defaults, and rejects bad usage", async () => {
+  it("works without a istack.yaml using defaults, and rejects bad usage", async () => {
     const { a } = scratchRepo();
     const up = await upJson(a);
     expect(up.code).toBe(0);
@@ -153,9 +149,9 @@ describe("mitchstack env (real git worktrees)", () => {
     expect((await env(a, ["sideways"])).code).toBe(2);
   });
 
-  it("refuses an invalid mitchstack.yaml", async () => {
+  it("refuses an invalid istack.yaml", async () => {
     const { a } = scratchRepo();
-    writeFileSync(join(a, "mitchstack.yaml"), config.replace("from: 4100", "from: 80"));
+    writeFileSync(join(a, "istack.yaml"), config.replace("from: 4100", "from: 80"));
     const up = await env(a, ["up"]);
     expect(up.code).toBe(1);
     expect(up.err.join("\n")).toMatch(/env\.ports\.from/);

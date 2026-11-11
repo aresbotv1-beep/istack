@@ -6,10 +6,10 @@ const KIT = new URL("..", import.meta.url).pathname;
 const read = (path: string) => JSON.parse(readFileSync(join(KIT, path), "utf8"));
 
 describe("Claude Code plugin + npx skills layout", () => {
-  it("plugin.json names the plugin mitchstack at the package version", () => {
+  it("plugin.json names the plugin istack at the package version", () => {
     const plugin = read(".claude-plugin/plugin.json");
     const pkg = read("package.json");
-    expect(plugin.name).toBe("mitchstack");
+    expect(plugin.name).toBe("istack");
     expect(plugin.version).toBe(pkg.version);
     expect(plugin.license).toBe("MIT");
     // skills/ is the default scan; declaring it again would load every skill twice.
@@ -18,9 +18,9 @@ describe("Claude Code plugin + npx skills layout", () => {
 
   it("marketplace.json lists the plugin at the repo root under the same name", () => {
     const market = read(".claude-plugin/marketplace.json");
-    expect(market.name).toBe("mitchstack");
+    expect(market.name).toBe("istack");
     expect(market.owner.name).toBeTruthy();
-    expect(market.plugins).toEqual([expect.objectContaining({ name: "mitchstack", source: "./" })]);
+    expect(market.plugins).toEqual([expect.objectContaining({ name: "istack", source: "./" })]);
   });
 
   it("every skill folder holds a SKILL.md whose name matches the folder (Cursor, npx skills)", () => {

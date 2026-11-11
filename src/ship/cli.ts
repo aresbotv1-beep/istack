@@ -14,7 +14,7 @@ import { tmpdir } from "node:os";
 import { delimiter, dirname, extname, join, resolve } from "node:path";
 import { z } from "zod";
 import type { CliIo } from "../cli.js";
-import { loadConfig } from "../config/load.js";
+import { loadConfig, oldConfigProblem } from "../config/load.js";
 import { discoverJudges, execJudge } from "../council/judges.js";
 import { renderCouncilScores } from "../council/markdown.js";
 import { type Judge, runCouncil } from "../council/run.js";
@@ -39,14 +39,14 @@ export interface ShipDeps {
 }
 
 const USAGE = [
-  "usage: mitchstack ship reviewer --builder <provider> [--delegate-task <p1,p2>]",
-  "       mitchstack ship review --from <review.json> [--format md|json]",
-  "       mitchstack ship body --from <body.json>",
-  "       mitchstack ship watch --repo <owner/name> --pr <number>",
-  "       mitchstack ship council --after <png> --control <png> [--before <png>] --head <sha>",
+  "usage: istack ship reviewer --builder <provider> [--delegate-task <p1,p2>]",
+  "       istack ship review --from <review.json> [--format md|json]",
+  "       istack ship body --from <body.json>",
+  "       istack ship watch --repo <owner/name> --pr <number>",
+  "       istack ship council --after <png> --control <png> [--before <png>] --head <sha>",
   "                               --changed <files.txt> --log <council.json>",
   "                               [--changed-since-last <files.txt>] [--door one-way|two-way]",
-  "                               [--config mitchstack.yaml] [--seed <n>] [--prices openai=0.2,...]",
+  "                               [--config istack.yaml] [--seed <n>] [--prices openai=0.2,...]",
 ].join("\n");
 
 const bodyInputSchema = z.strictObject({
@@ -99,7 +99,12 @@ async function council(flags: Map<string, string>, io: CliIo, deps: ShipDeps): P
   if (door !== undefined && door !== "one-way" && door !== "two-way") {
     return usage(io, "--door is one-way or two-way");
   }
-  const configPath = resolve(io.cwd, flags.get("config") ?? "mitchstack.yaml");
+  const configPath = resolve(io.cwd, flags.get("config") ?? "istack.yaml");
+  const old = flags.get("config") ? null : oldConfigProblem(io.cwd);
+  if (old) {
+    io.err(old);
+    return 2;
+  }
   if (!existsSync(configPath)) {
     io.err(`no config at ${configPath}: the council needs the profile and council settings`);
     return 2;

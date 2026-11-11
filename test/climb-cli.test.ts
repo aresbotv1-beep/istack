@@ -97,7 +97,7 @@ function git(dir: string, ...args: string[]): string {
   return execFileSync("git", args, { cwd: dir, encoding: "utf8" });
 }
 
-describe("mitchstack climb run", () => {
+describe("istack climb run", () => {
   it("reverts the no-op, keeps the improvement once, reverts every regression", async () => {
     const dir = climbFixture();
     writeFileSync(join(dir, "plan.json"), JSON.stringify(FIXTURE_PLAN));
@@ -259,7 +259,7 @@ describe("mitchstack climb run", () => {
   });
 });
 
-describe("mitchstack climb ladder", () => {
+describe("istack climb ladder", () => {
   it("lists the moves lowest-hanging first", async () => {
     const dir = climbFixture();
     writeFileSync(
@@ -287,7 +287,7 @@ describe("mitchstack climb ladder", () => {
   });
 });
 
-describe("mitchstack climb council-score", () => {
+describe("istack climb council-score", () => {
   const judge = (id: string, provider: string, afterScore: number, control = 5): Judge => ({
     id,
     provider,

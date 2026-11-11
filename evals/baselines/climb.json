@@ -1,23 +1,23 @@
 {
   "version": 1,
   "skill": "climb",
-  "skillHash": "7c870af86982bb2614980a67a5fec8e733dfd4edc197c31b2de27fb9ca47ab8f",
+  "skillHash": "5c4fb89e7b2714d66a6243ba12a0653798ebe5fa1d0124540de7810d20f62b67",
   "scenariosHash": "afecc3cd6dcdd384ac9402044b1be041005b3825cd118bb1ebc32c22dfdfc525",
   "producedBy": {
     "runner": "claude -p",
     "provider": "anthropic",
     "model": "claude-sonnet-5-5",
     "runs": 3,
-    "date": "2026-11-05",
+    "date": "2026-11-11",
     "mode": "deterministic",
-    "costUsd": 0.150276,
+    "costUsd": 0.155119,
     "costSource": "measured"
   },
   "score": 95.83,
   "runScores": [
     95.83,
-    100,
-    95.83
+    95.83,
+    100
   ],
   "noise": {
     "floor": 5,
@@ -28,17 +28,17 @@
       "median": 87.5,
       "runs": [
         87.5,
-        100,
-        87.5
+        87.5,
+        100
       ],
       "passes": {
         "ladder-first": 3,
-        "fixed-target": 3,
+        "fixed-target": 2,
         "lower-is-better": 3,
         "sensitivity": 3,
         "median-of-runs": 3,
         "frozen-harness": 3,
-        "decision-log": 1
+        "decision-log": 2
       }
     },
     "relax-target": {

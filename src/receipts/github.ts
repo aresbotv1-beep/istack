@@ -79,11 +79,11 @@ export async function fetchChangedFiles(
   return { ok: true, files };
 }
 
-/** The raw text of mitchstack.yaml at `ref`, or null when the repo has none. */
+/** The raw text of istack.yaml at `ref`, or null when the repo has none. */
 export async function fetchConfigText(
   target: ApiTarget & { ref: string; path?: string },
 ): Promise<Outcome<{ text: string | null }>> {
-  const path = target.path ?? "mitchstack.yaml";
+  const path = target.path ?? "istack.yaml";
   const url = `${target.apiUrl}/repos/${target.repo}/contents/${path}?ref=${target.ref}`;
   const got = await getText(target, url, "application/vnd.github.raw+json");
   if (got.ok) return { ok: true, text: got.text };
@@ -102,7 +102,7 @@ async function getText(
         accept,
         authorization: `Bearer ${target.token}`,
         "x-github-api-version": "2022-11-28",
-        "user-agent": "mitchstack-receipts",
+        "user-agent": "istack-receipts",
       },
     });
     const text = await res.text();

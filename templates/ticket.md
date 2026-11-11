@@ -35,7 +35,7 @@ labelled as such; plus a visual reviewer where pictures decide>
 ## Acceptance
 
 - **Observable:** <what someone can see or run at a test seam to know it works>
-- **Machine checks:** <the repo's checks from mitchstack.yaml, each must exit 0>
+- **Machine checks:** <the repo's checks from istack.yaml, each must exit 0>
 
 ## Required evidence
 

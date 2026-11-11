@@ -132,5 +132,5 @@ export const configSchema = z
     });
   });
 
-export type MitchstackConfig = z.output<typeof configSchema>;
+export type IstackConfig = z.output<typeof configSchema>;
 export type EnvConfig = z.output<typeof envSchema>;

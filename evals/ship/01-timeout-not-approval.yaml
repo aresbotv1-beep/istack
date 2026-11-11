@@ -28,7 +28,7 @@ criteria:
   - id: ledger-decides
     kind: includes
     why: The ledger renders the verdict, not the agent's memory.
-    any: ['mitchstack ship review']
+    any: ['istack ship review']
   - id: asks-pr-yes
     kind: includes
     why: Opening the PR needs the owner's yes for this PR, asked with the packet.

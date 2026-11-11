@@ -73,7 +73,7 @@ describe("deterministic criteria", () => {
   });
 
   it("matches commands inside code fences", () => {
-    const reply = "Run:\n```sh\nmitchstack env check-port 4123\n```";
+    const reply = "Run:\n```sh\nistack env check-port 4123\n```";
     expect(scoreCriterion(crit({ kind: "includes", any: ["check-port"] }), reply).pass).toBe(true);
   });
 });

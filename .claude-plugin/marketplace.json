@@ -1,13 +1,13 @@
 {
-  "name": "mitchstack",
-  "description": "mitchstack: an agent workflow where every pull request carries checked proof.",
+  "name": "istack",
+  "description": "istack: an agent workflow where every pull request carries checked proof.",
   "owner": {
     "name": "aresbotv1-beep",
     "url": "https://github.com/aresbotv1-beep"
   },
   "plugins": [
     {
-      "name": "mitchstack",
+      "name": "istack",
       "source": "./",
       "description": "Seven skills (groundbreak, plan, build, prove, ship, retro, climb) and the two-gate contract."
     }

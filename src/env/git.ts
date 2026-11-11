@@ -66,5 +66,5 @@ export function resolveWorktree(cwd: string, exec: Exec): WorktreeResult {
 }
 
 export function registryPathFor(commonDir: string): string {
-  return join(commonDir, "mitchstack", "ports.json");
+  return join(commonDir, "istack", "ports.json");
 }

@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { loadConfig } from "../config/load.js";
+import { loadConfig, oldConfigProblem } from "../config/load.js";
 import { type EnvConfig, envSchema } from "../config/schema.js";
 import { type DatabasePlan, type Gate, planDatabase } from "./database.js";
 import { type DepsPlan, detectDeps } from "./deps.js";
@@ -62,7 +62,9 @@ export interface DownReport {
 function context(cwd: string, exec: Exec): { ok: true; ctx: Context } | Failure {
   const wt = resolveWorktree(cwd, exec);
   if (!wt.ok) return wt;
-  const path = join(wt.info.root, "mitchstack.yaml");
+  const old = oldConfigProblem(wt.info.root);
+  if (old) return { ok: false, reason: old };
+  const path = join(wt.info.root, "istack.yaml");
   let env: EnvConfig = envSchema.parse(undefined);
   let gates: Gate[] = [];
   if (existsSync(path)) {
@@ -119,7 +121,7 @@ export function envUp(input: {
 
   const plan = databasePlan(ctx);
   if (input.db && !plan)
-    return { ok: false, reason: "--db given but mitchstack.yaml has no env.database" };
+    return { ok: false, reason: "--db given but istack.yaml has no env.database" };
   if (input.db && plan && !plan.ok) return plan;
 
   const lease = allocatePorts({
@@ -212,7 +214,7 @@ export function envDown(input: { cwd: string; exec: Exec; db: boolean }): DownRe
   const plan = databasePlan(ctx);
   let database: DatabaseReport = null;
   if (input.db) {
-    if (!plan) return { ok: false, reason: "--db given but mitchstack.yaml has no env.database" };
+    if (!plan) return { ok: false, reason: "--db given but istack.yaml has no env.database" };
     if (!plan.ok) return plan;
     if (!plan.drop) return { ok: false, reason: "--db given but env.database has no drop command" };
     const failed = runShell(plan.drop, root, input.exec);

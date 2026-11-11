@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { runProveCli } from "./capture/cli.js";
 import { runClimbCli } from "./climb/cli.js";
-import { loadConfig } from "./config/load.js";
+import { loadConfig, oldConfigProblem } from "./config/load.js";
 import { runEnvCli } from "./env/cli.js";
 import { runEvalsCli } from "./evals/cli.js";
 import { runInstallCli } from "./install/cli.js";
@@ -23,15 +23,15 @@ export interface CliIo {
 }
 
 const USAGE = [
-  "usage: mitchstack config check [path-to-mitchstack.yaml]",
-  "       mitchstack receipts check [--event path] [--config path] [--files path]",
-  "       mitchstack receipts verify ...",
-  "       mitchstack prove capture --url <url> --out <png> | prove receipts --from <claims.json>",
-  "       mitchstack ship reviewer|review|body|watch ...",
-  "       mitchstack env up|status|down|check-port|check-base ...",
-  "       mitchstack climb ladder|run|council-score ...",
-  "       mitchstack evals list|run|baseline|compare ...",
-  "       mitchstack install|uninstall --host claude|codex|cursor|all ...",
+  "usage: istack config check [path-to-istack.yaml]",
+  "       istack receipts check [--event path] [--config path] [--files path]",
+  "       istack receipts verify ...",
+  "       istack prove capture --url <url> --out <png> | prove receipts --from <claims.json>",
+  "       istack ship reviewer|review|body|watch ...",
+  "       istack env up|status|down|check-port|check-base ...",
+  "       istack climb ladder|run|council-score ...",
+  "       istack evals list|run|baseline|compare ...",
+  "       istack install|uninstall --host claude|codex|cursor|all ...",
 ].join("\n");
 
 /** Returns the process exit code. */
@@ -51,9 +51,14 @@ export async function runCli(args: string[], io: CliIo): Promise<number> {
 }
 
 function configCheck(pathArg: string | undefined, io: CliIo): number {
-  const path = resolve(io.cwd, pathArg ?? "mitchstack.yaml");
+  const path = resolve(io.cwd, pathArg ?? "istack.yaml");
+  const old = pathArg ? null : oldConfigProblem(io.cwd);
+  if (old) {
+    io.err(old);
+    return 1;
+  }
   if (!existsSync(path)) {
-    io.err(`no config at ${path} — copy mitchstack.yaml.example to start`);
+    io.err(`no config at ${path} — copy istack.yaml.example to start`);
     return 1;
   }
   const result = loadConfig(readFileSync(path, "utf8"));
@@ -92,12 +97,12 @@ async function receiptsCheck(rest: string[], io: CliIo): Promise<number> {
     fetch: io.fetch ?? fetch,
   });
   if (!run.ok) {
-    io.err(`mitchstack/receipts could not run: ${run.error}`);
+    io.err(`istack/receipts could not run: ${run.error}`);
     return 2;
   }
   const { result, notes } = run;
   const print = result.conclusion === "pass" ? io.out : io.err;
-  print(`mitchstack/receipts: ${result.conclusion}`);
+  print(`istack/receipts: ${result.conclusion}`);
   for (const reason of result.reasons) print(`  - ${reason}`);
   for (const label of result.labels) io.out(`  label: ${label}`);
   for (const note of notes) io.out(`  note: ${note}`);
