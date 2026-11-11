@@ -30,6 +30,22 @@ describe("port allocation", () => {
     expect(first.ports.api).toBe((first.ports.web as number) + 1);
   });
 
+  it("keeps leases made under the old mitchstack registry path (PR #9 review)", () => {
+    const { registryPath, wt } = setup();
+    const oldPath = join(registryPath, "..", "..", "mitchstack", "ports.json");
+    const one = { from: 4200, to: 4200 };
+    const a = allocatePorts({
+      worktree: wt("a"),
+      registryPath: oldPath,
+      range: one,
+      names: ["web"],
+    });
+    expect(a.ok).toBe(true);
+    const b = allocatePorts({ worktree: wt("b"), registryPath, range: one, names: ["web"] });
+    expect(b.ok).toBe(false);
+    expect(findLease({ worktree: wt("a"), registryPath })?.ports).toEqual({ web: 4200 });
+  });
+
   it("never hands two worktrees the same port, even when their hashes collide", () => {
     const { registryPath, wt } = setup();
     // A range with exactly two one-port blocks forces the second worktree to probe.
