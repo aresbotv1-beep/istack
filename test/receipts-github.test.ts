@@ -127,4 +127,19 @@ describe("fetchConfigText", () => {
     });
     expect(result).toEqual({ ok: true, text: null });
   });
+
+  it("refuses a base commit that still has only mitchstack.yaml", async () => {
+    const OLD = `${API}/repos/example/widgets/contents/mitchstack.yaml?ref=65881ed`;
+    const { fetch } = fakeFetch({ [OLD]: { status: 200, body: "version: 1\n" } });
+    const result = await fetchConfigText({
+      apiUrl: API,
+      repo: "example/widgets",
+      ref: "65881ed",
+      token: "t0k",
+      fetch,
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok)
+      expect(result.error).toMatch(/found mitchstack\.yaml — rename it to istack\.yaml/);
+  });
 });

@@ -3,6 +3,7 @@
  * files and base-commit config with the read-only GITHUB_TOKEN. No other secrets, no LLM calls.
  * Every function reports failure as a value; none throws for an expected failure.
  */
+import { OLD_CONFIG } from "../config/load.js";
 
 export interface FetchResponseLike {
   ok: boolean;
@@ -87,6 +88,11 @@ export async function fetchConfigText(
   const url = `${target.apiUrl}/repos/${target.repo}/contents/${path}?ref=${target.ref}`;
   const got = await getText(target, url, "application/vnd.github.raw+json");
   if (got.ok) return { ok: true, text: got.text };
+  if (got.status === 404 && target.path === undefined) {
+    const oldUrl = `${target.apiUrl}/repos/${target.repo}/contents/mitchstack.yaml?ref=${target.ref}`;
+    const old = await getText(target, oldUrl, "application/vnd.github.raw+json");
+    if (old.ok) return { ok: false, error: `${OLD_CONFIG} at ${target.ref}` };
+  }
   if (got.status === 404) return { ok: true, text: null };
   return { ok: false, error: got.error };
 }

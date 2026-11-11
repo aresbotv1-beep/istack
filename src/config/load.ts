@@ -12,10 +12,13 @@ export type LoadConfigResult =
  * The project was called mitchstack. A repo still holding only the old config file gets told to
  * rename it, instead of being silently run with defaults. Null when there is nothing to say.
  */
+export const OLD_CONFIG =
+  "found mitchstack.yaml — rename it to istack.yaml (mitchstack is now istack)";
+
 export function oldConfigProblem(dir: string): string | null {
   if (existsSync(join(dir, "istack.yaml")) || !existsSync(join(dir, "mitchstack.yaml")))
     return null;
-  return `found mitchstack.yaml — rename it to istack.yaml (mitchstack is now istack) in ${dir}`;
+  return `${OLD_CONFIG} in ${dir}`;
 }
 
 /** Parse and validate the text of an istack.yaml. Never throws. */
