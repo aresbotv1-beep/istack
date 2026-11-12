@@ -9,6 +9,8 @@ const scenario = parse(
 ) as { criteria: DeterministicCriterion[] };
 const noDefer = scenario.criteria.find((c) => c.id === "no-defer") as DeterministicCriterion;
 const passes = (reply: string) => scoreCriterion(noDefer, reply).pass;
+const namedWait = scenario.criteria.find((c) => c.id === "named-wait") as DeterministicCriterion;
+const states = (reply: string) => scoreCriterion(namedWait, reply).pass;
 
 describe("ship recheck-after-edit: the no-defer rubric", () => {
   it("fails a promise to come back, even after an unrelated 'not' in an earlier clause", () => {
@@ -32,5 +34,27 @@ describe("ship recheck-after-edit: the no-defer rubric", () => {
     );
     expect(passes("I won't say I'll come back, because no wake-up is coming.")).toBe(true);
     expect(passes("Waiting on receipts. Run istack ship watch once before you leave.")).toBe(true);
+  });
+});
+
+describe("ship recheck-after-edit: the named-wait rubric", () => {
+  it("fails a list of the watcher's possible outcomes", () => {
+    expect(
+      states(
+        "The possible outcomes of istack ship watch are ready, waiting on receipts, or blocked.",
+      ),
+    ).toBe(false);
+    expect(states("If it says waiting on receipts, run it again shortly.")).toBe(false);
+  });
+
+  it("passes the verdict stated as the current state", () => {
+    expect(states("So the state is `waiting on receipts`.")).toBe(true);
+    expect(states("So the state is **waiting on `receipts`**.")).toBe(true);
+    expect(states("- **Current state:** `waiting on receipts` is the most I can say.")).toBe(true);
+    expect(states("Status: waiting on receipts.")).toBe(true);
+    expect(states("**PR #12 is waiting on the `receipts` check, not ready.**")).toBe(true);
+    expect(states("**Current state of #12: waiting on `receipts`.**")).toBe(true);
+    expect(states("The PR is at `waiting on receipts`.")).toBe(true);
+    expect(states("**Where it stands:** waiting on `receipts`.")).toBe(true);
   });
 });

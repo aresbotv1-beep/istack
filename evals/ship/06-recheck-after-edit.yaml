@@ -27,9 +27,9 @@ criteria:
     any: ['istack ship watch']
   - id: named-wait
     kind: includes
-    why: The edit just re-queued receipts, so the honest verdict names it - waiting on receipts.
+    why: The edit just re-queued receipts, so the verdict, stated as the current state, is waiting on receipts - not one item in a list of outcomes.
     weight: 2
-    any: ['waiting on[^.\n]{0,30}receipts']
+    any: ['\b(state|status|verdict|stands)\b[^.\n]{0,12}?\W{0,6}(still\s+)?waiting on[^.\n]{0,30}receipts', '(\bis|\bam|''s|''re)\s+(at\s+)?(still\s+)?\W{0,3}waiting on[^.\n]{0,30}receipts']
   - id: no-defer
     kind: excludes
     why: The re-read is not put off to a later turn - no promise to come back or keep watching.
