@@ -34,7 +34,7 @@ If a person could see the difference, it needs a before/after pair.
 - Shoot with the capture command so two shots of an unchanged page hash the same:
 
 ```sh
-mitchstack prove capture --url http://localhost:3000/settings --out before.png \
+istack prove capture --url http://localhost:3000/settings --out before.png \
   --viewport 1280x800 --mask '[data-testid=avatar]' --mask .timestamp
 ```
 
@@ -104,7 +104,7 @@ Claim kinds: `red-green` (behavior), `visual` (pictures; `before` may be `"absen
 says why in `noVisibleChange`.
 
 ```sh
-mitchstack prove receipts --from claims.json
+istack prove receipts --from claims.json
 ```
 
 It validates against the receipts schema and prints one fenced `receipts` block, or names the

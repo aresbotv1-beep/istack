@@ -66,9 +66,9 @@ export interface VerifyInput {
   /** Shell command run once in each worktree before any claim (e.g. "npm ci"). */
   setup?: string;
   /**
-   * The repo's capture script, run in each worktree per visual claim with MITCHSTACK_SURFACE,
-   * MITCHSTACK_CAPTURE_OUT, MITCHSTACK_SIDE (base|head) and MITCHSTACK_CLAIM set. It writes a PNG
-   * to MITCHSTACK_CAPTURE_OUT and exits 0, or exits 3 when the surface does not exist at this
+   * The repo's capture script, run in each worktree per visual claim with ISTACK_SURFACE,
+   * ISTACK_CAPTURE_OUT, ISTACK_SIDE (base|head) and ISTACK_CLAIM set. It writes a PNG
+   * to ISTACK_CAPTURE_OUT and exits 0, or exits 3 when the surface does not exist at this
    * commit. Without it, only repo-relative file surfaces (e.g. "public/index.html") can be shot.
    */
   captureScript?: string;
@@ -193,7 +193,7 @@ export async function verifyReceipts(
     .map((f) => f.path);
 
   const ownShots = input.shotsDir === undefined;
-  const shotsDir = input.shotsDir ?? mkdtempSync(join(tmpdir(), "mitchstack-verify-shots-"));
+  const shotsDir = input.shotsDir ?? mkdtempSync(join(tmpdir(), "istack-verify-shots-"));
   mkdirSync(shotsDir, { recursive: true });
   const settings: Settings = {
     setup: input.setup,
@@ -386,10 +386,10 @@ async function shootWithScript(
     timeoutMs: settings.timeoutMs,
     env: {
       ...settings.env,
-      MITCHSTACK_SURFACE: claim.surface,
-      MITCHSTACK_CAPTURE_OUT: out,
-      MITCHSTACK_SIDE: side,
-      MITCHSTACK_CLAIM: claim.id,
+      ISTACK_SURFACE: claim.surface,
+      ISTACK_CAPTURE_OUT: out,
+      ISTACK_SIDE: side,
+      ISTACK_CLAIM: claim.id,
     },
   });
   if (ran.exitCode === SURFACE_ABSENT_EXIT) return { kind: "absent" };

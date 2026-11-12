@@ -110,10 +110,10 @@ describe("matchVisibleFiles", () => {
 });
 
 describe("visibleChangeFromConfig", () => {
-  it("uses the defaults when the repo has no mitchstack.yaml", () => {
+  it("uses the defaults when the repo has no istack.yaml", () => {
     const result = visibleChangeFromConfig(null);
     expect(result.visibleChange.include).toEqual(DEFAULT_VISIBLE);
-    expect(result.notes.join("\n")).toMatch(/no mitchstack.yaml/);
+    expect(result.notes.join("\n")).toMatch(/no istack.yaml/);
   });
 
   it("reads visibleChange from a valid config", () => {

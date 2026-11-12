@@ -97,7 +97,7 @@ function git(dir: string, ...args: string[]): string {
   return execFileSync("git", args, { cwd: dir, encoding: "utf8" });
 }
 
-describe("mitchstack climb run", () => {
+describe("istack climb run", () => {
   it("reverts the no-op, keeps the improvement once, reverts every regression", async () => {
     const dir = climbFixture();
     writeFileSync(join(dir, "plan.json"), JSON.stringify(FIXTURE_PLAN));
@@ -259,7 +259,7 @@ describe("mitchstack climb run", () => {
   });
 });
 
-describe("mitchstack climb ladder", () => {
+describe("istack climb ladder", () => {
   it("lists the moves lowest-hanging first", async () => {
     const dir = climbFixture();
     writeFileSync(
@@ -287,7 +287,7 @@ describe("mitchstack climb ladder", () => {
   });
 });
 
-describe("mitchstack climb council-score", () => {
+describe("istack climb council-score", () => {
   const judge = (id: string, provider: string, afterScore: number, control = 5): Judge => ({
     id,
     provider,
@@ -319,6 +319,15 @@ describe("mitchstack climb council-score", () => {
     expect(second).toMatchObject({ code: 0, out: "7.5" });
     const log = JSON.parse(readFileSync(join(dir, "council.json"), "utf8"));
     expect(log.rounds).toHaveLength(2);
+  });
+
+  it("stops on a leftover mitchstack.yaml before calling any judge", async () => {
+    const dir = pictures();
+    writeFileSync(join(dir, "mitchstack.yaml"), "version: 1\n");
+    const judges = () => [judge("a (openai)", "openai", 7), judge("b (anthropic)", "anthropic", 8)];
+    const r = await cli([...args, "--log", "council.json"], dir, { judges });
+    expect(r.code).toBe(2);
+    expect(r.err).toMatch(/found mitchstack\.yaml — rename it to istack\.yaml/);
   });
 
   it("gives no score when a judge's control drifts", async () => {

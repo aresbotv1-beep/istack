@@ -1,11 +1,11 @@
 {
-  "name": "mitchstack",
+  "name": "istack",
   "version": "0.0.0",
   "description": "Receipts, not vibes. An agent workflow where every PR carries checked proof.",
   "license": "MIT",
   "type": "module",
   "bin": {
-    "mitchstack": "dist/bin/mitchstack.js"
+    "istack": "dist/bin/istack.js"
   },
   "files": [
     "dist",

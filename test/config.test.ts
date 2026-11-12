@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { loadConfig } from "../src/config/load.js";
 
-const example = readFileSync(new URL("../mitchstack.yaml.example", import.meta.url), "utf8");
+const example = readFileSync(new URL("../istack.yaml.example", import.meta.url), "utf8");
 
 describe("loadConfig", () => {
   it("accepts the shipped example config", () => {
@@ -61,7 +61,7 @@ describe("loadConfig", () => {
       const shipped = loadConfig(example);
       expect(shipped.ok && shipped.config.env.files.length).toBeGreaterThan(0);
     } else {
-      expect.fail("mitchstack.yaml.example should show an env section");
+      expect.fail("istack.yaml.example should show an env section");
     }
   });
 

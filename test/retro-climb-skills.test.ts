@@ -105,7 +105,7 @@ describe("retro", () => {
 describe("climb", () => {
   it("plans the ladder before anything is measured", () => {
     expectInOrder(climb, ["## 1. Ladder first", "expected", "cost", "lowest", "## 2."]);
-    expect(climb).toContain("mitchstack climb ladder");
+    expect(climb).toContain("istack climb ladder");
   });
 
   it("states the discipline", () => {
@@ -121,14 +121,14 @@ describe("climb", () => {
       "fully reverted",
       "one commit",
       "decision.tsv",
-      "mitchstack climb run",
+      "istack climb run",
     ]) {
       expect(climb, needle).toContain(needle);
     }
   });
 
   it("uses the council with a hidden target and a control for UI climbs", () => {
-    expect(climb).toContain("mitchstack climb council-score");
+    expect(climb).toContain("istack climb council-score");
     expect(climb).toMatch(/\*\*target stays hidden\*\*/);
     expect(climb).toMatch(/\*\*control\*\* picture/);
   });

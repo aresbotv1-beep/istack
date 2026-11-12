@@ -12,7 +12,7 @@ import {
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { z } from "zod";
 import type { CliIo } from "../cli.js";
-import { loadConfig } from "../config/load.js";
+import { loadConfig, oldConfigProblem } from "../config/load.js";
 import { discoverJudges, execJudge } from "../council/judges.js";
 import { type Judge, runCouncil } from "../council/run.js";
 import { type CouncilLog, councilLogSchema } from "../council/schema.js";
@@ -54,10 +54,10 @@ export interface ClimbDeps {
 }
 
 const USAGE = [
-  "usage: mitchstack climb ladder --plan <climb.json>",
-  "       mitchstack climb run --plan <climb.json> --log <decision.tsv>",
-  "       mitchstack climb council-score --after <png> --control <png> --log <council.json>",
-  "                                      [--config mitchstack.yaml] [--budget <usd>] [--seed <n>]",
+  "usage: istack climb ladder --plan <climb.json>",
+  "       istack climb run --plan <climb.json> --log <decision.tsv>",
+  "       istack climb council-score --after <png> --control <png> --log <council.json>",
+  "                                      [--config istack.yaml] [--budget <usd>] [--seed <n>]",
 ].join("\n");
 
 const move = z.strictObject({
@@ -283,7 +283,12 @@ async function councilScoreCommand(
   if (!(budget > 0)) return usage(io, "--budget is a positive number of dollars");
 
   let providers: string[] = [];
-  const configPath = resolve(io.cwd, flags.get("config") ?? "mitchstack.yaml");
+  const old = flags.get("config") ? null : oldConfigProblem(io.cwd);
+  if (old) {
+    io.err(old);
+    return 2;
+  }
+  const configPath = resolve(io.cwd, flags.get("config") ?? "istack.yaml");
   if (existsSync(configPath)) {
     const loaded = loadConfig(readFileSync(configPath, "utf8"));
     if (!loaded.ok) {

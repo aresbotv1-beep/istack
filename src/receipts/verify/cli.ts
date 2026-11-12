@@ -14,7 +14,7 @@ export interface VerifyCliIo {
 }
 
 export const VERIFY_USAGE = [
-  "usage: mitchstack receipts verify [--event path | --body file --base sha --head sha]",
+  "usage: istack receipts verify [--event path | --body file --base sha --head sha]",
   "         [--repo dir] [--setup cmd] [--capture cmd] [--test-glob glob]...",
   "         [--timeout seconds] [--setup-timeout seconds] [--attempts n]",
   "         [--visual lenient|strict] [--shots dir] [--report file.json]",

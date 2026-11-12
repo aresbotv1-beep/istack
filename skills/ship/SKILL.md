@@ -13,7 +13,7 @@ turns on auto-merge, and never calls a PR approved that a reviewer did not appro
 The builder is never the only reviewer. Find one from a **different provider**:
 
 ```sh
-mitchstack ship reviewer --builder anthropic [--delegate-task openai,anthropic]
+istack ship reviewer --builder anthropic [--delegate-task openai,anthropic]
 ```
 
 Order: the harness's `delegate_task` tool when it reaches another provider (pass what the harness
@@ -52,7 +52,7 @@ with a reason. Then send the next round. The rules:
 Record the rounds in a JSON file and let the ledger decide, not your memory:
 
 ```sh
-mitchstack ship review --from review.json      # markdown; exit 0 only when approved
+istack ship review --from review.json      # markdown; exit 0 only when approved
 ```
 
 ```json
@@ -91,7 +91,7 @@ the ticket or to an earlier PR is not a yes to this one.
 ## 4. Write the body
 
 ```sh
-mitchstack ship body --from body.json > body.md
+istack ship body --from body.json > body.md
 ```
 
 The body is a one-minute briefing for the owner, not a lab notebook. The shape is fixed by
@@ -138,7 +138,7 @@ Never put a picture with secrets or customer data anywhere.
 **One watcher per PR.** Before starting one, make sure no other is running for that PR.
 
 ```sh
-mitchstack ship watch --repo owner/name --pr 123
+istack ship watch --repo owner/name --pr 123
 ```
 
 It prints `ready`, `waiting` or `blocked`, with actions. Exit 0 ready, 3 waiting, 1 blocked,
@@ -180,7 +180,7 @@ picture in every call to catch judges drifting. Full rules: [council.md](council
   door, and judges from at least 2 providers. After the first round, only when a visible file
   changed since the last round.
 - **Run it** after the pictures are captured and before writing the body:
-  `mitchstack ship council --before … --after … --control … --head … --changed … --log …`,
+  `istack ship council --before … --after … --control … --head … --changed … --log …`,
   then add `"councilLog"` to `body.json`.
 - **Scores are measurements, never a merge gate.** A round whose control leaves its band is
   discarded and shows no numbers. An exhausted budget shows "no council (budget)". A missing

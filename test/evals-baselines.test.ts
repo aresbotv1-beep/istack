@@ -21,7 +21,7 @@ describe("committed eval baselines", () => {
       const baseline = baselineSchema.parse(
         JSON.parse(readFileSync(baselinePath(root, skill), "utf8")),
       );
-      expect(baseline.skillHash, "skill text changed: run mitchstack evals baseline").toBe(
+      expect(baseline.skillHash, "skill text changed: run istack evals baseline").toBe(
         loadSkill(root, skill).hash,
       );
       expect(baseline.scenariosHash).toBe(loadScenarios(root, skill).hash);

@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { oldConfigProblem } from "../config/load.js";
 import { type CheckResult, checkReceipts, visibleChangeFromConfig } from "./check.js";
 import {
   type FetchLike,
@@ -13,7 +14,7 @@ import {
 export interface ReceiptsRunOptions {
   /** Path to the pull_request event JSON; defaults to GITHUB_EVENT_PATH. */
   eventPath?: string;
-  /** Local mitchstack.yaml; default: the base commit's copy via the API, else ./mitchstack.yaml. */
+  /** Local istack.yaml; default: the base commit's copy via the API, else ./istack.yaml. */
   configPath?: string;
   /** Newline-separated changed-file list; default: the PR's files via the API. */
   filesPath?: string;
@@ -91,7 +92,9 @@ async function readConfigText(
   if (options.configPath) return readFile(resolve(options.cwd, options.configPath));
   // The base commit's config, so a PR can't loosen its own visible-change globs.
   if (api) return fetchConfigText({ ...api, ref: pr.baseSha });
-  const local = resolve(options.cwd, "mitchstack.yaml");
+  const old = oldConfigProblem(resolve(options.cwd));
+  if (old) return { ok: false, error: old };
+  const local = resolve(options.cwd, "istack.yaml");
   return existsSync(local) ? readFile(local) : { ok: true, text: null };
 }
 
@@ -115,7 +118,7 @@ function readLines(path: string): Outcome<{ files: string[] }> {
 
 /** Markdown for the GitHub job summary. */
 export function renderSummary(result: CheckResult, notes: string[]): string {
-  const lines = [`## mitchstack/receipts: ${result.conclusion}`, ""];
+  const lines = [`## istack/receipts: ${result.conclusion}`, ""];
   for (const reason of result.reasons) lines.push(`- ${reason}`);
   if (result.labels.length > 0) {
     lines.push("", `Label: ${result.labels.map((l) => `\`${l}\``).join(", ")}`);

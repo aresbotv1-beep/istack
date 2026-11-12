@@ -1,5 +1,5 @@
 // Makes the README's demo pair from the real checker: `npm run build && node scripts/demo-pictures.mjs`.
-// Runs `mitchstack receipts check` on two sample pull requests (stale proof, honest proof), then
+// Runs `istack receipts check` on two sample pull requests (stale proof, honest proof), then
 // renders each run's exact output and exit code to a page and captures it headlessly.
 import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
@@ -8,7 +8,7 @@ import { join } from "node:path";
 
 const root = new URL("..", import.meta.url).pathname;
 const work = mkdtempSync(join(tmpdir(), "ms-demo-"));
-const cli = join(root, "dist/bin/mitchstack.js");
+const cli = join(root, "dist/bin/istack.js");
 const files = join(work, "files.txt");
 writeFileSync(files, "src/settings/SaveButton.tsx\nsrc/settings/save.ts\n");
 
@@ -44,7 +44,7 @@ for (const c of cases) {
   });
   const output = `${run.stdout}${run.stderr}`
     .split("\n")
-    .filter((line) => !line.includes("no mitchstack.yaml found"))
+    .filter((line) => !line.includes("no istack.yaml found"))
     .join("\n")
     .trim();
   const ok = run.status === 0;
@@ -57,7 +57,7 @@ for (const c of cases) {
     .p{color:#8b949e}</style>
     <div class="w"><h1>${esc(c.title)}</h1>
     <p class="s">${ok ? "✓ passes — the pull request can be merged" : "✗ fails — the pull request is blocked"} (exit code ${run.status})</p>
-    <pre><span class="p">$ mitchstack receipts check</span>\n${esc(output)}</pre></div>`;
+    <pre><span class="p">$ istack receipts check</span>\n${esc(output)}</pre></div>`;
   const page = join(work, `${c.name}.html`);
   writeFileSync(page, html);
   const out = join(root, "assets/demo", `${c.name}.png`);

@@ -1,4 +1,4 @@
-# Dogfood, opt-in per PR: re-run this repo's own receipts (mitchstack/receipts-verified) when a PR
+# Dogfood, opt-in per PR: re-run this repo's own receipts (istack/receipts-verified) when a PR
 # carries the "receipts: verify" label. Kept out of receipts.yml so the present-tier check is
 # unchanged. Not a required check: a job skipped by `if:` reports Success, so unlabelled PRs are
 # never blocked. pull_request only (never pull_request_target): the PR's own commands run here, with
@@ -25,7 +25,7 @@ concurrency:
 
 jobs:
   receipts-verified:
-    name: mitchstack/receipts-verified
+    name: istack/receipts-verified
     if: "contains(github.event.pull_request.labels.*.name, 'receipts: verify')"
     runs-on: ubuntu-latest
     timeout-minutes: 60

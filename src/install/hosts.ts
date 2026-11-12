@@ -36,7 +36,7 @@ export function hostTarget(host: Host, scope: Scope): HostTarget {
       host,
       skillsDir: join(root, ".claude", "skills"),
       notes: [
-        "Claude Code: the plugin install namespaces every skill (mitchstack:groundbreak) and never clashes — see the README",
+        "Claude Code: the plugin install namespaces every skill (istack:groundbreak) and never clashes — see the README",
       ],
     };
   }

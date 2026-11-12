@@ -113,7 +113,7 @@ export async function addWorktree(
   sha: string,
   label: string,
 ): Promise<GitOutcome<{ worktree: Worktree }>> {
-  const parent = mkdtempSync(join(tmpdir(), `mitchstack-verify-${label}-`));
+  const parent = mkdtempSync(join(tmpdir(), `istack-verify-${label}-`));
   const dir = join(parent, "tree");
   const added = await git(g, ["worktree", "add", "--detach", "--force", dir, sha]);
   if (!added.ok) {

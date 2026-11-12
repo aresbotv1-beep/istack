@@ -14,7 +14,7 @@ moves out of its normal range is thrown away.
 
 All of these must hold, or the command prints `council skipped: <why>` and spends nothing:
 
-- `profile: factory` and `council.enabled: true` in `mitchstack.yaml`;
+- `profile: factory` and `council.enabled: true` in `istack.yaml`;
 - the PR changes a visible file (per `visibleChange`), or its door is one-way;
 - judges from at least **2 distinct providers** are installed (`codex`, `claude`, `cursor-agent`,
   filtered by `council.providers`; 3 is the aim);
@@ -29,7 +29,7 @@ git diff --name-only origin/main...HEAD > changed.txt
 # after the first round, also: the files changed since the last round's head
 git diff --name-only <last-round-head> HEAD > since.txt
 
-mitchstack ship council --before before.png --after after.png --control control.png \
+istack ship council --before before.png --after after.png --control control.png \
   --head "$(git rev-parse HEAD)" --changed changed.txt [--changed-since-last since.txt] \
   [--door one-way] --log .artifacts/council.json [--prices openai=0.2,anthropic=0.25]
 ```

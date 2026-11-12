@@ -38,7 +38,7 @@ const body = {
   receipts: { head: "abc1234", claims: [], noVisibleChange: "logic only" },
 };
 
-describe("mitchstack ship", () => {
+describe("istack ship", () => {
   it("review: a timed-out reviewer prints not approved and exits 1", async () => {
     const dir = dirWith({ "review.json": timeoutReview });
     const result = await run(["review", "--from", "review.json"], dir);
@@ -137,6 +137,6 @@ describe("mitchstack ship", () => {
   it("prints usage for an unknown command", async () => {
     const result = await run(["nope"], tmpdir());
     expect(result.code).toBe(2);
-    expect(result.err).toMatch(/usage: mitchstack ship/);
+    expect(result.err).toMatch(/usage: istack ship/);
   });
 });

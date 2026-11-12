@@ -11,7 +11,7 @@ context:
     text: |
       { "number": 42, "url": "https://github.com/sam-rivera/tally/pull/42", "state": "OPEN",
         "autoMergeRequest": { "enabledAt": "2026-11-04T09:12:00Z" }, "mergeQueueEntry": null,
-        "statusCheckRollup": [{ "name": "test", "conclusion": "SUCCESS" }, { "name": "mitchstack/receipts", "conclusion": "SUCCESS" }] }
+        "statusCheckRollup": [{ "name": "test", "conclusion": "SUCCESS" }, { "name": "istack/receipts", "conclusion": "SUCCESS" }] }
 criteria:
   - id: disables-auto-merge
     kind: includes
@@ -30,7 +30,7 @@ criteria:
   - id: watcher
     kind: includes
     why: The watcher, not memory, says ready.
-    any: ['mitchstack ship watch']
+    any: ['istack ship watch']
   - id: presents-url
     kind: includes
     why: The run ends with the URL handed to the owner.

@@ -168,5 +168,5 @@ export function loadPrBodyTemplate(): string {
     if (existsSync(candidate)) return readFileSync(candidate, "utf8");
     dir = dirname(dir);
   }
-  throw new Error("templates/pr-body.md not found next to the mitchstack package");
+  throw new Error("templates/pr-body.md not found next to the istack package");
 }

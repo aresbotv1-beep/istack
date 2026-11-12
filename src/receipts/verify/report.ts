@@ -1,6 +1,6 @@
 import type { ClaimStatus, VerifyReport } from "./verify.js";
 
-export const VERIFIED_CHECK = "mitchstack/receipts-verified";
+export const VERIFIED_CHECK = "istack/receipts-verified";
 
 const MARK: Record<ClaimStatus, string> = {
   verified: "verified",

@@ -10,7 +10,7 @@ import {
   statSync,
   writeFileSync,
 } from "node:fs";
-import { dirname } from "node:path";
+import { basename, dirname, join } from "node:path";
 
 export interface PortRange {
   from: number;
@@ -92,7 +92,7 @@ export function allocatePorts(input: AllocateInput): AllocateResult {
     }
     return {
       ok: false,
-      reason: `no free block of ${size} port(s) left in ${range.from}-${range.to}; run 'mitchstack env down' in a finished worktree`,
+      reason: `no free block of ${size} port(s) left in ${range.from}-${range.to}; run 'istack env down' in a finished worktree`,
     };
   });
 }
@@ -134,8 +134,16 @@ function sameNames(ports: Record<string, number>, names: string[]): boolean {
 }
 
 function readRegistry(path: string): Registry {
-  if (!existsSync(path)) return { version: 1, leases: [] };
-  const parsed = JSON.parse(readFileSync(path, "utf8")) as Registry;
+  // Before the rename the registry lived in <git-common-dir>/mitchstack/. Until the first write
+  // under the new name, read the old one so live leases are not handed out again.
+  const old = join(dirname(dirname(path)), "mitchstack", basename(path));
+  const from = existsSync(path)
+    ? path
+    : basename(dirname(path)) === "istack" && existsSync(old)
+      ? old
+      : null;
+  if (!from) return { version: 1, leases: [] };
+  const parsed = JSON.parse(readFileSync(from, "utf8")) as Registry;
   return { version: 1, leases: Array.isArray(parsed.leases) ? parsed.leases : [] };
 }
 

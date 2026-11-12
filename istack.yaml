@@ -7,7 +7,7 @@ checks:
   - name: build
     run: npm run build
   - name: config
-    run: node dist/bin/mitchstack.js config check
+    run: node dist/bin/istack.js config check
   - name: test
     run: npm test
   - name: typecheck

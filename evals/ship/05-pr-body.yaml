@@ -5,7 +5,7 @@ purpose: >-
   The body is a one-minute briefing: it opens with the problem in plain words, before the
   summary, and names what the proof does not cover in a not-tested line instead of leaving it out.
 prompt: |
-  Proof is done and the review approved. Write the body.json for `mitchstack ship body`. Reply
+  Proof is done and the review approved. Write the body.json for `istack ship body`. Reply
   with the JSON only.
 context:
   - path: run-log.md

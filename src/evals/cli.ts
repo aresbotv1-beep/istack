@@ -21,10 +21,10 @@ export interface EvalsDeps {
 }
 
 const USAGE = [
-  "usage: mitchstack evals list",
-  "       mitchstack evals run      --skill <name|all> [options]   score now; last line is the score",
-  "       mitchstack evals baseline --skill <name|all> [options]   write evals/baselines/<skill>.json",
-  "       mitchstack evals compare  --skill <name|all> [options] [--from results.json]",
+  "usage: istack evals list",
+  "       istack evals run      --skill <name|all> [options]   score now; last line is the score",
+  "       istack evals baseline --skill <name|all> [options]   write evals/baselines/<skill>.json",
+  "       istack evals compare  --skill <name|all> [options] [--from results.json]",
   "       (baseline --from results.json writes the baseline from a saved run of the current skill)",
   "options: --runs <n> (3)  --runner claude|codex (claude)  --model <id> (the baseline's)  --budget <usd> (2)",
   "         --taste (council-score taste criteria; off by default)  --degrade <spec.json>",
@@ -297,7 +297,7 @@ function readBaseline(io: CliIo, skill: string): Baseline | undefined {
   const path = baselinePath(io.cwd, skill);
   if (!existsSync(path)) {
     io.err(
-      `${skill}: no baseline at ${path}; write one with \`mitchstack evals baseline --skill ${skill}\``,
+      `${skill}: no baseline at ${path}; write one with \`istack evals baseline --skill ${skill}\``,
     );
     return undefined;
   }

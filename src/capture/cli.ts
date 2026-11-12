@@ -10,8 +10,8 @@ export interface CliIo {
 }
 
 const USAGE = [
-  "usage: mitchstack prove capture --url <url> --out <file.png> [--viewport 1280x800] [--mask <selector>]...",
-  "       mitchstack prove receipts --from <claims.json>",
+  "usage: istack prove capture --url <url> --out <file.png> [--viewport 1280x800] [--mask <selector>]...",
+  "       istack prove receipts --from <claims.json>",
 ].join("\n");
 
 /** `args` are the words after `prove`. Returns the process exit code. */

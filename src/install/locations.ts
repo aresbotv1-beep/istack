@@ -97,7 +97,7 @@ function rel(root: string, abs: string): string {
 
 /**
  * Check every entry against the locations an install can write, before anything is touched. Returns
- * the problems; an empty list means every path the record names is one mitchstack could have written
+ * the problems; an empty list means every path the record names is one istack could have written
  * and still resolves (through any symlink) inside the directory it belongs to.
  */
 export function checkLocations(manifest: Manifest, scope: Scope): string[] {

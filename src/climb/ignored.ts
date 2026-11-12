@@ -57,7 +57,7 @@ export async function snapshotIgnored(
   list: ListIgnored,
   skip: (path: string) => boolean,
 ): Promise<IgnoredSnapshot> {
-  const backupDir = mkdtempSync(join(tmpdir(), "mitchstack-climb-ignored-"));
+  const backupDir = mkdtempSync(join(tmpdir(), "istack-climb-ignored-"));
   const entries = new Map<string, Entry>();
   let n = 0;
   for (const raw of await list()) {

@@ -7,13 +7,13 @@ import { loadConfig } from "../src/config/load.js";
 const root = new URL("..", import.meta.url).pathname;
 
 it("runs every repo check on the PR head without skipping or masking failures", () => {
-  const config = loadConfig(readFileSync(join(root, "mitchstack.yaml"), "utf8"));
+  const config = loadConfig(readFileSync(join(root, "istack.yaml"), "utf8"));
   expect(config.ok).toBe(true);
   if (!config.ok) throw new Error("invalid repository config");
   const commands = config.config.checks.map((check) => check.run);
   expect(commands).toEqual([
     "npm run build",
-    "node dist/bin/mitchstack.js config check",
+    "node dist/bin/istack.js config check",
     "npm test",
     "npm run typecheck",
     "npm run lint",
@@ -37,7 +37,7 @@ it("runs every repo check on the PR head without skipping or masking failures", 
   const job = workflow.jobs.quality;
   expect(Object.keys(job).sort()).toEqual(["name", "runs-on", "steps", "timeout-minutes"]);
   expect(job["runs-on"]).toBe("ubuntu-latest");
-  expect(job.name).toBe("mitchstack/quality");
+  expect(job.name).toBe("istack/quality");
   expect(job.if).toBeUndefined();
   expect(job["continue-on-error"]).toBeUndefined();
   expect(job["timeout-minutes"]).toBeGreaterThan(0);

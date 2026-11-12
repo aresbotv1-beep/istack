@@ -8,7 +8,7 @@ prompt: |
   I changed the Save button on the settings page so it isn't cut off on small screens (it was
   clipped at 375px wide). Tests pass. Get me the receipts.
 context:
-  - path: mitchstack.yaml
+  - path: istack.yaml
     text: |
       version: 1
       owner: Sam Rivera
@@ -23,7 +23,7 @@ criteria:
     kind: includes
     why: Pictures come from the capture command, so an unchanged page hashes the same.
     weight: 2
-    any: ['mitchstack prove capture']
+    any: ['istack prove capture']
   - id: same-viewport
     kind: includes
     why: Before and after are shot at the viewport where the bug shows.
@@ -43,7 +43,7 @@ criteria:
   - id: receipts-command
     kind: includes
     why: The receipts block comes from the command.
-    any: ['mitchstack prove receipts']
+    any: ['istack prove receipts']
   - id: no-desktop-recording
     kind: excludes
     why: Headless only; never a desktop screen recording.

@@ -1,4 +1,4 @@
-import type { MitchstackConfig } from "../config/schema.js";
+import type { IstackConfig } from "../config/schema.js";
 import type { CouncilLog, CouncilRound, JudgeRound, Role, RoleScores, Sample } from "./schema.js";
 import { inBand, learnBand, median, seededRandom, shuffle } from "./stats.js";
 
@@ -66,8 +66,8 @@ export const DEFAULT_OPTIONS: CouncilOptions = {
 };
 
 export interface CouncilInput {
-  profile: MitchstackConfig["profile"];
-  council: Pick<MitchstackConfig["council"], "enabled" | "budgetUsdPerPr">;
+  profile: IstackConfig["profile"];
+  council: Pick<IstackConfig["council"], "enabled" | "budgetUsdPerPr">;
   door?: "one-way" | "two-way";
   /** Visible files the PR changes, already matched against visibleChange. */
   visibleFiles: string[];
@@ -115,7 +115,7 @@ export function councilEligibility(
     };
   }
   if (!input.council.enabled)
-    return { run: false, reason: "the council is disabled in mitchstack.yaml" };
+    return { run: false, reason: "the council is disabled in istack.yaml" };
   if (input.visibleFiles.length === 0 && input.door !== "one-way") {
     return { run: false, reason: "no visible change and the door is two-way" };
   }

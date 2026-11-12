@@ -1,23 +1,23 @@
 {
   "version": 1,
   "skill": "groundbreak",
-  "skillHash": "0b947a77dcd6ad2a468060a03e192a3d6bf83b026158c2a303d0bad7a7f505d7",
+  "skillHash": "dcfc2d44cd45ba8739b73a8855ca037926c74cc903355e4059664898887b0b36",
   "scenariosHash": "d7f151696d69701512a9ce38df7f467112f932955496c36841b83bfb63a9de14",
   "producedBy": {
     "runner": "claude -p",
     "provider": "anthropic",
     "model": "claude-sonnet-5-5",
     "runs": 3,
-    "date": "2026-11-05",
+    "date": "2026-11-11",
     "mode": "deterministic",
-    "costUsd": 0.289393,
+    "costUsd": 0.318499,
     "costSource": "measured"
   },
-  "score": 97.73,
+  "score": 93.18,
   "runScores": [
-    97.73,
-    97.73,
-    97.73
+    100,
+    93.18,
+    92.73
   ],
   "noise": {
     "floor": 5,
@@ -65,19 +65,19 @@
     "express-bugfix": {
       "median": 90.91,
       "runs": [
-        90.91,
-        90.91,
+        100,
+        72.73,
         90.91
       ],
       "passes": {
         "lane-express": 3,
         "no-full-engine": 3,
-        "last-question-wrong": 3,
-        "almost-no-questions": 3,
+        "last-question-wrong": 2,
+        "almost-no-questions": 2,
         "no-asking-known-facts": 3,
         "draft-ticket": 3,
         "no-code": 3,
-        "short": 0
+        "short": 2
       }
     },
     "open-ambition": {
@@ -85,11 +85,11 @@
       "runs": [
         100,
         100,
-        100
+        80
       ],
       "passes": {
         "lane-full-engine": 3,
-        "not-express": 3,
+        "not-express": 2,
         "research-first": 3,
         "launch-post": 3,
         "no-invented-sources": 3,

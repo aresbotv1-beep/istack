@@ -5,7 +5,7 @@ import { receiptsSchema } from "../receipts/schema.js";
 /** JSON Schemas published for other tools (editors, CI, other kits) to consume. */
 export function exportSchemas(): Record<string, unknown> {
   return {
-    "mitchstack.schema.json": z.toJSONSchema(configSchema, { io: "input" }),
+    "istack.schema.json": z.toJSONSchema(configSchema, { io: "input" }),
     "receipts.schema.json": z.toJSONSchema(receiptsSchema, { io: "input" }),
   };
 }

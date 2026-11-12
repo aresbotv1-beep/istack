@@ -20,18 +20,18 @@ function isKitRoot(dir: string): boolean {
   if (!existsSync(pkg) || !existsSync(join(dir, "skills")) || !existsSync(join(dir, "AGENTS.md")))
     return false;
   try {
-    return JSON.parse(readFileSync(pkg, "utf8")).name === "mitchstack";
+    return JSON.parse(readFileSync(pkg, "utf8")).name === "istack";
   } catch {
     return false;
   }
 }
 
-/** The installed package (or this checkout): the nearest parent holding mitchstack's package.json. */
+/** The installed package (or this checkout): the nearest parent holding istack's package.json. */
 export function findKitRoot(from = dirname(fileURLToPath(import.meta.url))): string {
   let dir = from;
   while (!isKitRoot(dir)) {
     const up = dirname(dir);
-    if (up === dir) throw new Error(`cannot find the mitchstack kit above ${from}`);
+    if (up === dir) throw new Error(`cannot find the istack kit above ${from}`);
     dir = up;
   }
   return dir;
@@ -67,7 +67,7 @@ export function loadKit(root: string): Kit {
   };
 }
 
-/** Rename a skill for a `mitchstack-` prefixed install: the frontmatter name must match the folder. */
+/** Rename a skill for a `istack-` prefixed install: the frontmatter name must match the folder. */
 export function renameSkill(skill: KitSkill, name: string): KitSkill {
   const files = new Map(skill.files);
   const text = files.get("SKILL.md")?.toString("utf8");

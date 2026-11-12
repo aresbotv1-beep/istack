@@ -101,7 +101,7 @@ describe("fetchChangedFiles", () => {
 });
 
 describe("fetchConfigText", () => {
-  const URL = `${API}/repos/example/widgets/contents/mitchstack.yaml?ref=65881ed`;
+  const URL = `${API}/repos/example/widgets/contents/istack.yaml?ref=65881ed`;
 
   it("returns the raw file at the base commit", async () => {
     const { fetch, calls } = fakeFetch({ [URL]: { status: 200, body: "version: 1\n" } });
@@ -116,7 +116,7 @@ describe("fetchConfigText", () => {
     expect(calls[0]?.headers.accept).toBe("application/vnd.github.raw+json");
   });
 
-  it("returns null text when the repo has no mitchstack.yaml", async () => {
+  it("returns null text when the repo has no istack.yaml", async () => {
     const { fetch } = fakeFetch({});
     const result = await fetchConfigText({
       apiUrl: API,
@@ -126,5 +126,33 @@ describe("fetchConfigText", () => {
       fetch,
     });
     expect(result).toEqual({ ok: true, text: null });
+  });
+
+  it("refuses a base commit that still has only mitchstack.yaml", async () => {
+    const OLD = `${API}/repos/example/widgets/contents/mitchstack.yaml?ref=65881ed`;
+    const { fetch } = fakeFetch({ [OLD]: { status: 200, body: "version: 1\n" } });
+    const result = await fetchConfigText({
+      apiUrl: API,
+      repo: "example/widgets",
+      ref: "65881ed",
+      token: "t0k",
+      fetch,
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok)
+      expect(result.error).toMatch(/found mitchstack\.yaml — rename it to istack\.yaml/);
+  });
+
+  it("fails rather than using defaults when the old-config lookup itself fails", async () => {
+    const OLD = `${API}/repos/example/widgets/contents/mitchstack.yaml?ref=65881ed`;
+    const { fetch } = fakeFetch({ [OLD]: { status: 503, body: "unavailable" } });
+    const result = await fetchConfigText({
+      apiUrl: API,
+      repo: "example/widgets",
+      ref: "65881ed",
+      token: "t0k",
+      fetch,
+    });
+    expect(result.ok).toBe(false);
   });
 });

@@ -19,11 +19,11 @@ criteria:
   - id: capture-after
     kind: includes
     why: The after picture comes from the capture command.
-    any: ['mitchstack prove capture']
+    any: ['istack prove capture']
   - id: receipts-command
     kind: includes
     why: The receipts block comes from the command.
-    any: ['mitchstack prove receipts']
+    any: ['istack prove receipts']
   - id: door
     kind: includes
     why: Every receipt names the door.

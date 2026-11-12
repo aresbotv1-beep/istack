@@ -3,6 +3,7 @@
  * files and base-commit config with the read-only GITHUB_TOKEN. No other secrets, no LLM calls.
  * Every function reports failure as a value; none throws for an expected failure.
  */
+import { OLD_CONFIG } from "../config/load.js";
 
 export interface FetchResponseLike {
   ok: boolean;
@@ -79,14 +80,20 @@ export async function fetchChangedFiles(
   return { ok: true, files };
 }
 
-/** The raw text of mitchstack.yaml at `ref`, or null when the repo has none. */
+/** The raw text of istack.yaml at `ref`, or null when the repo has none. */
 export async function fetchConfigText(
   target: ApiTarget & { ref: string; path?: string },
 ): Promise<Outcome<{ text: string | null }>> {
-  const path = target.path ?? "mitchstack.yaml";
+  const path = target.path ?? "istack.yaml";
   const url = `${target.apiUrl}/repos/${target.repo}/contents/${path}?ref=${target.ref}`;
   const got = await getText(target, url, "application/vnd.github.raw+json");
   if (got.ok) return { ok: true, text: got.text };
+  if (got.status === 404 && target.path === undefined) {
+    const oldUrl = `${target.apiUrl}/repos/${target.repo}/contents/mitchstack.yaml?ref=${target.ref}`;
+    const old = await getText(target, oldUrl, "application/vnd.github.raw+json");
+    if (old.ok) return { ok: false, error: `${OLD_CONFIG} at ${target.ref}` };
+    if (old.status !== 404) return { ok: false, error: old.error };
+  }
   if (got.status === 404) return { ok: true, text: null };
   return { ok: false, error: got.error };
 }
@@ -102,7 +109,7 @@ async function getText(
         accept,
         authorization: `Bearer ${target.token}`,
         "x-github-api-version": "2022-11-28",
-        "user-agent": "mitchstack-receipts",
+        "user-agent": "istack-receipts",
       },
     });
     const text = await res.text();

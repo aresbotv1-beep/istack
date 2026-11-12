@@ -24,7 +24,7 @@ function io(cwd: string, env: Record<string, string | undefined> = {}) {
 
 const deps = { capture: fileHashCapture };
 
-describe("mitchstack receipts verify (CLI)", { timeout: 60_000 }, () => {
+describe("istack receipts verify (CLI)", { timeout: 60_000 }, () => {
   let fx: FixtureRepo;
   let dir: string;
   beforeAll(() => {
@@ -51,7 +51,7 @@ describe("mitchstack receipts verify (CLI)", { timeout: 60_000 }, () => {
     );
     expect(code).toBe(1);
     const text = t.err.join("\n");
-    expect(text).toMatch(/mitchstack\/receipts-verified: fail/);
+    expect(text).toMatch(/istack\/receipts-verified: fail/);
     expect(text).toMatch(/faked \(red-green\): FAILED/);
     expect(text).toMatch(/honest \(red-green\): verified/);
   });

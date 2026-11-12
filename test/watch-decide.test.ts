@@ -10,7 +10,7 @@ function snapshot(overrides: Partial<PrSnapshot> = {}): PrSnapshot {
     mergeable: "mergeable",
     checks: [
       { name: "test", state: "success" },
-      { name: "mitchstack/receipts", state: "success" },
+      { name: "istack/receipts", state: "success" },
     ],
     conversations: [],
     autoMerge: "off",

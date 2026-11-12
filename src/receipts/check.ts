@@ -40,7 +40,7 @@ export function matchVisibleFiles(files: string[], visibleChange: VisibleChange)
 }
 
 /**
- * The visible-change globs from a mitchstack.yaml's text (null = the repo has none). A missing or
+ * The visible-change globs from a istack.yaml's text (null = the repo has none). A missing or
  * invalid config falls back to the defaults with a note, so a broken config can't wedge every PR.
  */
 export function visibleChangeFromConfig(text: string | null): {
@@ -51,7 +51,7 @@ export function visibleChangeFromConfig(text: string | null): {
   if (text === null) {
     return {
       visibleChange: defaults,
-      notes: ["no mitchstack.yaml found; using the default visible-change globs"],
+      notes: ["no istack.yaml found; using the default visible-change globs"],
     };
   }
   const loaded = loadConfig(text);
@@ -60,14 +60,14 @@ export function visibleChangeFromConfig(text: string | null): {
     return {
       visibleChange: defaults,
       notes: [
-        `mitchstack.yaml is invalid (${first?.path || "file"}: ${first?.message}); using the default visible-change globs`,
+        `istack.yaml is invalid (${first?.path || "file"}: ${first?.message}); using the default visible-change globs`,
       ],
     };
   }
   return { visibleChange: loaded.config.visibleChange, notes: [] };
 }
 
-/** Decide the mitchstack/receipts check for one PR. Pure; never throws. */
+/** Decide the istack/receipts check for one PR. Pure; never throws. */
 export function checkReceipts(input: CheckInput): CheckResult {
   const visibleFiles = matchVisibleFiles(input.changedFiles, input.visibleChange);
   const extracted = extractReceipts(input.body);

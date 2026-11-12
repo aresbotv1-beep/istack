@@ -31,7 +31,7 @@ async function run(args: string[], cwd: string, deps?: ShipDeps) {
 
 function repo(config = CONFIG): string {
   const dir = mkdtempSync(join(tmpdir(), "ms-council-cli-"));
-  writeFileSync(join(dir, "mitchstack.yaml"), config);
+  writeFileSync(join(dir, "istack.yaml"), config);
   writeFileSync(join(dir, "before.png"), "BEFORE-PIXELS");
   writeFileSync(join(dir, "after.png"), "AFTER-PIXELS");
   writeFileSync(join(dir, "control.png"), "CONTROL-PIXELS");
@@ -83,7 +83,7 @@ const ARGS = [
   "out/council.json",
 ];
 
-describe("mitchstack ship council", () => {
+describe("istack ship council", () => {
   it("writes a log, discards the planted-drift round, and the body shows none of its numbers", async () => {
     const dir = repo();
     const round = { n: 1 };

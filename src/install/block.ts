@@ -1,7 +1,7 @@
-export const BEGIN = "<!-- mitchstack:begin -->";
-export const END = "<!-- mitchstack:end -->";
+export const BEGIN = "<!-- istack:begin -->";
+export const END = "<!-- istack:end -->";
 const NOTE =
-  "<!-- Written by `mitchstack install`. Text between these markers is replaced on re-install and removed by `mitchstack uninstall`; everything outside them is yours. -->";
+  "<!-- Written by `istack install`. Text between these markers is replaced on re-install and removed by `istack uninstall`; everything outside them is yours. -->";
 
 /** The marked block, without a trailing newline. */
 export function renderBlock(contract: string): string {
