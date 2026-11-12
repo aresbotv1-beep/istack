@@ -1,23 +1,23 @@
 {
   "version": 1,
   "skill": "prove",
-  "skillHash": "733a65c80d7e1f62ad7e7645eafa7c0c33a9aad32dfe15e1b96230c0229bc174",
+  "skillHash": "7be6f12f3ab826d6e0b1f2e3c501fc189b4451bb054ba019fbce179e488c1152",
   "scenariosHash": "ad1caadff4ad8dc0e01975f0217bdc51003f133e6778bdd67e9c7671312a29f3",
   "producedBy": {
     "runner": "claude -p",
     "provider": "anthropic",
     "model": "claude-sonnet-5-5",
     "runs": 3,
-    "date": "2026-11-11",
+    "date": "2026-11-12",
     "mode": "deterministic",
-    "costUsd": 0.16052,
+    "costUsd": 0.161115,
     "costSource": "measured"
   },
   "score": 95.83,
   "runScores": [
-    95.83,
-    95.83,
-    90.28
+    91.67,
+    100,
+    95.83
   ],
   "noise": {
     "floor": 5,
@@ -27,8 +27,8 @@
     "red-after-fix": {
       "median": 87.5,
       "runs": [
-        100,
         87.5,
+        100,
         87.5
       ],
       "passes": {
@@ -62,14 +62,14 @@
       "runs": [
         100,
         100,
-        83.33
+        100
       ],
       "passes": {
         "before-absent": 3,
         "capture-after": 3,
         "receipts-command": 3,
         "door": 3,
-        "no-invented-before": 2
+        "no-invented-before": 3
       }
     }
   }
