@@ -97,14 +97,14 @@ function runReceipts(flags: Flags, io: CliIo): number {
 }
 
 function runRun(words: string[], io: CliIo): number {
-  if (words[0] !== "--" || words.length < 2) return usage(io, "run needs -- <command>");
+  if (words[0] !== "--" || !words[1]) return usage(io, "run needs -- <command>");
   const result = runAndRecord(words.slice(1), io.cwd);
   if (!result.ok) return usage(io, result.reason);
   if (result.dirty) {
-    io.err(`warning: uncommitted changes; this run is not exactly commit ${result.record.sha}`);
+    io.err(`warning: uncommitted changes; this run is not exactly commit ${result.record.run.sha}`);
   }
   io.out(JSON.stringify(result.record, null, 2));
-  return result.record.exitCode;
+  return result.record.run.exitCode;
 }
 
 function usage(io: CliIo, reason?: string): number {

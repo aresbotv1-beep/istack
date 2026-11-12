@@ -1,7 +1,7 @@
 {
   "version": 1,
   "skill": "prove",
-  "skillHash": "7be6f12f3ab826d6e0b1f2e3c501fc189b4451bb054ba019fbce179e488c1152",
+  "skillHash": "3bfe9a4dfaf76a77eeef8c8938a9f5d7cb3c9372d4db55a9baf5dbf5bf53d8bd",
   "scenariosHash": "ad1caadff4ad8dc0e01975f0217bdc51003f133e6778bdd67e9c7671312a29f3",
   "producedBy": {
     "runner": "claude -p",
@@ -10,14 +10,14 @@
     "runs": 3,
     "date": "2026-11-12",
     "mode": "deterministic",
-    "costUsd": 0.161115,
+    "costUsd": 0.158658,
     "costSource": "measured"
   },
-  "score": 95.83,
+  "score": 90.28,
   "runScores": [
-    91.67,
-    100,
-    95.83
+    90.28,
+    87.5,
+    91.67
   ],
   "noise": {
     "floor": 5,
@@ -27,32 +27,32 @@
     "red-after-fix": {
       "median": 87.5,
       "runs": [
-        87.5,
         100,
-        87.5
+        87.5,
+        75
       ],
       "passes": {
         "red-at-base": 3,
         "no-red-at-head": 3,
         "same-check": 3,
         "receipts-command": 3,
-        "door": 3,
+        "door": 2,
         "try-it": 1
       }
     },
     "visual-change": {
-      "median": 100,
+      "median": 87.5,
       "runs": [
         87.5,
-        100,
+        75,
         100
       ],
       "passes": {
         "capture": 3,
         "same-viewport": 3,
-        "before-from-old-code": 3,
+        "before-from-old-code": 2,
         "no-secrets": 3,
-        "try-it": 2,
+        "try-it": 1,
         "receipts-command": 3,
         "no-desktop-recording": 3
       }
@@ -60,7 +60,7 @@
     "new-screen": {
       "median": 100,
       "runs": [
-        100,
+        83.33,
         100,
         100
       ],
@@ -68,7 +68,7 @@
         "before-absent": 3,
         "capture-after": 3,
         "receipts-command": 3,
-        "door": 3,
+        "door": 2,
         "no-invented-before": 3
       }
     }
