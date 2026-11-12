@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -76,5 +77,52 @@ describe("prove receipts", () => {
   it("prints usage and exits 2 on an unknown command", async () => {
     expect((await run(["frobnicate"], tmpdir())).code).toBe(2);
     expect((await run([], tmpdir())).code).toBe(2);
+  });
+});
+
+describe("prove run", () => {
+  function repo(): { dir: string; sha: string } {
+    const dir = mkdtempSync(join(tmpdir(), "ms-prove-run-"));
+    const git = (...a: string[]) => execFileSync("git", a, { cwd: dir, encoding: "utf8" }).trim();
+    git("init", "-q");
+    git("-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "x");
+    return { dir, sha: git("rev-parse", "HEAD") };
+  }
+
+  it("records a failing command's real exit code and exits with it", async () => {
+    const { dir, sha } = repo();
+    const { code, out } = await run(["run", "--", "sh", "-c", "exit 3"], dir);
+    expect(code).toBe(3);
+    expect(JSON.parse(out.join("\n"))).toEqual({ command: "sh -c 'exit 3'", sha, exitCode: 3 });
+  });
+
+  it("records 0 and the HEAD sha for a passing command", async () => {
+    const { dir, sha } = repo();
+    const { code, out } = await run(["run", "--", "true"], dir);
+    expect(code).toBe(0);
+    expect(JSON.parse(out.join("\n"))).toEqual({ command: "true", sha, exitCode: 0 });
+  });
+
+  it("exits 127 when the program does not exist", async () => {
+    const { dir } = repo();
+    const { code, out } = await run(["run", "--", "no-such-program-istack"], dir);
+    expect(code).toBe(127);
+    expect(JSON.parse(out.join("\n")).exitCode).toBe(127);
+  });
+
+  it("warns on stderr when the tree has uncommitted changes", async () => {
+    const { dir } = repo();
+    writeFileSync(join(dir, "dirty.txt"), "x");
+    const { err } = await run(["run", "--", "true"], dir);
+    expect(err.join("\n")).toMatch(/uncommitted/);
+  });
+
+  it("needs a command after --, and a git checkout", async () => {
+    const { dir } = repo();
+    expect((await run(["run"], dir)).code).toBe(2);
+    expect((await run(["run", "--"], dir)).code).toBe(2);
+    expect((await run(["run", "--", "true"], mkdtempSync(join(tmpdir(), "ms-nogit-")))).code).toBe(
+      2,
+    );
   });
 });
