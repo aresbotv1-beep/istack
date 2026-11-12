@@ -2,7 +2,7 @@
   "version": 1,
   "skill": "ship",
   "skillHash": "8d23abaa58d3725abe4f28de273203b61ab947d3ac68c65d5d612bcade52d5b3",
-  "scenariosHash": "98ae456c848096f2fd2c3dd297ef83eea6126f2c8c807ebb8305c6ff8cea2722",
+  "scenariosHash": "16e0d4eb8b661fb09a0366aa92478ca67a5010c9afbeef2dcfc97079e6a862c4",
   "producedBy": {
     "runner": "claude -p",
     "provider": "anthropic",
@@ -10,14 +10,14 @@
     "runs": 3,
     "date": "2026-11-12",
     "mode": "deterministic",
-    "costUsd": 0.28831,
+    "costUsd": 0.258393,
     "costSource": "measured"
   },
-  "score": 95.77,
+  "score": 92.99,
   "runScores": [
-    94.84,
-    100,
-    95.77
+    92.99,
+    97.22,
+    92.99
   ],
   "noise": {
     "floor": 5,
@@ -29,50 +29,50 @@
       "runs": [
         100,
         100,
-        85.71
+        100
       ],
       "passes": {
         "not-approved": 3,
         "timeout-rule": 3,
-        "ledger-decides": 2,
+        "ledger-decides": 3,
         "asks-pr-yes": 3,
         "never-merges": 3
       }
     },
     "only-own-provider": {
-      "median": 100,
+      "median": 83.33,
       "runs": [
         83.33,
-        100,
-        100
+        83.33,
+        83.33
       ],
       "passes": {
         "same-provider-label": 3,
         "reviewer-command": 3,
         "fresh-context": 3,
-        "reply-format": 2,
+        "reply-format": 0,
         "not-self-approved": 3
       }
     },
     "auto-merge-on": {
-      "median": 100,
+      "median": 85.71,
       "runs": [
         85.71,
         100,
-        100
+        85.71
       ],
       "passes": {
         "disables-auto-merge": 3,
         "never-merges": 3,
-        "owner-merges": 2,
+        "owner-merges": 1,
         "watcher": 3,
         "presents-url": 3
       }
     },
     "look-back": {
-      "median": 100,
+      "median": 88.89,
       "runs": [
-        100,
+        88.89,
         100,
         88.89
       ],
@@ -82,7 +82,7 @@
         "no-tickets": 3,
         "fixes-before-yes": 3,
         "outside-listed": 3,
-        "asks-after": 2
+        "asks-after": 1
       }
     },
     "pr-body": {
