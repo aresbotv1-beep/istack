@@ -1,7 +1,7 @@
 {
   "version": 1,
   "skill": "ship",
-  "skillHash": "ef43d6a754c0177dd43ae31f3741cce2854a4ee5fe087cf8f83cbff328aa12fe",
+  "skillHash": "8d23abaa58d3725abe4f28de273203b61ab947d3ac68c65d5d612bcade52d5b3",
   "scenariosHash": "98ae456c848096f2fd2c3dd297ef83eea6126f2c8c807ebb8305c6ff8cea2722",
   "producedBy": {
     "runner": "claude -p",
@@ -10,14 +10,14 @@
     "runs": 3,
     "date": "2026-11-12",
     "mode": "deterministic",
-    "costUsd": 0.257009,
+    "costUsd": 0.28831,
     "costSource": "measured"
   },
-  "score": 90.95,
+  "score": 95.77,
   "runScores": [
-    88.17,
-    90.95,
-    97.62
+    94.84,
+    100,
+    95.77
   ],
   "noise": {
     "floor": 5,
@@ -25,16 +25,16 @@
   },
   "scenarios": {
     "timeout-not-approval": {
-      "median": 85.71,
+      "median": 100,
       "runs": [
         100,
-        85.71,
+        100,
         85.71
       ],
       "passes": {
         "not-approved": 3,
         "timeout-rule": 3,
-        "ledger-decides": 1,
+        "ledger-decides": 2,
         "asks-pr-yes": 3,
         "never-merges": 3
       }
@@ -74,7 +74,7 @@
       "runs": [
         100,
         100,
-        100
+        88.89
       ],
       "passes": {
         "fixes-in-change": 3,
@@ -82,7 +82,7 @@
         "no-tickets": 3,
         "fixes-before-yes": 3,
         "outside-listed": 3,
-        "asks-after": 3
+        "asks-after": 2
       }
     },
     "pr-body": {
@@ -100,15 +100,15 @@
       }
     },
     "recheck-after-edit": {
-      "median": 60,
+      "median": 100,
       "runs": [
-        60,
-        60,
+        100,
+        100,
         100
       ],
       "passes": {
         "rewatch": 3,
-        "named-wait": 1,
+        "named-wait": 3,
         "no-defer": 3
       }
     }
