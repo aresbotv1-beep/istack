@@ -1,11 +1,10 @@
 import { spawnSync } from "node:child_process";
 import { constants } from "node:os";
 
-/** One run of a command, in the shape of a receipt's `red` / `green` entry plus the command. */
+/** One run of a command: `command` is the claim's command, `run` its red or green entry as is. */
 export interface RunRecord {
   command: string;
-  sha: string;
-  exitCode: number;
+  run: { sha: string; exitCode: number };
 }
 
 export type RunResult =
@@ -30,8 +29,7 @@ export function runAndRecord(argv: string[], cwd: string): RunResult {
     dirty,
     record: {
       command: argv.map(quote).join(" "),
-      sha: head.stdout.trim(),
-      exitCode: exitCode(child),
+      run: { sha: head.stdout.trim(), exitCode: exitCode(child) },
     },
   };
 }
