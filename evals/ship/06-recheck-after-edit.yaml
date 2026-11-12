@@ -34,4 +34,4 @@ criteria:
     kind: excludes
     why: The re-read is not put off to a later turn - no promise to come back or keep watching.
     weight: 2
-    any: ['(?<!\b(not|n''t|never|no|without)\b[^.;,:!?\n]{0,30})\b(I''ll|I will)\s+(come back|check back|report back|get back|circle back|ping you|let you know|follow up|be back|keep watching|run the watcher (and|then|when|once))', '(want|like) me to keep (one |a )?watch', 'keep watching until']
+    any: ['(?<!\b(not|never|won''t|will not)\s+(going to\s+)?(say|promise|end on|ending on|end with|ending with)\s*["“`'']?)\b(I''ll|I will)\s+(come back|check back|report back|get back|circle back|ping you|let you know|follow up|be back|keep watching|run the watcher (and|then|when|once))', '(want|like) me to keep (one |a )?watch', 'keep watching until']
