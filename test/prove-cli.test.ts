@@ -1,5 +1,5 @@
-import { execFileSync } from "node:child_process";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { execFileSync, spawnSync } from "node:child_process";
+import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -122,6 +122,17 @@ describe("prove run", () => {
     expect(claim.red.safeParse(red.run).success).toBe(true);
     expect(claim.green.safeParse(green.run).success).toBe(true);
     expect(claim.command.safeParse(red.command).success).toBe(true);
+  });
+
+  it("records the subdirectory, so replaying the command from the repo root runs the same check", async () => {
+    const { dir } = repo();
+    mkdirSync(join(dir, "my pkg"));
+    writeFileSync(join(dir, "my pkg", "check.js"), "process.exit(0)");
+    const { code, out } = await run(["run", "--", "node", "check.js"], join(dir, "my pkg"));
+    expect(code).toBe(0);
+    const { command } = JSON.parse(out.join("\n"));
+    expect(command).toBe("cd 'my pkg/' && node check.js");
+    expect(spawnSync("sh", ["-c", command], { cwd: dir }).status).toBe(0);
   });
 
   it("warns on stderr when the tree has uncommitted changes", async () => {

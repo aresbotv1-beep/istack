@@ -19,6 +19,9 @@ export type RunResult =
 export function runAndRecord(argv: string[], cwd: string): RunResult {
   const head = spawnSync("git", ["rev-parse", "HEAD"], { cwd, encoding: "utf8" });
   if (head.status !== 0) return { ok: false, reason: `not a git checkout with a commit: ${cwd}` };
+  // Receipts are replayed from the repo root, so a run from a subdirectory records the `cd`.
+  const prefix = spawnSync("git", ["rev-parse", "--show-prefix"], { cwd, encoding: "utf8" });
+  const subdir = prefix.status === 0 ? prefix.stdout.trim() : "";
   const status = spawnSync("git", ["status", "--porcelain"], { cwd, encoding: "utf8" });
   const dirty = status.status !== 0 || status.stdout.trim() !== "";
 
@@ -28,7 +31,7 @@ export function runAndRecord(argv: string[], cwd: string): RunResult {
     ok: true,
     dirty,
     record: {
-      command: argv.map(quote).join(" "),
+      command: (subdir ? `cd ${quote(subdir)} && ` : "") + argv.map(quote).join(" "),
       run: { sha: head.stdout.trim(), exitCode: exitCode(child) },
     },
   };
