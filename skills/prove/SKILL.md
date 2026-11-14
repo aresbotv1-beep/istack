@@ -22,6 +22,12 @@ fix, so do it first.
 After the fix, run **the same check** again. It must exit 0 at the new SHA. That is **green**.
 Same command, same test, same screen. A different check proves something else.
 
+Record both runs with `istack prove run -- <command>`. It prints `{ "command", "run" }`: the
+claim's `command`, and `run` (`sha` = HEAD, `exitCode` = the command's own) to paste as the `red`
+or `green` entry as is. It exits with the command's code. Never read an exit code from `echo $?` after a pipe: that is the last command's code
+(`tail`'s), not the test's. It warns when the tree has uncommitted changes, because the run is
+then not exactly that commit.
+
 ## 2. Pictures for anything visible
 
 If a person could see the difference, it needs a before/after pair.

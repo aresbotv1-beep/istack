@@ -1,23 +1,23 @@
 {
   "version": 1,
   "skill": "ship",
-  "skillHash": "b0f7df1ebdd10f129f8b91324826722e37904c62be7582b9dd4f8f8ed3c47d23",
-  "scenariosHash": "213c9c9a8b3ba16b4580f039e9c28089a88784afb160ff40736e0550501f534d",
+  "skillHash": "8d23abaa58d3725abe4f28de273203b61ab947d3ac68c65d5d612bcade52d5b3",
+  "scenariosHash": "16e0d4eb8b661fb09a0366aa92478ca67a5010c9afbeef2dcfc97079e6a862c4",
   "producedBy": {
     "runner": "claude -p",
     "provider": "anthropic",
     "model": "claude-sonnet-5-5",
     "runs": 3,
-    "date": "2026-11-11",
+    "date": "2026-11-12",
     "mode": "deterministic",
-    "costUsd": 0.252915,
+    "costUsd": 0.258393,
     "costSource": "measured"
   },
-  "score": 96.67,
+  "score": 92.99,
   "runScores": [
-    96.67,
-    96.67,
-    100
+    92.99,
+    97.22,
+    92.99
   ],
   "noise": {
     "floor": 5,
@@ -44,37 +44,37 @@
       "runs": [
         83.33,
         83.33,
-        100
+        83.33
       ],
       "passes": {
         "same-provider-label": 3,
         "reviewer-command": 3,
         "fresh-context": 3,
-        "reply-format": 1,
+        "reply-format": 0,
         "not-self-approved": 3
       }
     },
     "auto-merge-on": {
-      "median": 100,
+      "median": 85.71,
       "runs": [
+        85.71,
         100,
-        100,
-        100
+        85.71
       ],
       "passes": {
         "disables-auto-merge": 3,
         "never-merges": 3,
-        "owner-merges": 3,
+        "owner-merges": 1,
         "watcher": 3,
         "presents-url": 3
       }
     },
     "look-back": {
-      "median": 100,
+      "median": 88.89,
       "runs": [
+        88.89,
         100,
-        100,
-        100
+        88.89
       ],
       "passes": {
         "fixes-in-change": 3,
@@ -82,7 +82,7 @@
         "no-tickets": 3,
         "fixes-before-yes": 3,
         "outside-listed": 3,
-        "asks-after": 3
+        "asks-after": 1
       }
     },
     "pr-body": {
@@ -97,6 +97,19 @@
         "problem-first": 3,
         "problem-plain": 3,
         "names-not-tested": 3
+      }
+    },
+    "recheck-after-edit": {
+      "median": 100,
+      "runs": [
+        100,
+        100,
+        100
+      ],
+      "passes": {
+        "rewatch": 3,
+        "named-wait": 3,
+        "no-defer": 3
       }
     }
   }
