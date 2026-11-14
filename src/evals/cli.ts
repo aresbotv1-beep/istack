@@ -218,10 +218,21 @@ export async function runEvalsCli(
       continue;
     }
     if (command === "baseline") {
-      const baseline = toBaseline(result, { date: now().slice(0, 10), noiseFloor, k });
       const path = baselinePath(io.cwd, name);
+      const previous = existsSync(path)
+        ? baselineSchema.safeParse(JSON.parse(readFileSync(path, "utf8")))
+        : undefined;
+      const baseline = toBaseline(
+        result,
+        { date: now().slice(0, 10), noiseFloor, k },
+        previous?.success ? previous.data : undefined,
+      );
       mkdirSync(dirname(path), { recursive: true });
       writeFileSync(path, `${JSON.stringify(baseline, null, 2)}\n`);
+      if (baseline.best && baseline.best.score > baseline.score)
+        io.out(
+          `${name}: below its best ${baseline.best.score} (${baseline.best.date}); the best is kept`,
+        );
       io.out(
         `baseline written: ${path}${at ? ` (skill at ${at}; rewrite it once the edit is done)` : ""}`,
       );
@@ -238,9 +249,13 @@ export async function runEvalsCli(
         exit = Math.max(exit, 2);
         continue;
       }
-      const verdict = c.regressed ? "dropped beyond noise" : "holds";
+      const verdict = c.belowBest
+        ? `dropped beyond noise from its best (${c.best})`
+        : c.regressed
+          ? "dropped beyond noise"
+          : "holds";
       io.out(
-        `${name}: ${verdict} — ${c.score} vs baseline ${c.baselineScore} (${signed(c.delta ?? 0)}, noise ${c.noise})`,
+        `${name}: ${verdict} — ${c.score} vs baseline ${c.baselineScore} (${signed(c.delta ?? 0)}, noise ${c.noise})${c.best !== undefined ? `, best ${c.best}` : ""}`,
       );
       if (c.regressed) exit = Math.max(exit, 1);
     }

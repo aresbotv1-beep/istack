@@ -205,6 +205,19 @@ export const baselineSchema = z.strictObject({
   /** One skill score per run: the mean of the scenario scores in that run. */
   runScores: runsArray,
   noise: z.strictObject({ floor: z.number().min(0), k: z.number().min(0) }),
+  /**
+   * The highest score any baseline reached on these scenarios, with this runner, model and mode.
+   * `compare` fails a drop beyond noise from it too, so small drops cannot add up across rewrites
+   * (retro 2026-11-13 R3). Absent on baselines written before it existed.
+   */
+  best: z
+    .strictObject({
+      score: z.number(),
+      runScores: runsArray,
+      skillHash: z.string(),
+      date: z.string(),
+    })
+    .optional(),
   scenarios: z.record(
     z.string(),
     z.strictObject({
