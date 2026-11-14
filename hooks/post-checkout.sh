@@ -13,7 +13,9 @@ case "$1" in *[!0]*) ;; *) exit 0 ;; esac
 [ "$(cd "$(git rev-parse --git-dir)" && pwd -P)" = "$(cd "$(git rev-parse --git-common-dir)" && pwd -P)" ] || exit 0
 
 # Detached HEAD (a rebase, a bisect) passes; only a named branch other than the default fails.
-branch=$(git symbolic-ref --quiet --short HEAD) || exit 0
+# Full ref names: a tag with the branch's name makes --short say "heads/main".
+ref=$(git symbolic-ref --quiet HEAD) || exit 0
+branch=${ref#refs/heads/}
 # The default branch: `git config istack.defaultBranch`, else origin/HEAD, else main/master/trunk.
 default=$(git config --get istack.defaultBranch)
 [ -n "$default" ] || default=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's|^origin/||')
