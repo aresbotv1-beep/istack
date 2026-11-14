@@ -4,6 +4,9 @@ import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { HOSTS, type Host, hostTarget, type Scope } from "./hosts.js";
 import type { Entry, Manifest } from "./manifest.js";
 
+/** The git hooks `istack install --hooks` writes. */
+export const HOOK_NAMES = ["pre-push", "post-checkout"] as const;
+
 /** The git hooks directory for `root`, or null when it is not a git repository. */
 export function gitHooksDir(root: string): string | null {
   try {
@@ -60,7 +63,9 @@ function permitted(scope: Scope): Permitted {
   const hooksDirs = new Set([join(root, ".git", "hooks")]);
   const fromGit = gitHooksDir(root);
   if (fromGit) hooksDirs.add(fromGit);
-  const hooks = [...hooksDirs].map((dir) => ({ path: join(dir, "pre-push"), base: dir }));
+  const hooks = [...hooksDirs].flatMap((dir) =>
+    HOOK_NAMES.map((name) => ({ path: join(dir, name), base: dir })),
+  );
   for (const dir of hooksDirs) dirAnchors.push({ path: dir, base: dirname(dir) });
   return { skillsDirs, agentsFiles, hooks, dirAnchors };
 }
@@ -144,7 +149,7 @@ export function checkLocations(manifest: Manifest, scope: Scope): string[] {
     } else if (entry.kind === "hook") {
       const abs = resolve(root, entry.path);
       const match = allowed.hooks.find((a) => a.path === abs);
-      if (!match) problems.push(`${label}: not this repository's git pre-push hook`);
+      if (!match) problems.push(`${label}: not one of this repository's git hooks istack writes`);
       else mustStayIn(label, abs, match.base, true);
     } else {
       const abs = resolve(root, entry.path);

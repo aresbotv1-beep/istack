@@ -51,12 +51,13 @@ One line per host:
 - **Codex** gets the skills in `~/.agents/skills/` and the contract in `~/.codex/AGENTS.md`.
   **Cursor** gets the skills in `~/.cursor/skills/`. Add `--project <repo>` to install into one
   repository instead (skills under `.agents/skills/` or `.cursor/skills/`, the contract in the
-  repo's `AGENTS.md`), and `--hooks` to add a git pre-push hook that runs the checks in
-  `istack.yaml`. `--host all` does all three; `--dry-run` shows what would change.
+  repo's `AGENTS.md`), and `--hooks` to add two git hooks: pre-push runs the checks in
+  `istack.yaml`, and post-checkout fails a branch switch in the main checkout, because agents
+  build in worktrees. `--host all` does all three; `--dry-run` shows what would change.
 - **It never overwrites anything it didn't write.** If you already have a skill called `plan` or
   `ship`, that one is skipped and reported (add `--prefix` to install ours as `istack-plan`).
   The contract goes between `<!-- istack:begin -->` and `<!-- istack:end -->` markers;
-  your text outside them is never touched. An existing pre-push hook, skill file or contract block
+  your text outside them is never touched. An existing git hook, skill file or contract block
   is left alone and never recorded as istack's, even when it is byte-identical. With
   `--prefix`, links between skills (`../ship/council.md`) are rewritten to the prefixed folders.
   Running the install again changes nothing.

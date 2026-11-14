@@ -36,7 +36,7 @@ const manifestSchema = z.strictObject({
   entries: z.array(z.discriminatedUnion("kind", [skillEntry, blockEntry, hookEntry, dirEntry])),
 });
 
-/** Who owns a directory or file: a host, or "git" for the pre-push hook. */
+/** Who owns a directory or file: a host, or "git" for the git hooks. */
 export type Owner = z.infer<typeof owner>;
 export type SkillEntry = z.infer<typeof skillEntry>;
 export type BlockEntry = z.infer<typeof blockEntry>;
