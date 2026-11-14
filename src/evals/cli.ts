@@ -6,6 +6,7 @@ import type { Judge } from "../council/run.js";
 import { toFieldErrors } from "../result.js";
 import { onPath } from "../ship/cli.js";
 import { type AgentRunner, claudeRunner, codexRunner } from "./agents.js";
+import { checkExamples, type ExampleProblem } from "./examples.js";
 import { compareToBaseline, type EvalResult, runSkillEvals, toBaseline } from "./run.js";
 import { loadScenarios, skillsWithEvals } from "./scenarios.js";
 import { type Baseline, baselineSchema } from "./schema.js";
@@ -22,6 +23,7 @@ export interface EvalsDeps {
 
 const USAGE = [
   "usage: istack evals list",
+  "       istack evals check                                   score every criterion against its examples",
   "       istack evals run      --skill <name|all> [options]   score now; last line is the score",
   "       istack evals baseline --skill <name|all> [options]   write evals/baselines/<skill>.json",
   "       istack evals compare  --skill <name|all> [options] [--from results.json]",
@@ -47,6 +49,7 @@ export async function runEvalsCli(
   if (!parsed.ok) return usage(io, parsed.reason);
   const flags = parsed.flags;
   if (command === "list") return list(io);
+  if (command === "check") return check(io);
   if (command !== "run" && command !== "baseline" && command !== "compare") return usage(io);
 
   const skillFlag = flags.get("skill");
@@ -259,6 +262,24 @@ function printResult(io: CliIo, r: EvalResult): void {
       .join(", ");
     io.out(`| ${id} | ${s.median ?? "-"} | ${s.runs.join(", ") || "-"} | ${failed || "none"} |`);
   }
+}
+
+/** Exit 0 when every regex criterion judges its examples right; 1 names each one that does not. */
+function check(io: CliIo): number {
+  let problems: ExampleProblem[];
+  try {
+    problems = checkExamples(io.cwd);
+  } catch (error) {
+    io.err((error as Error).message);
+    return 2;
+  }
+  for (const p of problems) io.err(`${p.where}: ${p.problem}`);
+  io.out(
+    problems.length === 0
+      ? "examples: every criterion judges its examples right"
+      : `examples: ${problems.length} problem${problems.length === 1 ? "" : "s"}`,
+  );
+  return problems.length === 0 ? 0 : 1;
 }
 
 function list(io: CliIo): number {

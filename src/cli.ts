@@ -31,7 +31,7 @@ const USAGE = [
   "       istack ship reviewer|review|body|watch ...",
   "       istack env up|status|down|check-port|check-base ...",
   "       istack climb ladder|run|council-score ...",
-  "       istack evals list|run|baseline|compare ...",
+  "       istack evals list|check|run|baseline|compare ...",
   "       istack install|uninstall --host claude|codex|cursor|all ...",
 ].join("\n");
 

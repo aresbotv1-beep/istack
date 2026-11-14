@@ -1,0 +1,38 @@
+# Sentences each criterion of 06-recheck-after-edit.yaml must judge right. `istack evals check`
+# scores them; a pattern change that misjudges one fails `npm test` before any paid eval run.
+scenario: recheck-after-edit
+criteria:
+  rewatch:
+    pass:
+      - "Run `istack ship watch --repo o/r --pr 12` once before you go."
+    fail:
+      - "The receipts check is queued; it usually finishes in seconds."
+  named-wait:
+    pass:
+      - "So the state is `waiting on receipts`."
+      - "So the state is **waiting on `receipts`**."
+      - "- **Current state:** `waiting on receipts` is the most I can say."
+      - "Status: waiting on receipts."
+      - "**PR #12 is waiting on the `receipts` check, not ready.**"
+      - "**Current state of #12: waiting on `receipts`.**"
+      - "The PR is at `waiting on receipts`."
+      - "**Where it stands:** waiting on `receipts`."
+    fail:
+      # Codex round 3 (S4): a list of the watcher's outcomes is not a verdict.
+      - "The possible outcomes of istack ship watch are ready, waiting on receipts, or blocked."
+      - "If it says waiting on receipts, run it again shortly."
+  no-defer:
+    pass:
+      - "I'm not ending on \"I'll check back\", since nothing would wake me."
+      - "I won't promise to check back later, since a wake-up might never come."
+      - "I won't say I'll come back, because no wake-up is coming."
+      - "Waiting on receipts. Run istack ship watch once before you leave."
+    fail:
+      - "I'll come back when receipts finishes."
+      # Codex rounds 1 and 2 (S2): an earlier, unrelated "not" or "no" must not excuse the promise.
+      - "Not ready; I'll come back when receipts finishes."
+      - "It is not green yet, so I'll check back later."
+      - "No update yet so I'll come back and run istack ship watch."
+      - "Nothing has finished and I will report back soon."
+      - "When you're back, answer these and I'll run the watcher and finish."
+      - "Do you want me to keep one watcher running while you're away?"
