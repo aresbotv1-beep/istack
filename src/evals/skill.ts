@@ -68,8 +68,17 @@ export function loadSkillAt(
   }
   // Paths in a tree are from the repo root; `root` may be a subdirectory (or a symlinked path).
   const prefix = `${git(["rev-parse", "--show-prefix"]).trim()}${skillsDir}/${name}`;
-  const paths = git(["ls-tree", "-r", "--full-tree", "--name-only", commit, "--", `${prefix}/`])
-    .split("\n")
+  const paths = git([
+    "ls-tree",
+    "-r",
+    "-z",
+    "--full-tree",
+    "--name-only",
+    commit,
+    "--",
+    `${prefix}/`,
+  ])
+    .split("\0")
     .filter(Boolean);
   if (!paths.includes(`${prefix}/SKILL.md`))
     throw new Error(`no skill at ${prefix}/SKILL.md in ${ref}`);

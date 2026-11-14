@@ -1,12 +1,19 @@
 import { execFileSync } from "node:child_process";
-import { appendFileSync, cpSync, mkdtempSync, readFileSync } from "node:fs";
+import {
+  appendFileSync,
+  cpSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import type { AgentRequest, AgentRunner } from "../src/evals/agents.js";
 import { runEvalsCli } from "../src/evals/cli.js";
 import { baselineSchema } from "../src/evals/schema.js";
-import { loadSkill } from "../src/evals/skill.js";
+import { loadSkill, loadSkillAt } from "../src/evals/skill.js";
 
 const ROOT = new URL("..", import.meta.url).pathname;
 
@@ -71,6 +78,21 @@ describe("evals baseline --at <ref> (retro 2026-11-13 R2)", () => {
       JSON.parse(readFileSync(join(cwd, "evals", "baselines", "retro.json"), "utf8")),
     );
     expect(baseline.skillHash).toBe(committedHash);
+  });
+
+  it("reads files whose names git quotes, like non-ASCII ones (review round 2 S1)", async () => {
+    const top = mkdtempSync(join(tmpdir(), "ms-evals-at-quoted-"));
+    mkdirSync(join(top, "skills", "demo"), { recursive: true });
+    writeFileSync(join(top, "skills", "demo", "SKILL.md"), "skill\n");
+    writeFileSync(join(top, "skills", "demo", "notes-é.md"), "important instructions\n");
+    const git = (...args: string[]) => execFileSync("git", args, { cwd: top, stdio: "ignore" });
+    git("init", "-q");
+    git("config", "core.quotePath", "true");
+    git("add", ".");
+    git("-c", "user.name=t", "-c", "user.email=t@example.com", "commit", "-q", "-m", "base");
+    const historical = loadSkillAt(top, "demo", "HEAD");
+    expect(historical.files.map((f) => f.path).sort()).toEqual(["SKILL.md", "notes-é.md"]);
+    expect(historical.hash).toBe(loadSkill(top, "demo").hash);
   });
 
   it("refuses an unknown ref, and --at outside baseline", async () => {
