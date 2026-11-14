@@ -13,6 +13,8 @@ export interface Kit {
   skills: KitSkill[];
   contract: string;
   hookTemplate: string;
+  /** The post-checkout hook: fails a branch switch in the main checkout. */
+  checkoutHookTemplate: string;
 }
 
 function isKitRoot(dir: string): boolean {
@@ -64,6 +66,7 @@ export function loadKit(root: string): Kit {
     skills,
     contract: readFileSync(join(root, "AGENTS.md"), "utf8"),
     hookTemplate: readFileSync(join(root, "hooks", "pre-push.sh"), "utf8"),
+    checkoutHookTemplate: readFileSync(join(root, "hooks", "post-checkout.sh"), "utf8"),
   };
 }
 

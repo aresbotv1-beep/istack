@@ -9,12 +9,12 @@ import {
   unlinkSync,
   writeFileSync,
 } from "node:fs";
-import { dirname, join, relative, resolve, sep } from "node:path";
+import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { loadConfig, oldConfigProblem } from "../config/load.js";
 import { mergeBlock, removeBlock, renderBlock } from "./block.js";
 import { type Host, hostTarget, type Scope } from "./hosts.js";
 import { type Kit, prefixSkills } from "./kit.js";
-import { checkLocations, gitHooksDir } from "./locations.js";
+import { checkLocations, gitHooksDir, type HOOK_NAMES } from "./locations.js";
 import {
   type BlockEntry,
   type DirEntry,
@@ -65,7 +65,10 @@ export interface InstallOptions {
   kit: Kit;
   /** Install every skill as `istack-<name>` so it cannot clash with a personal skill. */
   prefix?: boolean;
-  /** Also write a git pre-push hook running the repo's checks (project scope only). */
+  /**
+   * Also write git hooks (project scope only): pre-push runs the repo's checks, post-checkout fails
+   * a branch switch in the main checkout.
+   */
   hooks?: boolean;
   dryRun?: boolean;
 }
@@ -100,14 +103,17 @@ function installInto(ctx: Ctx, options: InstallOptions): Ctx {
     for (const note of target.notes) ctx.items.push({ status: "note", path: "", detail: note });
   }
   for (const [path, hosts] of blocks) installBlock(ctx, path, hosts, kit.contract);
-  if (options.hooks) installHook(ctx, kit.hookTemplate);
+  if (options.hooks) {
+    installHook(ctx, "pre-push", kit.hookTemplate);
+    installHook(ctx, "post-checkout", kit.checkoutHookTemplate);
+  }
   return ctx;
 }
 
 export interface UninstallOptions {
   scope: Scope;
   hosts: Host[];
-  /** Remove the pre-push hook too (implied when every host is removed). */
+  /** Remove the git hooks too (implied when every host is removed). */
   hooks?: boolean;
   dryRun?: boolean;
 }
@@ -350,33 +356,45 @@ export function renderHook(
   return template.replace("# @@CHECKS@@", lines.join("\n"));
 }
 
-function installHook(ctx: Ctx, template: string): void {
+type HookName = (typeof HOOK_NAMES)[number];
+
+const HOOK_DETAIL: Record<HookName, string> = {
+  "pre-push": "runs the istack.yaml checks before every push",
+  "post-checkout": "fails a branch switch in the main checkout; agents build in worktrees",
+};
+
+function installHook(ctx: Ctx, name: HookName, template: string): void {
   const hooksDir = gitHooksDir(ctx.root);
   if (!hooksDir) {
-    ctx.items.push({ status: "skipped", path: "", detail: "pre-push hook: not a git repository" });
+    ctx.items.push({ status: "skipped", path: "", detail: `${name} hook: not a git repository` });
     return;
   }
-  const abs = join(hooksDir, "pre-push");
+  const abs = join(hooksDir, name);
   const path = rel(ctx, abs);
-  const configPath = join(ctx.root, "istack.yaml");
-  if (!existsSync(configPath)) {
-    ctx.items.push({
-      status: "skipped",
-      path,
-      detail: "pre-push hook: no istack.yaml, so no checks to run",
-    });
-    return;
+  let text = template;
+  let detail = HOOK_DETAIL[name];
+  if (name === "pre-push") {
+    const configPath = join(ctx.root, "istack.yaml");
+    if (!existsSync(configPath)) {
+      ctx.items.push({
+        status: "skipped",
+        path,
+        detail: "pre-push hook: no istack.yaml, so no checks to run",
+      });
+      return;
+    }
+    const config = loadConfig(readFileSync(configPath, "utf8"));
+    if (!config.ok) {
+      ctx.items.push({
+        status: "skipped",
+        path,
+        detail: "pre-push hook: istack.yaml is invalid (run istack config check)",
+      });
+      return;
+    }
+    text = renderHook(template, config.config.checks);
+    detail = `runs ${config.config.checks.map((c) => c.name).join(", ")} before every push`;
   }
-  const config = loadConfig(readFileSync(configPath, "utf8"));
-  if (!config.ok) {
-    ctx.items.push({
-      status: "skipped",
-      path,
-      detail: "pre-push hook: istack.yaml is invalid (run istack config check)",
-    });
-    return;
-  }
-  const text = renderHook(template, config.config.checks);
   const entry = ctx.manifest.entries.find(
     (e): e is HookEntry => e.kind === "hook" && e.path === path,
   );
@@ -386,8 +404,7 @@ function installHook(ctx: Ctx, template: string): void {
     ctx.items.push({
       status: "skipped",
       path,
-      detail:
-        "pre-push hook: this repo already has a pre-push hook istack did not write — left untouched and not recorded; call your checks from it, or remove it and re-run with --hooks",
+      detail: `${name} hook: this repo already has a ${name} hook istack did not write — left untouched and not recorded; call istack's from it, or remove it and re-run with --hooks`,
     });
     return;
   }
@@ -395,7 +412,7 @@ function installHook(ctx: Ctx, template: string): void {
     ctx.items.push({
       status: "kept",
       path,
-      detail: "pre-push hook: changed since install — left as you have it",
+      detail: `${name} hook: changed since install — left as you have it`,
     });
     return;
   }
@@ -405,7 +422,7 @@ function installHook(ctx: Ctx, template: string): void {
   ctx.items.push({
     status: !disk ? "created" : changed ? "updated" : "unchanged",
     path,
-    detail: `pre-push hook: runs ${config.config.checks.map((c) => c.name).join(", ")} before every push`,
+    detail: `${name} hook: ${detail}`,
   });
 }
 
@@ -458,11 +475,11 @@ function uninstallHook(ctx: Ctx, entry: HookEntry): HookEntry | null {
     ctx.items.push({
       status: "kept",
       path: entry.path,
-      detail: "pre-push hook: changed since install — left in place",
+      detail: `${basename(entry.path)} hook: changed since install — left in place`,
     });
     return entry;
   }
   if (disk && !ctx.dryRun) unlinkSync(abs);
-  ctx.items.push({ status: "removed", path: entry.path, detail: "pre-push hook" });
+  ctx.items.push({ status: "removed", path: entry.path, detail: `${basename(entry.path)} hook` });
   return null;
 }

@@ -6,10 +6,11 @@ import type { Judge } from "../council/run.js";
 import { toFieldErrors } from "../result.js";
 import { onPath } from "../ship/cli.js";
 import { type AgentRunner, claudeRunner, codexRunner } from "./agents.js";
+import { checkExamples, type ExampleProblem } from "./examples.js";
 import { compareToBaseline, type EvalResult, runSkillEvals, toBaseline } from "./run.js";
 import { loadScenarios, skillsWithEvals } from "./scenarios.js";
 import { type Baseline, baselineSchema } from "./schema.js";
-import { applyDegrade, loadDegrade, loadSkill } from "./skill.js";
+import { applyDegrade, loadDegrade, loadSkill, loadSkillAt, type SkillText } from "./skill.js";
 import { judgeFromRunner } from "./taste.js";
 
 export interface EvalsDeps {
@@ -22,10 +23,12 @@ export interface EvalsDeps {
 
 const USAGE = [
   "usage: istack evals list",
+  "       istack evals check                                   score every criterion against its examples",
   "       istack evals run      --skill <name|all> [options]   score now; last line is the score",
   "       istack evals baseline --skill <name|all> [options]   write evals/baselines/<skill>.json",
   "       istack evals compare  --skill <name|all> [options] [--from results.json]",
   "       (baseline --from results.json writes the baseline from a saved run of the current skill)",
+  "       (baseline --at <git-ref> scores the skill as it was at that commit: the baseline for a change that edits it)",
   "options: --runs <n> (3)  --runner claude|codex (claude)  --model <id> (the baseline's)  --budget <usd> (2)",
   "         --taste (council-score taste criteria; off by default)  --degrade <spec.json>",
   "         --noise-floor <points> (5)  --k <n> (2)  --out <results.json>  --transcript <file.jsonl>",
@@ -47,6 +50,7 @@ export async function runEvalsCli(
   if (!parsed.ok) return usage(io, parsed.reason);
   const flags = parsed.flags;
   if (command === "list") return list(io);
+  if (command === "check") return check(io);
   if (command !== "run" && command !== "baseline" && command !== "compare") return usage(io);
 
   const skillFlag = flags.get("skill");
@@ -79,6 +83,12 @@ export async function runEvalsCli(
       return 2;
     }
   }
+
+  const at = flags.get("at");
+  if (at && command !== "baseline") return usage(io, "--at only goes with baseline");
+  /** The skill the baseline describes: as it is now, or as it was at --at. */
+  const skillOf = (name: string): SkillText =>
+    at ? loadSkillAt(io.cwd, name, at) : loadSkill(io.cwd, name);
 
   const degradePath = flags.get("degrade");
   if (command === "baseline" && degradePath) {
@@ -139,9 +149,16 @@ export async function runEvalsCli(
       if (command === "baseline") {
         // The written baseline must describe the skill and scenarios as they are now, from a
         // median of at least 3 complete runs, exactly as a fresh `evals baseline` would.
+        let expected: string;
+        try {
+          expected = skillOf(name).hash;
+        } catch (error) {
+          io.err((error as Error).message);
+          return 2;
+        }
         const problem =
-          result.skillHash !== loadSkill(io.cwd, name).hash
-            ? "was scored on other skill text (or degraded)"
+          result.skillHash !== expected
+            ? `was scored on other skill text than ${at ? `the skill at ${at}` : "the current skill"} (or degraded)`
             : result.scenariosHash !== loadScenarios(io.cwd, name).hash
               ? "was scored on other scenarios"
               : result.status !== "complete"
@@ -158,7 +175,7 @@ export async function runEvalsCli(
       let skill: ReturnType<typeof loadSkill>;
       let scenarios: ReturnType<typeof loadScenarios>;
       try {
-        skill = loadSkill(io.cwd, name);
+        skill = skillOf(name);
         scenarios = loadScenarios(io.cwd, name);
         if (degradePath) {
           const spec = loadDegrade(resolve(io.cwd, degradePath));
@@ -201,11 +218,24 @@ export async function runEvalsCli(
       continue;
     }
     if (command === "baseline") {
-      const baseline = toBaseline(result, { date: now().slice(0, 10), noiseFloor, k });
       const path = baselinePath(io.cwd, name);
+      const previous = existsSync(path)
+        ? baselineSchema.safeParse(JSON.parse(readFileSync(path, "utf8")))
+        : undefined;
+      const baseline = toBaseline(
+        result,
+        { date: now().slice(0, 10), noiseFloor, k },
+        previous?.success ? previous.data : undefined,
+      );
       mkdirSync(dirname(path), { recursive: true });
       writeFileSync(path, `${JSON.stringify(baseline, null, 2)}\n`);
-      io.out(`baseline written: ${path}`);
+      if (baseline.best && baseline.best.score > baseline.score)
+        io.out(
+          `${name}: below its best ${baseline.best.score} (${baseline.best.date}); the best is kept`,
+        );
+      io.out(
+        `baseline written: ${path}${at ? ` (skill at ${at}; rewrite it once the edit is done)` : ""}`,
+      );
     }
     if (command === "compare") {
       const baseline = readBaseline(io, name);
@@ -219,9 +249,13 @@ export async function runEvalsCli(
         exit = Math.max(exit, 2);
         continue;
       }
-      const verdict = c.regressed ? "dropped beyond noise" : "holds";
+      const verdict = c.belowBest
+        ? `dropped beyond noise from its best (${c.best})`
+        : c.regressed
+          ? "dropped beyond noise"
+          : "holds";
       io.out(
-        `${name}: ${verdict} — ${c.score} vs baseline ${c.baselineScore} (${signed(c.delta ?? 0)}, noise ${c.noise})`,
+        `${name}: ${verdict} — ${c.score} vs baseline ${c.baselineScore} (${signed(c.delta ?? 0)}, noise ${c.noise})${c.best !== undefined ? `, best ${c.best}` : ""}`,
       );
       if (c.regressed) exit = Math.max(exit, 1);
     }
@@ -259,6 +293,24 @@ function printResult(io: CliIo, r: EvalResult): void {
       .join(", ");
     io.out(`| ${id} | ${s.median ?? "-"} | ${s.runs.join(", ") || "-"} | ${failed || "none"} |`);
   }
+}
+
+/** Exit 0 when every regex criterion judges its examples right; 1 names each one that does not. */
+function check(io: CliIo): number {
+  let problems: ExampleProblem[];
+  try {
+    problems = checkExamples(io.cwd);
+  } catch (error) {
+    io.err((error as Error).message);
+    return 2;
+  }
+  for (const p of problems) io.err(`${p.where}: ${p.problem}`);
+  io.out(
+    problems.length === 0
+      ? "examples: every criterion judges its examples right"
+      : `examples: ${problems.length} problem${problems.length === 1 ? "" : "s"}`,
+  );
+  return problems.length === 0 ? 0 : 1;
 }
 
 function list(io: CliIo): number {
