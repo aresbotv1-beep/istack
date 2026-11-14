@@ -10,7 +10,7 @@ import { checkExamples, type ExampleProblem } from "./examples.js";
 import { compareToBaseline, type EvalResult, runSkillEvals, toBaseline } from "./run.js";
 import { loadScenarios, skillsWithEvals } from "./scenarios.js";
 import { type Baseline, baselineSchema } from "./schema.js";
-import { applyDegrade, loadDegrade, loadSkill } from "./skill.js";
+import { applyDegrade, loadDegrade, loadSkill, loadSkillAt, type SkillText } from "./skill.js";
 import { judgeFromRunner } from "./taste.js";
 
 export interface EvalsDeps {
@@ -28,6 +28,7 @@ const USAGE = [
   "       istack evals baseline --skill <name|all> [options]   write evals/baselines/<skill>.json",
   "       istack evals compare  --skill <name|all> [options] [--from results.json]",
   "       (baseline --from results.json writes the baseline from a saved run of the current skill)",
+  "       (baseline --at <git-ref> scores the skill as it was at that commit: the baseline for a change that edits it)",
   "options: --runs <n> (3)  --runner claude|codex (claude)  --model <id> (the baseline's)  --budget <usd> (2)",
   "         --taste (council-score taste criteria; off by default)  --degrade <spec.json>",
   "         --noise-floor <points> (5)  --k <n> (2)  --out <results.json>  --transcript <file.jsonl>",
@@ -82,6 +83,12 @@ export async function runEvalsCli(
       return 2;
     }
   }
+
+  const at = flags.get("at");
+  if (at && command !== "baseline") return usage(io, "--at only goes with baseline");
+  /** The skill the baseline describes: as it is now, or as it was at --at. */
+  const skillOf = (name: string): SkillText =>
+    at ? loadSkillAt(io.cwd, name, at) : loadSkill(io.cwd, name);
 
   const degradePath = flags.get("degrade");
   if (command === "baseline" && degradePath) {
@@ -142,9 +149,16 @@ export async function runEvalsCli(
       if (command === "baseline") {
         // The written baseline must describe the skill and scenarios as they are now, from a
         // median of at least 3 complete runs, exactly as a fresh `evals baseline` would.
+        let expected: string;
+        try {
+          expected = skillOf(name).hash;
+        } catch (error) {
+          io.err((error as Error).message);
+          return 2;
+        }
         const problem =
-          result.skillHash !== loadSkill(io.cwd, name).hash
-            ? "was scored on other skill text (or degraded)"
+          result.skillHash !== expected
+            ? `was scored on other skill text than ${at ? `the skill at ${at}` : "the current skill"} (or degraded)`
             : result.scenariosHash !== loadScenarios(io.cwd, name).hash
               ? "was scored on other scenarios"
               : result.status !== "complete"
@@ -161,7 +175,7 @@ export async function runEvalsCli(
       let skill: ReturnType<typeof loadSkill>;
       let scenarios: ReturnType<typeof loadScenarios>;
       try {
-        skill = loadSkill(io.cwd, name);
+        skill = skillOf(name);
         scenarios = loadScenarios(io.cwd, name);
         if (degradePath) {
           const spec = loadDegrade(resolve(io.cwd, degradePath));
@@ -208,7 +222,9 @@ export async function runEvalsCli(
       const path = baselinePath(io.cwd, name);
       mkdirSync(dirname(path), { recursive: true });
       writeFileSync(path, `${JSON.stringify(baseline, null, 2)}\n`);
-      io.out(`baseline written: ${path}`);
+      io.out(
+        `baseline written: ${path}${at ? ` (skill at ${at}; rewrite it once the edit is done)` : ""}`,
+      );
     }
     if (command === "compare") {
       const baseline = readBaseline(io, name);
