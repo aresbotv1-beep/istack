@@ -74,6 +74,14 @@ export function checkExamples(root: string, evalsDir = "evals"): ExampleProblem[
         problems.push({ where: `${skill}/examples/${file}`, problem: errors.join("; ") });
         continue;
       }
+      const other = byScenario.get(parsed.data.scenario);
+      if (other) {
+        problems.push({
+          where: `${skill}/${parsed.data.scenario}`,
+          problem: `two example files: examples/${other.file} and examples/${file}; keep one`,
+        });
+        continue;
+      }
       byScenario.set(parsed.data.scenario, { file, examples: parsed.data });
     }
     for (const id of byScenario.keys()) {

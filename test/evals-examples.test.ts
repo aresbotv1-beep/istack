@@ -104,6 +104,19 @@ describe("eval criterion examples", () => {
     );
   });
 
+  it("refuses two example files for one scenario (review S1)", async () => {
+    const copy = copyEvals();
+    writeFileSync(
+      join(copy, "evals", "ship", "examples", "00-broken.yaml"),
+      "scenario: recheck-after-edit\ncriteria:\n  rewatch:\n    pass: [nothing]\n    fail: [istack ship watch]\n",
+    );
+    const { code, err } = await check(copy);
+    expect(code).toBe(1);
+    expect(err).toContain(
+      "ship/recheck-after-edit: two example files: examples/00-broken.yaml and examples/recheck-after-edit.yaml; keep one",
+    );
+  });
+
   it("asks to drop a pending line once its scenario has examples", async () => {
     const copy = copyEvals();
     const pending = join(copy, "evals", "examples-pending.txt");

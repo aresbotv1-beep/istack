@@ -301,6 +301,33 @@ describe("git post-checkout hook (retro 2026-11-13 R5)", () => {
     expect(allowed.status, allowed.stderr).toBe(0);
   });
 
+  it("stays guarded when it cannot tell the default branch, until it is named (review S3)", async () => {
+    const dir = tempDir("ms-install-develop-");
+    const git = (...args: string[]) =>
+      spawnSync("git", ["-c", "user.name=t", "-c", "user.email=t@example.com", ...args], {
+        cwd: dir,
+        encoding: "utf8",
+        env: { ...process.env, ISTACK_ALLOW_MAIN_CHECKOUT: "" },
+      });
+    put(
+      dir,
+      "istack.yaml",
+      'version: 1\nowner: Sam\nprofile: solo\nchecks:\n  - name: test\n    run: "true"\n',
+    );
+    git("init", "-q", "-b", "develop");
+    git("commit", "-q", "--allow-empty", "-m", "base");
+    const run = await install(dir, ["install", "--host", "codex", "--project", dir, "--hooks"]);
+    expect(run.code, run.err).toBe(0);
+    const unknown = git("switch", "-q", "-c", "feature");
+    expect(unknown.status).toBe(1);
+    expect(unknown.stderr).toContain("git config istack.defaultBranch <branch>");
+    git("config", "istack.defaultBranch", "develop");
+    expect(git("switch", "-q", "develop").status).toBe(0);
+    const named = git("switch", "-q", "feature");
+    expect(named.status).toBe(1);
+    expect(named.stderr).toContain("now on feature, not develop");
+  });
+
   it("is removed with the other hooks", async () => {
     const { dir } = await project();
     const hook = join(dir, ".git/hooks/post-checkout");
