@@ -1,0 +1,26 @@
+# Scenarios whose regex criteria have no pass/fail examples yet (`istack evals check`).
+# This list only shrinks: add evals/<skill>/examples/<scenario-id>.yaml, then delete its line.
+# A new scenario never goes here; it ships with its examples.
+build/start-approved-ticket
+build/port-trust
+build/third-guess
+climb/plan-a-climb
+climb/relax-target
+climb/gain-within-noise
+groundbreak/founding-session
+groundbreak/express-settled-flag
+groundbreak/express-bugfix
+groundbreak/open-ambition
+plan/one-ticket
+plan/multi-ticket-spec
+prove/red-after-fix
+prove/visual-change
+prove/new-screen
+retro/offer-not-run
+retro/run-retro
+retro/before-merge
+ship/timeout-not-approval
+ship/only-own-provider
+ship/auto-merge-on
+ship/look-back
+ship/pr-body

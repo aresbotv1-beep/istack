@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
@@ -39,6 +40,54 @@ export function loadSkill(root: string, name: string, skillsDir = "skills"): Ski
     }
   };
   walk(dir);
+  return skillFromFiles(name, files);
+}
+
+/**
+ * Reads `skills/<name>/` as it was at a git commit, without checking it out: the skill a baseline
+ * should describe when a change edits it (retro 2026-11-13 R2). Historical reads only accept
+ * regular files, since a link's Git blob is its path, not its contents.
+ */
+export function loadSkillAt(
+  root: string,
+  name: string,
+  ref: string,
+  skillsDir = "skills",
+): SkillText {
+  const git = (args: string[]) =>
+    execFileSync("git", args, {
+      cwd: root,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+      maxBuffer: 64 * 1024 * 1024,
+    });
+  let commit: string;
+  try {
+    commit = git(["rev-parse", "--verify", "--end-of-options", `${ref}^{commit}`]).trim();
+  } catch {
+    throw new Error(`not a commit: ${ref}`);
+  }
+  // Paths in a tree are from the repo root; `root` may be a subdirectory (or a symlinked path).
+  const prefix = `${git(["rev-parse", "--show-prefix"]).trim()}${skillsDir}/${name}`;
+  const entries = git(["ls-tree", "-r", "-z", "--full-tree", commit, "--", `${prefix}/`])
+    .split("\0")
+    .filter(Boolean)
+    .map((entry) => ({
+      mode: entry.slice(0, entry.indexOf(" ")),
+      path: entry.slice(entry.indexOf("\t") + 1),
+    }));
+  const unsupported = entries.find(({ mode }) => mode !== "100644" && mode !== "100755");
+  if (unsupported) {
+    throw new Error(
+      `cannot read ${unsupported.path} at ${ref}: baseline --at does not follow symlinks or submodules`,
+    );
+  }
+  if (!entries.some(({ path }) => path === `${prefix}/SKILL.md`))
+    throw new Error(`no skill at ${prefix}/SKILL.md in ${ref}`);
+  const files = entries
+    .map(({ path }) => path)
+    .filter((p) => /\.(md|txt|json|ya?ml)$/i.test(p))
+    .map((p) => ({ path: p.slice(prefix.length + 1), text: git(["show", `${commit}:${p}`]) }));
   return skillFromFiles(name, files);
 }
 

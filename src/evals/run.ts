@@ -230,13 +230,39 @@ export async function runSkillEvals(input: EvalInput): Promise<EvalResult> {
   return result;
 }
 
+/**
+ * `previous` is the baseline being replaced. Its best carries over while the scenarios, runner,
+ * model and mode stay the same; any of those changing starts a new best from this run.
+ */
 export function toBaseline(
   result: EvalResult,
   options: { date: string; noiseFloor: number; k: number },
+  previous?: Baseline,
 ): Baseline {
   if (result.status !== "complete" || result.score === undefined) {
     throw new Error(`no baseline from an ${result.status} run: ${result.reason}`);
   }
+  const mine = {
+    score: result.score,
+    runScores: result.runScores,
+    skillHash: result.skillHash,
+    date: options.date,
+  };
+  const sameSet =
+    previous !== undefined &&
+    previous.scenariosHash === result.scenariosHash &&
+    previous.producedBy.runner === result.runner.id &&
+    previous.producedBy.model === result.runner.model &&
+    previous.producedBy.mode === result.mode;
+  const before = sameSet
+    ? (previous.best ?? {
+        score: previous.score,
+        runScores: previous.runScores,
+        skillHash: previous.skillHash,
+        date: previous.producedBy.date,
+      })
+    : undefined;
+  const best = before && before.score > mine.score ? before : mine;
   return {
     version: 1,
     skill: result.skill,
@@ -255,6 +281,7 @@ export function toBaseline(
     score: result.score,
     runScores: result.runScores,
     noise: { floor: options.noiseFloor, k: options.k },
+    best,
     scenarios: Object.fromEntries(
       Object.entries(result.scenarios).map(([id, s]) => [
         id,
@@ -272,6 +299,10 @@ export interface Comparison {
   score?: number;
   delta?: number;
   noise: number;
+  /** The best score recorded for these scenarios, when the baseline keeps one. */
+  best?: number;
+  /** Below that best by more than its noise: a drop that came in small steps. */
+  belowBest?: boolean;
   regressed: boolean;
 }
 
@@ -305,6 +336,11 @@ export function compareToBaseline(baseline: Baseline, result: EvalResult): Compa
     return { comparable: false, reasons, baselineScore: baseline.score, noise, regressed: false };
   }
   const delta = round(result.score - baseline.score);
+  const best = baseline.best;
+  const bestNoise = best
+    ? noiseOf(best.runScores, result.runScores, baseline.noise.floor, baseline.noise.k)
+    : 0;
+  const belowBest = best ? result.score - best.score < -bestNoise : false;
   return {
     comparable: true,
     reasons,
@@ -312,7 +348,8 @@ export function compareToBaseline(baseline: Baseline, result: EvalResult): Compa
     score: result.score,
     delta,
     noise: round(noise),
-    regressed: delta < -noise,
+    ...(best ? { best: best.score, belowBest } : {}),
+    regressed: delta < -noise || belowBest,
   };
 }
 
