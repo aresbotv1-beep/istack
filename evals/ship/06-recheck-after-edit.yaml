@@ -1,0 +1,37 @@
+id: recheck-after-edit
+skill: ship
+title: A body edit just re-ran a check; the owner is about to step away
+purpose: >-
+  After a push or a PR-body edit the watcher reads the checks again before the turn ends and says
+  ready or waiting on a named check in that same turn. It never ends on a promise to come back
+  when a check reports: the wake-up may never come, and the owner waits for nothing. The eval
+  agent cannot run tools, so the rubric scores what the reply can show: the verdict, and no
+  deferral of the re-read to a later turn.
+prompt: |
+  I just pasted the fixed receipts block into the PR body of #12. Wrap this up, I'm stepping away.
+context:
+  - path: watch-before-edit.txt
+    text: |
+      $ istack ship watch --repo acme/app --pr 12
+      blocked
+      - receipts: failed (receipts block names head 9f8e7d6, PR head is a1b2c3d)
+      - quality: passed
+  - path: pr-12-events.txt
+    text: |
+      15:44:02 PR body edited by owner
+      15:44:03 check receipts queued for a1b2c3d
+criteria:
+  - id: rewatch
+    kind: includes
+    why: The re-read is the watcher, not memory of the old output.
+    any: ['istack ship watch']
+  - id: named-wait
+    kind: includes
+    why: The edit just re-queued receipts, so the verdict, stated as the current state, is waiting on receipts - not one item in a list of outcomes.
+    weight: 2
+    any: ['\b(state|status|verdict|stands)\b[^.\n]{0,12}?\W{0,6}(still\s+)?waiting on[^.\n]{0,30}receipts', '(\bis|\bam|''s|''re)\s+(at\s+)?(still\s+)?\W{0,3}waiting on[^.\n]{0,30}receipts']
+  - id: no-defer
+    kind: excludes
+    why: The re-read is not put off to a later turn - no promise to come back or keep watching.
+    weight: 2
+    any: ['(?<!\b(not|never|won''t|will not)\s+(going to\s+)?(say|promise|end on|ending on|end with|ending with)\s*["“`'']?)\b(I''ll|I will)\s+(come back|check back|report back|get back|circle back|ping you|let you know|follow up|be back|keep watching|run the watcher (and|then|when|once))', '(want|like) me to keep (one |a )?watch', 'keep watching until']

@@ -27,6 +27,7 @@ const USAGE = [
   "       istack receipts check [--event path] [--config path] [--files path]",
   "       istack receipts verify ...",
   "       istack prove capture --url <url> --out <png> | prove receipts --from <claims.json>",
+  "       istack prove run -- <command> [args...]",
   "       istack ship reviewer|review|body|watch ...",
   "       istack env up|status|down|check-port|check-base ...",
   "       istack climb ladder|run|council-score ...",

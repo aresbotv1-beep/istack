@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { writeReceipts } from "../receipts/write.js";
 import { capture, type Viewport } from "./capture.js";
+import { runAndRecord } from "./run.js";
 
 export interface CliIo {
   cwd: string;
@@ -12,11 +13,13 @@ export interface CliIo {
 const USAGE = [
   "usage: istack prove capture --url <url> --out <file.png> [--viewport 1280x800] [--mask <selector>]...",
   "       istack prove receipts --from <claims.json>",
+  "       istack prove run -- <command> [args...]",
 ].join("\n");
 
 /** `args` are the words after `prove`. Returns the process exit code. */
 export async function runProveCli(args: string[], io: CliIo): Promise<number> {
   const [command, ...rest] = args;
+  if (command === "run") return runRun(rest, io);
   const flags = parseFlags(rest);
   if (!flags.ok) return usage(io, flags.reason);
   if (command === "capture") return runCapture(flags.flags, io);
@@ -91,6 +94,17 @@ function runReceipts(flags: Flags, io: CliIo): number {
   }
   io.out(result.block);
   return 0;
+}
+
+function runRun(words: string[], io: CliIo): number {
+  if (words[0] !== "--" || !words[1]) return usage(io, "run needs -- <command>");
+  const result = runAndRecord(words.slice(1), io.cwd);
+  if (!result.ok) return usage(io, result.reason);
+  if (result.dirty) {
+    io.err(`warning: uncommitted changes; this run is not exactly commit ${result.record.run.sha}`);
+  }
+  io.out(JSON.stringify(result.record, null, 2));
+  return result.record.run.exitCode;
 }
 
 function usage(io: CliIo, reason?: string): number {

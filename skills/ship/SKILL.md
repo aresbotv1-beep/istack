@@ -149,6 +149,14 @@ It prints `ready`, `waiting` or `blocked`, with actions. Exit 0 ready, 3 waiting
 - **waiting**: checks are still running. Wait, then watch again.
 - **ready**: checks green, every conversation answered, full stop holds.
 
+**After every push or PR-body edit, watch again before the turn ends.** An edit re-runs checks
+(the receipts check reads the body), and they often finish in seconds. End the turn on what the
+watcher says now, in plain words: `ready`, or `waiting on <check>` naming the check. When a
+check was queued after the last result you have, or you cannot run the watcher, the state is
+`waiting on <check>`: say it as the current verdict, not as one option in a list. Never end on
+a promise to come back when a check reports: the wake-up may never come, and the owner would
+wait for nothing.
+
 Every comment you post starts with an author header naming the agent, because you may be
 posting from the owner's account:
 
