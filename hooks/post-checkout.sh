@@ -18,7 +18,12 @@ ref=$(git symbolic-ref --quiet HEAD) || exit 0
 branch=${ref#refs/heads/}
 # The default branch: `git config istack.defaultBranch`, else origin/HEAD, else main/master/trunk.
 default=$(git config --get istack.defaultBranch)
-[ -n "$default" ] || default=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's|^origin/||')
+if [ -z "$default" ]; then
+  origin_default=$(git symbolic-ref --quiet refs/remotes/origin/HEAD 2>/dev/null)
+  case "$origin_default" in
+    refs/remotes/origin/*) default=${origin_default#refs/remotes/origin/} ;;
+  esac
+fi
 if [ -z "$default" ]; then
   for name in main master trunk; do
     if git show-ref --verify --quiet "refs/heads/$name"; then default=$name; break; fi

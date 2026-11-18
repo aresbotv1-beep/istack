@@ -2,9 +2,11 @@ import { execFileSync } from "node:child_process";
 import {
   appendFileSync,
   cpSync,
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  symlinkSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -93,6 +95,27 @@ describe("evals baseline --at <ref> (retro 2026-11-13 R2)", () => {
     const historical = loadSkillAt(top, "demo", "HEAD");
     expect(historical.files.map((f) => f.path).sort()).toEqual(["SKILL.md", "notes-é.md"]);
     expect(historical.hash).toBe(loadSkill(top, "demo").hash);
+  });
+
+  it("refuses to score a symlink target path as historical skill text", async () => {
+    const { cwd } = editedRepo();
+    writeFileSync(join(cwd, "guidance.md"), "Validate the output first.\n");
+    symlinkSync("../../guidance.md", join(cwd, "skills", "retro", "shared.md"));
+    const git = (...args: string[]) => execFileSync("git", args, { cwd, stdio: "ignore" });
+    git("add", "guidance.md", "skills/retro/shared.md");
+    git("-c", "user.name=t", "-c", "user.email=t@example.com", "commit", "-q", "-m", "link");
+
+    const seen: string[] = [];
+    const err: string[] = [];
+    const code = await runEvalsCli(
+      ["baseline", "--skill", "retro", "--at", "HEAD"],
+      { cwd, out: () => {}, err: (line) => err.push(line) },
+      { runner: () => recording(seen) },
+    );
+    expect(code, err.join("\n")).toBe(2);
+    expect(err.join("\n")).toContain("skills/retro/shared.md");
+    expect(seen).toEqual([]);
+    expect(existsSync(join(cwd, "evals", "baselines", "retro.json"))).toBe(false);
   });
 
   it("refuses an unknown ref, and --at outside baseline", async () => {

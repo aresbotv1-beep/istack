@@ -336,6 +336,21 @@ describe("git post-checkout hook (retro 2026-11-13 R5)", () => {
     expect(back.status, back.stderr).toBe(0);
   });
 
+  it("uses origin's default even when a tag matches its remote-tracking name", async () => {
+    const { git } = await project();
+    expect(git("update-ref", "refs/remotes/origin/main", "HEAD").status).toBe(0);
+    expect(git("symbolic-ref", "refs/remotes/origin/HEAD", "refs/remotes/origin/main").status).toBe(
+      0,
+    );
+    expect(git("tag", "origin/main").status).toBe(0);
+    expect(git("switch", "-q", "--detach").status).toBe(0);
+    const back = git("switch", "-q", "main");
+    expect(back.status, back.stderr).toBe(0);
+    const feature = git("switch", "-q", "-c", "feature");
+    expect(feature.status, feature.stderr).toBe(1);
+    expect(feature.stderr).toContain("now on feature, not main");
+  });
+
   it("is removed with the other hooks", async () => {
     const { dir } = await project();
     const hook = join(dir, ".git/hooks/post-checkout");
